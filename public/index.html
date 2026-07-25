@@ -46,7 +46,7 @@
   .fair .detail-grid{display:grid;gap:6px;margin-top:8px}
   .fair .detail-grid input,.fair .detail-grid textarea{width:100%;font-family:'Courier New',monospace;font-size:.68rem;padding:5px 8px;border-radius:5px;background:var(--mono-bg);color:var(--mono-ink);border:1px solid var(--line)}
   /* маса */
-  .tablewrap{position:relative;width:100%;padding-top:58%;margin-bottom:8px}
+  .tablewrap{position:relative;width:100%;padding-top:58%;margin-bottom:52px}
   @media(min-width:900px){.tablewrap{padding-top:54%}}
   .table{position:absolute;inset:0}
   .oval{position:absolute;left:13%;right:13%;top:16%;bottom:16%;
@@ -97,6 +97,7 @@
   .seat.hero .card{width:48px;height:68px}
   .seat.hero .card .r{font-size:.95rem}
   @media(max-width:640px){
+    .tablewrap{margin-bottom:40px}
     .seat{width:86px}.seat.hero{width:118px}
     .card{width:28px;height:41px}
     .card .r{font-size:.62rem}.card .s{font-size:.72rem}
@@ -164,6 +165,19 @@
   .switch input:checked+span::before{transform:translateX(18px)}
   /* панели */
 
+
+  /* --- тесте в историята --- */
+  .dvttl{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mint);margin:6px 0 3px}
+  .dcard{display:inline-block;font-family:'Courier New',monospace;font-size:.68rem;padding:1px 4px;margin:1px;border-radius:4px;border:1px solid var(--line)}
+  .dcard.used{background:#1f8a4d;color:#eafff2;border-color:#39d47f;font-weight:700}
+  .dcard.rest{background:#123526;color:#7fbf9f}
+  .dvleg{font-size:.62rem;color:#9db3a6;margin-top:4px;line-height:1.55}
+  /* --- аватари --- */
+  .avrow{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+  .avbtn{font-size:1.15rem;padding:4px 7px;border-radius:8px;border:1px solid var(--line);background:rgba(0,0,0,.25);cursor:pointer;line-height:1}
+  .avbtn.sel{border-color:var(--gold);box-shadow:0 0 8px rgba(212,175,55,.45);background:rgba(212,175,55,.12)}
+  .seat .av{font-size:.9rem;margin-right:3px}
+  .seat.hero .av{font-size:1.05rem}
   /* --- оформление: маса вляво, странична колона вдясно --- */
   .layout{display:grid;grid-template-columns:1fr;gap:8px}
   @media(min-width:1100px){
@@ -221,6 +235,7 @@
     <h2>♠ NETRIVA POKER PRO</h2>
     <div class="note">Онлайн маса · Texas Hold'em · до 8 реални играчи, свободните места допълват ботове.</div>
     <div class="field"><label>Твоето име</label><input type="text" id="lbName" maxlength="14" placeholder="напр. Георги"></div>
+    <div class="field"><label>Аватар</label><div class="avrow" id="avRow"></div></div>
     <div class="field"><label>Client seed (по избор — твоят принос към разбъркването)</label><input type="text" id="lbSeed" maxlength="64" placeholder="оставяш празно = автоматичен"></div>
     <button class="primary" id="btnCreate" style="width:100%">➕ Създай нова маса</button>
     <div class="or">— ИЛИ —</div>
@@ -390,7 +405,7 @@ const SEAT_POS=[[50,96],[15,85],[3,50],[15,15],[50,4],[85,15],[97,50],[85,85]];
 const grp=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00A0");
 
 let socket=null,S=null,mySeat=-1,myHole=null,amHost=false,local={bbView:false,fourColor:false};
-let deadlineTimer=null;
+let deadlineTimer=null;let lastRV=null;
 
 function fmt(n){
   if(!S)return grp(n);
@@ -434,13 +449,13 @@ const urlCode=new URLSearchParams(location.search).get("r");
 if(urlCode)$("lbCode").value=urlCode.toUpperCase();
 
 $("btnCreate").onclick=()=>{
-  socket.emit("create",{name:$("lbName").value,clientSeed:$("lbSeed").value},res=>{
+  socket.emit("create",{name:$("lbName").value,clientSeed:$("lbSeed").value,avatar:myAvatar},res=>{
     if(res.error)$("lbErr").textContent=res.error;else amHost=true;
   });
 };
 $("btnJoin").onclick=()=>{
   if(!$("lbCode").value.trim())return $("lbErr").textContent="Въведи код на маса.";
-  socket.emit("join",{code:$("lbCode").value,name:$("lbName").value,clientSeed:$("lbSeed").value},res=>{
+  socket.emit("join",{code:$("lbCode").value,name:$("lbName").value,clientSeed:$("lbSeed").value,avatar:myAvatar},res=>{
     if(res.error)$("lbErr").textContent=res.error;
   });
 };
@@ -499,10 +514,15 @@ function render(){
   // печат
   $("commitLine").textContent=S.commit||"— очаква ръка —";
   const vb=$("vbadge");
-  if(S.reveal){vb.className="vbadge ok";vb.textContent="РАЗКРИТО";
-    $("revServer").value=S.reveal.server;$("revClient").value=S.reveal.client;$("revNonce").value=S.reveal.nonce;
+  const rv=S.reveal||S.lastReveal;
+  if(S.reveal){vb.className="vbadge ok";vb.textContent="РАЗКРИТО";}
+  if(rv){
+    lastRV=rv;
+    $("revServer").value=rv.server;$("revClient").value=rv.client;$("revNonce").value=rv.nonce+(rv.no?"   (ръка №"+rv.no+")":"");
     $("btnVerify").disabled=false;
-  }else{vb.className="vbadge wait";vb.textContent=S.commit?"ЗАПЕЧАТАНО":"—";
+    const fs=document.querySelector("#fairDetails summary");
+    if(fs)fs.textContent="Пълни данни (seeds / nonce) — последна завършена ръка"+(rv.no?" №"+rv.no:"");
+  }else{
     $("revServer").value="—";$("revClient").value="—";$("revNonce").value="—";
     $("btnVerify").disabled=true;$("verifyOut").textContent="";
   }
@@ -520,7 +540,7 @@ function renderTable(){
     const d=document.createElement("div");
     d.className="seat"+(i===mySeat?" hero":"")+(p.folded&&!S.handOver?" folded":"")+(i===S.acting?" acting":"")+(!p.connected?" gone":"");
     d.style.left=x+"%";d.style.top=y+"%";
-    let nm='<div class="name">'+p.name+(p.type==="bot"?'<span class="tag">bot</span>':"")+(i===S.button?'<span class="dealerbtn">D</span>':"")+(!p.connected?'<span class="tag">off</span>':"")+'</div>';
+    let nm='<div class="name">'+(p.avatar?'<span class="av">'+p.avatar+'</span>':'')+p.name+(p.type==="bot"?'<span class="tag">bot</span>':"")+(i===S.button?'<span class="dealerbtn">D</span>':"")+(!p.connected?'<span class="tag">off</span>':"")+'</div>';
     let stack='<div class="stack">'+fmt(p.chips)+(p.allIn?" · all-in":"")+'</div>';
     let timer=(i===S.acting&&S.deadline)?'<div class="timer" data-deadline="'+S.deadline+'"><span class="tsec"></span><div class="tbar"><i></i></div></div>':"";
     d.innerHTML=nm+stack+timer;
@@ -646,11 +666,44 @@ function renderHist(list){
     h.actions.forEach(a=>{
       const r=document.createElement("div");r.className="act";r.textContent=a;d.appendChild(r);
     });
+    if(h.deck&&h.deck.length){
+      const ttl=document.createElement("div");ttl.className="dvttl";
+      ttl.textContent="Тесте — ред на 52-те карти (ярко зелено = раздадени/изгорени, тъмно = неизиграни):";
+      d.appendChild(ttl);
+      const dk=document.createElement("div");
+      h.deck.forEach((c,i)=>{
+        const sp=document.createElement("span");
+        const used=i<(h.used||0);
+        sp.className="dcard "+(used?"used":"rest");
+        sp.textContent=c;
+        sp.title=used?((h.map&&h.map[i])||"използвана"):"неизиграна — остана в тестето";
+        dk.appendChild(sp);
+      });
+      d.appendChild(dk);
+      if(h.map&&h.map.length){
+        const lg=document.createElement("div");lg.className="dvleg";
+        lg.textContent=h.map.map((m,i)=>(i+1)+". "+h.deck[i]+" → "+m).join("   ·   ");
+        d.appendChild(lg);
+      }
+    }
     el.appendChild(d);
   });
 }
 
 /* ---------- ДЕЙСТВИЯ ---------- */
+
+/* --- аватари --- */
+const AVATARS=["🙂","😎","🦊","🐯","🦁","🐺","🦅","🃏","👑","🎩","🐉","🍀"];
+let myAvatar=localStorage.getItem("nvAvatar")||"🙂";
+(function buildAv(){
+  const row=$("avRow");if(!row)return;
+  AVATARS.forEach(a=>{
+    const b=document.createElement("button");b.type="button";b.className="avbtn"+(a===myAvatar?" sel":"");b.textContent=a;
+    b.onclick=()=>{myAvatar=a;try{localStorage.setItem("nvAvatar",a);}catch(e){}
+      row.querySelectorAll(".avbtn").forEach(x=>x.classList.toggle("sel",x.textContent===a));};
+    row.appendChild(b);
+  });
+})();
 $("btnNewHand").onclick=()=>socket.emit("newHand");
 $("btnFold").onclick=()=>socket.emit("action",{type:"fold"});
 $("btnCall").onclick=()=>socket.emit("action",{type:"check_call"});
@@ -717,7 +770,9 @@ $("btnSettings").onclick=()=>{
 };
 $("setBB").onchange=e=>{local.bbView=e.target.checked;render();};
 $("btnGoVerify").onclick=()=>{
-  const d=$("fairDetails");if(d)d.open=true;
+  const d=$("fairDetails");if(!d)return;
+  if(d.open){d.open=false;return;}
+  d.open=true;
   const f=document.querySelector(".fair");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});
 };
 $("setFour").onchange=e=>{local.fourColor=e.target.checked;document.body.classList.toggle("fourcolor",local.fourColor);};
@@ -739,9 +794,10 @@ $("btnVerify").onclick=async()=>{
     for(let i=0;i<bytes.length;i++)bytes[i]=parseInt(hex.substr(i*2,2),16);
     const dig=await crypto.subtle.digest("SHA-256",bytes);
     const out=[...new Uint8Array(dig)].map(b=>b.toString(16).padStart(2,"0")).join("");
-    const ok=out===$("commitLine").textContent.trim();
-    $("verifyOut").textContent=ok?"✓ Съвпада — печатът е публикуван преди раздаването и отговаря на разкрития server seed."
-      :"✗ НЕ съвпада с текущия печат (възможно е печатът вече да е за следващата ръка — сравни в Историята).";
+    const target=(lastRV&&lastRV.commit)?lastRV.commit:$("commitLine").textContent.trim();
+    const ok=out===target;
+    $("verifyOut").textContent=ok?"✓ Съвпада — печатът на ръка"+(lastRV&&lastRV.no?" №"+lastRV.no:"")+" е публикуван преди раздаването и отговаря на разкрития server seed."
+      :"✗ НЕ съвпада — печатът и seed-ът не пасват!";
   }catch(e){$("verifyOut").textContent="Грешка при проверката: "+e.message;}
 };
 })();
