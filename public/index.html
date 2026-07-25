@@ -79,7 +79,7 @@
   .center{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
     display:flex;flex-direction:column;align-items:center;gap:5px;z-index:3}
   .board{display:flex;gap:5px}
-  .potline{font-size:.82rem;color:var(--gold-hi);letter-spacing:.03em;background:rgba(0,0,0,.35);padding:2px 12px;border-radius:11px}
+  .potline{font-size:.9rem;color:var(--gold-hi);letter-spacing:.03em;background:rgba(0,0,0,.35);padding:2px 12px;border-radius:11px}
   .stageline{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mint)}
   .winbanner{position:absolute;left:50%;top:64%;transform:translate(-50%,-50%);
     background:rgba(8,20,15,.92);border:1px solid var(--gold);border-radius:10px;
@@ -100,21 +100,21 @@
   .peek .card{opacity:.92;filter:saturate(.9)}
   .peeklbl{font-size:.55rem;color:#8fae9e;letter-spacing:.08em;text-transform:uppercase}
   .seat.gone{opacity:.25;border-style:dashed;border-color:var(--line)}
-  .seat .name{font-size:.92rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .seat .name{font-size:1.06rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .seat .stack{font-size:.8rem;color:var(--chip)}
-  .seat .stack b{color:#fff;font-weight:700;letter-spacing:.02em}
-  .seat .tag{font-family:'Courier New',monospace;font-size:.55rem;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:#e0a196;margin-left:3px}
+  .seat .stack b{color:#fff;font-weight:700;font-size:1.15rem;letter-spacing:.03em}
+  .seat .tag{font-family:'Courier New',monospace;font-size:.72rem;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:#e0a196;margin-left:3px}
   .seat .timer{font-family:'Courier New',monospace;font-size:.6rem;color:var(--gold-hi)}
   .hole{display:flex;justify-content:center;gap:4px;margin-top:3px}
   .handname{font-size:.62rem;color:var(--mint);min-height:12px;margin-top:2px}
   .seat.hero{width:150px;background:rgba(6,16,12,.7)}
-  .seat.hero .name{font-size:1.02rem;color:var(--gold-hi)}
+  .seat.hero .name{font-size:1.18rem;color:var(--gold-hi)}
   .dealerbtn{display:inline-block;width:14px;height:14px;border-radius:50%;
     background:#f5f0e4;color:#241a08;font-size:.56rem;font-weight:bold;
     line-height:14px;vertical-align:middle;margin-left:3px;font-family:Arial,sans-serif}
   .betchip{position:absolute;transform:translate(-50%,-50%);z-index:5;
     display:flex;flex-direction:column;align-items:center;gap:3px;white-space:nowrap}
-  .betchip .amt{font-size:.66rem;color:#fff;font-weight:700;letter-spacing:.02em;background:rgba(5,12,9,.78);
+  .betchip .amt{font-size:.92rem;color:#fff;font-weight:700;letter-spacing:.03em;background:rgba(5,12,9,.78);
     border:1px solid rgba(212,175,55,.45);border-radius:9px;padding:1px 8px;
     box-shadow:0 1px 4px rgba(0,0,0,.5)}
   .card{width:44px;height:62px;border-radius:6px;background:linear-gradient(160deg,#fffdf8,#f2ece0);color:var(--ink);
@@ -240,7 +240,7 @@
   #sndBtn{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.95rem;cursor:pointer;line-height:1}
   #sndBtn:hover{border-color:var(--gold)}
 
-  #potLine b{color:#fff;font-weight:700;font-size:1.12em;letter-spacing:.02em}
+  #potLine b{color:#fff;font-weight:700;font-size:1.28em;letter-spacing:.03em}
 
   /* --- рискови цветове на опциите за залог --- */
   .rowlbl{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.14em;color:var(--mint);text-transform:uppercase;align-self:center;margin-right:4px;white-space:nowrap}
@@ -441,7 +441,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v33</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
+      <span class="ver" id="verTag">v34</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -1068,7 +1068,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v33 · 25.07";
+const NV_VER="v34 · 25.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
