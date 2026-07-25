@@ -121,13 +121,12 @@
     position:relative;box-shadow:0 3px 7px rgba(0,0,0,.5);border:1px solid #cfc6b2;
     font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;
     -webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;overflow:hidden}
-  .card .cnr{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:.92}
-  .card .cnr.tl{left:3px;top:2px}
-  .card .cnr.br{right:3px;bottom:2px;transform:rotate(180deg)}
-  .card .cnr .r{font-size:.99rem;font-weight:900;letter-spacing:-.04em}
-  .card .cnr .s{font-size:.66rem;font-style:normal;margin-top:-1px}
-  .card .pip{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);
-    font-size:1.35rem;line-height:1;opacity:.95;text-shadow:0 1px 1px rgba(0,0,0,.12)}
+  .card .cnr.tl{position:absolute;left:0;right:0;top:8%;text-align:center;line-height:1}
+  .card .cnr.tl .r{font-size:1.5rem;font-weight:900;letter-spacing:-.05em}
+  .card .cnr.tl .s{display:none}
+  .card .cnr.br{display:none}
+  .card .pip{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);
+    font-size:1.62rem;line-height:1;text-shadow:0 1px 1px rgba(0,0,0,.12)}
   .card.c-h{color:#cf1d18} .card.c-d2{color:#cf1d18}
   .card.c-s2,.card.c-c2{color:#161a1c}
   body.fourcolor .card.c-d2{color:#1565d8}
@@ -140,22 +139,20 @@
   .card.back::after{content:"";position:absolute;inset:3px;border:1px solid rgba(212,175,55,.55);border-radius:3px}
   .card.back .cnr,.card.back .pip{visibility:hidden}
   .board .card{width:62px;height:87px;box-shadow:0 6px 15px rgba(0,0,0,.6)}
-  .board .card .cnr .r{font-size:1.4rem}
-  .board .card .cnr .s{font-size:.85rem}
-  .board .card .pip{font-size:1.95rem}
+  .board .card .cnr.tl .r{font-size:2.1rem}
+  .board .card .pip{font-size:2.25rem}
   .seat.hero .card{width:56px;height:79px}
-  .seat.hero .card .cnr .r{font-size:1.26rem}
-  .seat.hero .card .cnr .s{font-size:.78rem}
-  .seat.hero .card .pip{font-size:1.75rem}
+  .seat.hero .card .cnr.tl .r{font-size:1.9rem}
+  .seat.hero .card .pip{font-size:2.05rem}
   @media(max-width:640px){
     .tablewrap{margin-bottom:40px}
     .seat{width:86px}.seat.hero{width:118px}
     .card{width:32px;height:45px}
-    .card .cnr .r{font-size:.8rem}.card .cnr .s{font-size:.5rem}.card .pip{font-size:1.05rem}
+    .card .cnr.tl .r{font-size:1.15rem}.card .pip{font-size:1.25rem}
     .board .card{width:44px;height:62px}
-    .board .card .cnr .r{font-size:1.02rem}.board .card .pip{font-size:1.45rem}
+    .board .card .cnr.tl .r{font-size:1.55rem}.board .card .pip{font-size:1.65rem}
     .seat.hero .card{width:44px;height:62px}
-    .seat.hero .card .cnr .r{font-size:1.02rem}.seat.hero .card .pip{font-size:1.45rem}
+    .seat.hero .card .cnr.tl .r{font-size:1.55rem}.seat.hero .card .pip{font-size:1.65rem}
     .oval::after{font-size:.9rem}
   }
   /* лента действия */
@@ -444,7 +441,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v32</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
+      <span class="ver" id="verTag">v33</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -1071,7 +1068,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v32 · 25.07";
+const NV_VER="v33 · 25.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
