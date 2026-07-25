@@ -86,14 +86,15 @@
   .seat.acting{border-color:var(--gold);box-shadow:0 0 14px rgba(212,175,106,.5)}
   .seat.folded{opacity:.4}
   .seat.gone{opacity:.25;border-style:dashed;border-color:var(--line)}
-  .seat .name{font-size:.68rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .seat .stack{font-size:.64rem;color:var(--chip)}
+  .seat .name{font-size:.8rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .seat .stack{font-size:.74rem;color:var(--chip)}
+  .seat .stack b{color:#fff;font-weight:700;letter-spacing:.02em}
   .seat .tag{font-family:'Courier New',monospace;font-size:.55rem;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:#e0a196;margin-left:3px}
   .seat .timer{font-family:'Courier New',monospace;font-size:.6rem;color:var(--gold-hi)}
   .hole{display:flex;justify-content:center;gap:4px;margin-top:3px}
   .handname{font-size:.62rem;color:var(--mint);min-height:12px;margin-top:2px}
   .seat.hero{width:150px;background:rgba(6,16,12,.7)}
-  .seat.hero .name{font-size:.78rem;color:var(--gold-hi)}
+  .seat.hero .name{font-size:.9rem;color:var(--gold-hi)}
   .dealerbtn{display:inline-block;width:14px;height:14px;border-radius:50%;
     background:#f5f0e4;color:#241a08;font-size:.56rem;font-weight:bold;
     line-height:14px;vertical-align:middle;margin-left:3px;font-family:Arial,sans-serif}
@@ -196,11 +197,8 @@
 
 
 
-  .goldshine{background:linear-gradient(100deg,#8a6a1e 0%,#d4af37 25%,#ffe9a8 50%,#d4af37 75%,#8a6a1e 100%);
-    background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
-    animation:goldflow 6s linear infinite}
-  @keyframes goldflow{0%{background-position:0% 0}100%{background-position:200% 0}}
-  .roomtag{color:#fff !important;font-weight:700;letter-spacing:.06em}
+  .goldshine{color:var(--gold-hi);font-weight:bold}
+  .roomtag b{color:#fff;font-weight:700;letter-spacing:.06em}
 
   /* --- обратна връзка и празнични пулсове --- */
   .roomtag.copied{color:#42e6a4 !important;border-color:#42e6a4 !important;text-shadow:0 0 8px rgba(66,230,164,.5)}
@@ -271,10 +269,6 @@
     background-size:250px 92vh, 230px 170px}
   .wrap{position:relative;z-index:1}
   .decorL{display:none}
-  @media(min-width:1300px){
-    .layout{grid-template-columns:80px minmax(0,1fr) 350px}
-    .decorL{display:block}
-  }
   @media(max-width:900px){body::after{display:none}}
   /* --- оформление: маса вляво, странична колона вдясно --- */
   .layout{display:grid;grid-template-columns:1fr;gap:8px}
@@ -282,6 +276,11 @@
     .wrap{max-width:1420px}
     .layout{grid-template-columns:minmax(0,1fr) 350px;align-items:start}
     .sidebar{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow-y:auto}
+  }
+  @media(min-width:1340px){
+    .wrap{max-width:1500px}
+    .layout{grid-template-columns:80px minmax(0,1fr) 350px}
+    .decorL{display:block}
   }
   /* --- сгъваем дневник --- */
   .logfold summary{cursor:pointer;font-family:'Courier New',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
@@ -335,7 +334,9 @@
   /* лоби */
   .lobby{position:fixed;inset:0;background:rgba(4,12,9,.94);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
   .lobbycard{background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:22px;max-width:420px;width:100%}
-  .lobbycard h2{color:var(--gold-hi);font-weight:normal;margin-bottom:4px;letter-spacing:.05em}
+  .lobbycard h2{color:var(--gold-hi);font-weight:normal;margin-bottom:4px;letter-spacing:.06em}
+  .lobbycard h2 b{color:var(--gold-hi);font-weight:bold}
+  .lobbycard h2 .ttl2{color:var(--gold)}
   .lobbycard .field{margin:12px 0}
   .lobbycard label{display:block;font-size:.74rem;color:#8fae9e;margin-bottom:4px}
   .lobbycard input{width:100%;text-align:left;font-size:1rem;padding:9px 10px}
@@ -346,7 +347,7 @@
 <body>
 <div class="lobby" id="lobby">
   <div class="lobbycard">
-    <h2>♠ NETRIVA POKER PRO</h2>
+    <h2>♠ <b>NETRIVA</b> <span class="ttl2">POKER PRO</span></h2>
     <div class="note">Онлайн маса · Texas Hold'em · до 8 реални играчи, свободните места допълват ботове.</div>
     <div class="field"><label>Твоето име</label><input type="text" id="lbName" maxlength="14" placeholder="напр. Георги"></div>
     <div class="field"><label>Аватар</label><div class="avrow" id="avRow"></div></div>
@@ -591,7 +592,7 @@ $("btnJoin").onclick=()=>{
 };
 function updateRoomTag(){
   if(!S)return;
-  $("roomTag").textContent="Маса: "+S.code+" 📋";
+  $("roomTag").innerHTML='Маса: <b>'+S.code+'</b> 📋';
 }
 $("roomTag").onclick=()=>{
   const url=location.origin+location.pathname+"?r="+(S?S.code:"");
@@ -600,9 +601,8 @@ $("roomTag").onclick=()=>{
   const rt=$("roomTag");
   if(rt._t)clearTimeout(rt._t);
   rt.classList.add("copied");
-  const orig="Маса: "+(S?S.code:"")+" 📋";
   rt.textContent="✓ Копирано!";
-  rt._t=setTimeout(()=>{rt.classList.remove("copied");rt.textContent=orig;rt._t=null;},1600);
+  rt._t=setTimeout(()=>{rt.classList.remove("copied");rt.innerHTML='Маса: <b>'+(S?S.code:"")+'</b> 📋';rt._t=null;},1600);
 };
 
 /* ---------- РЕНДЕР ---------- */
@@ -682,7 +682,7 @@ function renderTable(){
     d.className="seat"+(i===mySeat?" hero":"")+(p.folded&&!S.handOver?" folded":"")+(i===S.acting?" acting":"")+(!p.connected?" gone":"")+(S.handOver&&p.winCards?" wonseat":"")+(S.handOver&&p.showCards&&!p.winCards?" lostseat":"");
     d.style.left=x+"%";d.style.top=y+"%";
     let nm='<div class="name">'+avHTML(p.avatar)+p.name+(p.type==="bot"?'<span class="tag">bot</span>':"")+(i===S.button?'<span class="dealerbtn">D</span>':"")+(!p.connected?'<span class="tag">off</span>':"")+'</div>';
-    let stack='<div class="stack">'+fmt(p.chips)+(p.allIn?" · all-in":"")+'</div>';
+    let stack='<div class="stack"><b>'+fmt(p.chips)+'</b>'+(p.allIn?" · all-in":"")+'</div>';
     let timer=(i===S.acting&&S.deadline)?'<div class="timer" data-deadline="'+S.deadline+'"><span class="tsec"></span><div class="tbar"><i></i></div></div>':"";
     d.innerHTML=nm+stack+timer;
     const hl=document.createElement("div");hl.className="hole";
