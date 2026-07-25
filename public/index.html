@@ -144,17 +144,7 @@
   .seat.hero .card{width:56px;height:79px}
   .seat.hero .card .cnr.tl .r{font-size:1.9rem}
   .seat.hero .card .pip{font-size:2.05rem}
-  @media(max-width:640px){
-    .tablewrap{margin-bottom:40px}
-    .seat{width:86px}.seat.hero{width:118px}
-    .card{width:32px;height:45px}
-    .card .cnr.tl .r{font-size:1.15rem}.card .pip{font-size:1.25rem}
-    .board .card{width:44px;height:62px}
-    .board .card .cnr.tl .r{font-size:1.55rem}.board .card .pip{font-size:1.65rem}
-    .seat.hero .card{width:44px;height:62px}
-    .seat.hero .card .cnr.tl .r{font-size:1.55rem}.seat.hero .card .pip{font-size:1.65rem}
-    .oval::after{font-size:.9rem}
-  }
+
   /* лента действия */
   .actions{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
   .actions .msg{font-size:.84rem;color:#cfe0d6;margin-bottom:8px;min-height:16px;text-align:center}
@@ -305,7 +295,6 @@
   .emopop.open{display:flex}
   .emopop button{font-size:1.2rem;padding:5px 7px;border-radius:8px;border:1px solid var(--line);background:rgba(0,0,0,.28);cursor:pointer;line-height:1;transition:transform .12s}
   .emopop button:hover{transform:scale(1.2);border-color:var(--gold)}
-  @media(max-width:640px){.emofab{left:auto;right:2%;top:88%}.emopop{left:auto;right:2%;transform:translate(0,-100%)}}
 
   /* --- резюме на ръката --- */
   .hsum{margin:6px 0 2px;border:1px solid rgba(212,175,55,.35);border-radius:8px;overflow:hidden}
@@ -424,6 +413,127 @@
   .lobbycard input{width:100%;text-align:left;font-size:1rem;padding:9px 10px}
   .lobbycard .or{text-align:center;color:#8fae9e;font-size:.75rem;margin:10px 0;letter-spacing:.2em}
   .err{color:var(--bad);font-size:.78rem;min-height:16px;margin-top:6px}
+
+  /* ================= МОБИЛНА ВЕРСИЯ ================= */
+  @media(max-width:760px){
+    html,body{overflow-x:hidden;max-width:100vw}
+    body{padding:6px 6px 20px}
+    .wrap{max-width:100%}
+    /* хедър: компактен, две нива */
+    h1{font-size:1.05rem;line-height:1.25}
+    .hdr{gap:6px}
+    .hdr-stat{font-size:.72rem}
+    .hdr-stat b{font-size:1rem}
+    .ver{display:none}
+    .fair{padding:6px 8px}
+    .fair .flabel{font-size:.55rem}
+    #commitLine{font-size:.58rem}
+    /* масата: по-висока пропорция, за да има място за местата */
+    .tablewrap{padding-top:88%;margin-bottom:8px}
+    .oval{left:7%;right:7%;top:13%;bottom:13%;border-width:7px;
+      box-shadow:0 0 0 7px var(--rail),0 0 0 8px rgba(212,175,55,.5),0 12px 26px rgba(0,0,0,.6),inset 0 0 40px rgba(0,0,0,.45)}
+    .oval::before{inset:5%}
+    .tablewrap::before,.tablewrap::after,.table::before,.table::after{font-size:4rem}
+    /* места: компактни картончета */
+    .seat{width:74px;padding:2px 2px 3px;border-radius:8px}
+    .seat.hero{width:104px}
+    .seat .name{font-size:.72rem}
+    .seat.hero .name{font-size:.82rem}
+    .seat .name .av.avimg svg{width:15px;height:15px}
+    .seat.hero .av.avimg svg{width:19px;height:19px}
+    .seat .tag{font-size:.5rem;padding:0 2px}
+    .seat .stack{font-size:.6rem}
+    .seat .stack b{font-size:.82rem}
+    .seat .handname{font-size:.52rem}
+    .timer .tsec{font-size:.55rem}
+    /* карти */
+    .card{width:26px;height:37px;border-radius:4px}
+    .card .cnr.tl .r{font-size:.95rem}.card .pip{font-size:1rem}
+    .board .card{width:38px;height:53px}
+    .board .card .cnr.tl .r{font-size:1.35rem}.board .card .pip{font-size:1.4rem}
+    .seat.hero .card{width:40px;height:56px}
+    .seat.hero .card .cnr.tl .r{font-size:1.4rem}.seat.hero .card .pip{font-size:1.45rem}
+    /* жетони и суми */
+    .chip{width:13px;height:13px;margin-top:-9px;border-width:2px}
+    .chip b{font-size:6px}
+    .chips.big .chip{width:16px;height:16px;margin-top:-11px}
+    .betchip .amt{font-size:.66rem;padding:0 5px}
+    .potline{font-size:.72rem;padding:1px 8px}
+    #potLine b{font-size:1.2em}
+    .stageline{font-size:.5rem;letter-spacing:.14em}
+    .winbanner{font-size:.78rem;padding:8px 12px;top:66%}
+    .winbanner .bsub{font-size:.66rem}
+    /* контроли: пълна ширина, едри бутони за пръст */
+    .controls{padding:8px 6px 10px}
+    #msg{font-size:.75rem;margin-bottom:6px}
+    .actions{gap:8px}
+    .actions button{flex:1;min-width:0;font-size:.92rem;padding:13px 6px;border-radius:9px}
+    .presets{gap:5px;justify-content:center;flex-wrap:wrap}
+    .rowlbl{display:none}
+    #postRow .preset{flex:1 1 28%;min-width:0;font-size:.8rem;padding:10px 4px}
+    #postRow .preset[data-k="a"]{flex:1 1 28%;min-width:0;font-size:.82rem;padding:10px 4px}
+    .stepgrp{flex:1 1 30%;min-width:0}
+    .stepgrp .stepbtn{flex:1;width:100%;font-size:.8rem;padding:10px 4px}
+    .stepbtn b{font-size:1em}
+    .updown button{padding:5px 6px;font-size:.6rem}
+    .fine{gap:6px;flex-wrap:wrap;justify-content:center}
+    input[type=range]{width:100%;order:1;height:26px}
+    .raiseval{order:2;min-width:96px;font-size:1.05rem;padding:5px 8px}
+    .raiseval small{font-size:.66rem}
+    .raisegrp{order:3}
+    #btnRaise{min-width:88px;padding:12px 10px}
+    /* реакции */
+    .emofab{width:36px;height:36px;font-size:1rem;left:auto;right:2%;top:auto;bottom:2%;z-index:13}
+    .emopop{right:1%;left:auto;bottom:34px;top:auto;transform:none;padding:6px;max-width:92vw;flex-wrap:wrap;justify-content:center}
+    .emopop button{font-size:1.15rem;padding:7px 9px}
+    /* панели */
+    .panel{padding:8px 9px;border-radius:9px}
+    .panel h3,.logfold summary{font-size:.58rem}
+    .sidebar{max-height:none;position:static}
+    .histbox{max-height:260px}
+    .logbox{max-height:180px;font-size:.68rem}
+    .stats{font-size:.62rem}
+    .stats th{font-size:.5rem;padding:3px 2px}
+    .stats td{padding:3px 2px}
+    .fstep .ft b{font-size:.7rem}
+    .fstep .ft span{font-size:.62rem}
+    .lobbycard{padding:16px 14px}
+    .avbtn svg{width:34px;height:34px}
+    .avrow{gap:6px;justify-content:center}
+  }
+
+  /* --- таблети --- */
+  @media(min-width:901px) and (max-width:1099px){
+    html,body{overflow-x:hidden;max-width:100vw}
+    .seat{width:104px}.seat.hero{width:132px}
+  }
+  @media(min-width:761px) and (max-width:900px){
+    html,body{overflow-x:hidden;max-width:100vw}
+    .tablewrap{padding-top:66%}
+    .oval{left:9%;right:9%;top:14%;bottom:14%}
+    .seat{width:94px}.seat.hero{width:126px}
+    .seat .name{font-size:.86rem}.seat.hero .name{font-size:.96rem}
+    .seat .stack b{font-size:1rem}
+    .card{width:30px;height:42px}
+    .board .card{width:46px;height:64px}
+    .seat.hero .card{width:48px;height:67px}
+    .actions button{font-size:1rem;padding:13px 18px}
+    #postRow .preset,.stepgrp .stepbtn{font-size:.85rem;padding:10px 10px}
+  }
+  /* много тесни телефони */
+  @media(max-width:390px){
+    .seat{width:64px}
+    .seat.hero{width:92px}
+    .seat .name{font-size:.66rem}
+    .card{width:22px;height:31px}
+    .card .cnr.tl .r{font-size:.8rem}.card .pip{font-size:.85rem}
+    .board .card{width:33px;height:46px}
+    .board .card .cnr.tl .r{font-size:1.15rem}.board .card .pip{font-size:1.2rem}
+    .seat.hero .card{width:35px;height:49px}
+    .actions button{font-size:.85rem;padding:12px 4px}
+    #postRow .preset{font-size:.72rem;padding:9px 2px}
+    .stepgrp .stepbtn{font-size:.72rem;padding:9px 2px}
+  }
 </style>
 </head>
 <body>
@@ -450,7 +560,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v36</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
+      <span class="ver" id="verTag">v41</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -604,7 +714,11 @@ const $=id=>document.getElementById(id);
 const RANKS=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
 const SUITS=["♠","♥","♦","♣"];
 const SUITCLS=["","c-h","c-d2","c-c2"];
-const SEAT_POS=[[50,96],[15,85],[3,50],[15,15],[50,4],[85,15],[97,50],[85,85]];
+const SEAT_POS_D=[[50,96],[15,85],[3,50],[15,15],[50,4],[85,15],[97,50],[85,85]];
+const SEAT_POS_M=[[50,95],[18,82],[10,50],[18,17],[50,5],[82,17],[90,50],[82,82]];
+const isMob=()=>window.matchMedia("(max-width:1340px)").matches;
+let SEAT_POS=isMob()?SEAT_POS_M:SEAT_POS_D;
+window.addEventListener("resize",()=>{const n=isMob()?SEAT_POS_M:SEAT_POS_D;if(n!==SEAT_POS){SEAT_POS=n;if(S)render();}});
 const grp=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00A0");
 
 let socket=null,S=null,mySeat=-1,myHole=null,amHost=false,local={bbView:false,fourColor:false};
@@ -1077,7 +1191,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v36 · 25.07";
+const NV_VER="v41 · 25.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
