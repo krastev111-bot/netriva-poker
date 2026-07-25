@@ -120,6 +120,32 @@
   .sizer .presets{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
   .sizer .fine{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
   input[type=range]{width:230px;accent-color:var(--gold)}
+  /* --- активен играч: пулс + лента за време --- */
+  .seat.acting{border-color:var(--gold);animation:actpulse 1.15s ease-in-out infinite}
+  @keyframes actpulse{0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,0)}50%{box-shadow:0 0 16px 4px rgba(212,175,55,.55)}}
+  .tbar{height:5px;border-radius:3px;background:rgba(255,255,255,.13);margin-top:3px;overflow:hidden}
+  .tbar i{display:block;height:100%;width:100%;background:#4fae6d;transition:width .45s linear}
+  .tbar i.warn{background:#c94b3f}
+  /* --- жетони --- */
+  .chips{display:flex;gap:3px;align-items:flex-end;justify-content:center}
+  .chipcol{display:flex;flex-direction:column}
+  .chip{width:15px;height:15px;border-radius:50%;border:2px dashed rgba(255,255,255,.75);box-sizing:border-box;margin-top:-11px;box-shadow:0 1px 2px rgba(0,0,0,.5)}
+  .chipcol .chip:first-child{margin-top:0}
+  .chips.big .chip{width:19px;height:19px;margin-top:-14px}
+  .chips.big .chipcol .chip:first-child{margin-top:0}
+  .c-blue{background:#3a6ea5}.c-red{background:#b3403a}.c-green{background:#3f8f5a}.c-black{background:#40403f}.c-purple{background:#7b4fa0}
+  .betchip .amt{display:block;margin-top:3px}
+  .potchips{display:flex;justify-content:center;margin-top:5px}
+  /* --- нов панел за залози --- */
+  .stepgrp{display:flex;align-items:center;gap:2px}
+  .stepgrp .stepbtn{font-size:.82rem;padding:7px 12px;border-color:var(--gold);color:var(--gold-hi);font-weight:600}
+  .updown{display:flex;flex-direction:column;gap:1px}
+  .updown button{font-size:.55rem;line-height:1;padding:3px 5px;border-radius:4px}
+  .raisegrp{display:flex;align-items:stretch;gap:2px}
+  .raiseval{min-width:110px;text-align:center;font-family:'Courier New',monospace;font-size:.95rem;color:var(--gold-hi);
+    border:1px solid var(--line);border-radius:7px;padding:7px 8px;background:rgba(0,0,0,.25)}
+  .raiseval small{display:block;font-size:.62rem;color:#9db3a6}
+
   input[type=number],input[type=text]{width:92px;font-family:'Courier New',monospace;font-size:.9rem;
     padding:7px 8px;border-radius:6px;background:var(--mono-bg);color:var(--gold-hi);border:1px solid var(--line);text-align:center}
   /* настройки */
@@ -196,6 +222,8 @@
     <div class="set-grid">
       <div class="set-item"><span>Показвай сумите в BB (само за теб)</span>
         <label class="switch"><input type="checkbox" id="setBB"><span></span></label></div>
+      <div class="set-item"><span>Автоматична нова ръка (общо за масата)</span>
+        <label class="switch"><input type="checkbox" id="setAuto" checked><span></span></label></div>
       <div class="set-item"><span>Четирицветно тесте (само за теб)</span>
         <label class="switch"><input type="checkbox" id="setFour"><span></span></label></div>
       <div id="hostSettings">
@@ -276,18 +304,22 @@
       <button class="danger" id="btnFold">Fold</button>
       <button class="primary" id="btnCall">Check</button>
       <div class="sizer" id="sizer">
-        <div class="presets">
+        <div class="presets" id="preRow"></div>
+        <div class="presets" id="postRow">
           <button class="preset" data-k="min">Min</button>
-          <button class="preset" data-k="t">⅓ пот</button>
-          <button class="preset" data-k="h">½ пот</button>
-          <button class="preset" data-k="q">¾ пот</button>
-          <button class="preset" data-k="p">Пот</button>
+          <button class="preset" data-k="33">33%</button>
+          <button class="preset" data-k="50">50%</button>
+          <button class="preset" data-k="75">75%</button>
+          <button class="preset" data-k="100">100%</button>
           <button class="preset" data-k="a">All-in</button>
         </div>
         <div class="fine">
           <input type="range" id="raiseSlider">
-          <input type="number" id="raiseNum">
-          <button id="btnRaise">Raise</button>
+          <div class="raiseval" id="raiseShow">—</div>
+          <div class="raisegrp">
+            <button id="btnRaise" class="primary">Raise</button>
+            <div class="updown"><button id="rUp">▲</button><button id="rDn">▼</button></div>
+          </div>
         </div>
       </div>
     </div>
@@ -385,10 +417,33 @@ $("roomTag").onclick=()=>{
 };
 
 /* ---------- РЕНДЕР ---------- */
+
+function chipStackEl(amount,big){
+  const bb=S.settings.sb*2, sb=S.settings.sb;
+  const wrap=document.createElement("div");wrap.className="chips"+(big?" big":"");
+  const denoms=[[bb*25,"c-purple"],[bb*10,"c-black"],[bb*5,"c-green"],[bb,"c-red"],[sb,"c-blue"]];
+  let rest=amount;const cols=[];
+  denoms.forEach(([d,cls])=>{
+    if(d<=0)return;
+    let n=Math.floor(rest/d);
+    if(n>0){rest-=n*d;cols.push([Math.min(n,big?8:5),cls]);}
+  });
+  if(!cols.length)cols.push([1,"c-blue"]);
+  cols.slice(0,4).forEach(([n,cls])=>{
+    const col=document.createElement("div");col.className="chipcol";
+    for(let k=0;k<n;k++){const c=document.createElement("i");c.className="chip "+cls;col.appendChild(c);}
+    wrap.appendChild(col);
+  });
+  return wrap;
+}
+const bbTxt=v=>{const bb=S.settings.sb*2;const x=v/bb;return (x%1===0?x.toFixed(0):x.toFixed(1))+" BB";};
+const amtTxt=v=>local.bbView?bbTxt(v):fmt(v);
+
 function render(){
   if(!S)return;
   updateRoomTag();
   $("blindsHdr").textContent=S.settings.sb+"/"+S.settings.sb*2;
+  if(document.activeElement!==$("setAuto"))$("setAuto").checked=S.settings.autoDeal!==false;
   const me=mySeat>=0?S.seats[mySeat]:null;
   $("heroChips").textContent=me&&me.type!=="empty"?fmt(me.chips):"—";
   $("hostRow").style.display=(mySeat>=0&&S.handOver)?"flex":"none";
@@ -418,7 +473,7 @@ function renderTable(){
     d.style.left=x+"%";d.style.top=y+"%";
     let nm='<div class="name">'+p.name+(p.type==="bot"?'<span class="tag">bot</span>':"")+(i===S.button?'<span class="dealerbtn">D</span>':"")+(!p.connected?'<span class="tag">off</span>':"")+'</div>';
     let stack='<div class="stack">'+fmt(p.chips)+(p.allIn?" · all-in":"")+'</div>';
-    let timer=(i===S.acting&&S.deadline)?'<div class="timer" data-deadline="'+S.deadline+'"></div>':"";
+    let timer=(i===S.acting&&S.deadline)?'<div class="timer" data-deadline="'+S.deadline+'"><span class="tsec"></span><div class="tbar"><i></i></div></div>':"";
     d.innerHTML=nm+stack+timer;
     const hl=document.createElement("div");hl.className="hole";
     const showable=p.hole||((i===mySeat)&&myHole&&!S.handOver&&!p.folded?myHole:null);
@@ -433,7 +488,9 @@ function renderTable(){
     t.appendChild(d);
     if(p.bet>0){
       const bc=document.createElement("div");bc.className="betchip";
-      bc.textContent=fmt(p.bet);
+      bc.appendChild(chipStackEl(p.bet,false));
+      const lbl=document.createElement("span");lbl.className="amt";lbl.textContent=amtTxt(p.bet);
+      bc.appendChild(lbl);
       bc.style.left=(x+(50-x)*0.33)+"%";bc.style.top=(y+(42-y)*0.33)+"%";
       t.appendChild(bc);
     }
@@ -442,7 +499,14 @@ function renderTable(){
   S.board.forEach(c=>b.appendChild(cardEl(c)));
   $("stageLine").textContent=S.handOver?(S.handNo?"ръка №"+S.handNo+" · край":"очаква ръка"):S.stage;
   $("potLine").style.display=S.pot>0||!S.handOver?"block":"none";
-  $("potLine").textContent="Пот: "+fmt(S.pot+S.seats.reduce((s,p)=>s+(p.bet||0),0));
+  const potTotal=S.pot+S.seats.reduce((s,p)=>s+(p.bet||0),0);
+  $("potLine").textContent="Пот: "+amtTxt(potTotal);
+  const oldPC=t.querySelector(".potchips");if(oldPC)oldPC.remove();
+  if(potTotal>0&&!S.handOver){
+    const pc=document.createElement("div");pc.className="potchips";
+    pc.appendChild(chipStackEl(potTotal,true));
+    $("potLine").parentNode.insertBefore(pc,$("potLine").nextSibling);
+  }
   startCountdown();
 }
 function startCountdown(){
@@ -450,37 +514,62 @@ function startCountdown(){
   const el=document.querySelector(".timer[data-deadline]");
   if(!el)return;
   const dl=+el.dataset.deadline;
+  const total=(S&&S.turnMs)||45000;
+  const sec=el.querySelector(".tsec"),bar=el.querySelector(".tbar i");
   const tick=()=>{
-    const s=Math.max(0,Math.ceil((dl-Date.now())/1000));
-    el.textContent="⏱ "+s+" с";
-    if(s<=0&&deadlineTimer){clearInterval(deadlineTimer);deadlineTimer=null;}
+    const rem=Math.max(0,dl-Date.now());
+    const s=Math.ceil(rem/1000);
+    if(sec)sec.textContent="⏱ "+s+" с";
+    if(bar){const pct=Math.max(0,Math.min(100,100*rem/total));bar.style.width=pct+"%";bar.classList.toggle("warn",rem<total*0.28);}
+    if(rem<=0&&deadlineTimer){clearInterval(deadlineTimer);deadlineTimer=null;}
   };
-  tick();deadlineTimer=setInterval(tick,500);
+  tick();deadlineTimer=setInterval(tick,400);
 }
+let autoMsgTimer=null;
 function renderControls(){
   const my=S.acting===mySeat&&!S.handOver&&mySeat>=0;
   $("handControls").style.display=my?"flex":"none";
+  if(autoMsgTimer){clearInterval(autoMsgTimer);autoMsgTimer=null;}
   if(S.handOver){
-    $("msg").textContent=mySeat>=0?"Натисни „Нова ръка“, за да раздадеш — всеки на масата може.":"Сядаш от следващата ръка.";
+    const upd=()=>{
+      if(!S.handOver)return;
+      if(S.nextHandAt&&S.nextHandAt>Date.now()){
+        const s=Math.ceil((S.nextHandAt-Date.now())/1000);
+        $("msg").textContent="Нова ръка след "+s+" с… (или натисни „Нова ръка“)";
+      }else{
+        $("msg").textContent=mySeat>=0?"Натисни „Нова ръка“, за да раздадеш — всеки на масата може.":"Сядаш от следващата ръка.";
+      }
+    };
+    upd();
+    if(S.nextHandAt)autoMsgTimer=setInterval(upd,500);
   }else if(my){
     const me=S.seats[mySeat];
     const toCall=S.currentBet-me.bet;
-    $("msg").textContent="Твой ред."+(toCall>0?" За плащане: "+fmt(Math.min(toCall,me.chips)):"");
-    $("btnCall").textContent=toCall<=0?"Check":"Call "+fmt(Math.min(toCall,me.chips));
+    $("msg").textContent="Твой ред."+(toCall>0?" За плащане: "+bbTxt(Math.min(toCall,me.chips))+" ("+fmt(Math.min(toCall,me.chips))+")":"");
+    $("btnCall").textContent=toCall<=0?"Check":"Call "+bbTxt(Math.min(toCall,me.chips));
     const minTo=S.currentBet+S.minRaise, maxTo=me.bet+me.chips;
     const canRaise=maxTo>S.currentBet;
     $("sizer").style.display=canRaise?"flex":"none";
     if(canRaise){
-      const sl=$("raiseSlider"),num=$("raiseNum");
-      sl.min=num.min=Math.min(minTo,maxTo);sl.max=num.max=maxTo;
-      if(+num.value<+num.min||+num.value>+num.max){num.value=sl.value=Math.min(minTo,maxTo);}
+      const sbv=S.settings.sb;
+      const sl=$("raiseSlider");
+      sl.min=Math.min(minTo,maxTo);sl.max=maxTo;sl.step=sbv;
+      if(+sl.value<+sl.min||+sl.value>+sl.max)sl.value=Math.min(minTo,maxTo);
       const P=S.pot+S.seats.reduce((s,p)=>s+(p.bet||0),0);
       $("sizer")._ctx={minTo,maxTo,P,toCall};
+      // редове според етапа: префлоп → стъпки в BB; след флопа → проценти от пота
+      $("preRow").style.display=S.stage==="preflop"?"flex":"none";
+      $("postRow").style.display=S.stage!=="preflop"?"flex":"none";
+      showRaiseVal();
     }
   }else{
     const act=S.seats[S.acting];
     $("msg").textContent=act?("Ред на "+act.name+"…"):"";
   }
+}
+function showRaiseVal(){
+  const v=+$("raiseSlider").value||0;
+  $("raiseShow").innerHTML=bbTxt(v)+"<small>"+fmt(v)+" жетона</small>";
 }
 function renderStats(){
   const tb=$("statsTbl").querySelector("tbody");tb.innerHTML="";
@@ -516,22 +605,58 @@ function renderHist(list){
 $("btnNewHand").onclick=()=>socket.emit("newHand");
 $("btnFold").onclick=()=>socket.emit("action",{type:"fold"});
 $("btnCall").onclick=()=>socket.emit("action",{type:"check_call"});
-$("btnRaise").onclick=()=>socket.emit("action",{type:"raise",target:+$("raiseNum").value});
-$("raiseSlider").oninput=e=>$("raiseNum").value=e.target.value;
-$("raiseNum").oninput=e=>$("raiseSlider").value=e.target.value;
-document.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{
+$("btnRaise").onclick=()=>socket.emit("action",{type:"raise",target:+$("raiseSlider").value});
+$("raiseSlider").oninput=()=>showRaiseVal();
+/* разцепен Raise: стрелките местят с 0.5 BB */
+const nudge=dir=>{
+  const ctx=$("sizer")._ctx;if(!ctx)return;
+  const sbv=S.settings.sb, sl=$("raiseSlider");
+  let v=(+sl.value||ctx.minTo)+dir*sbv;
+  v=Math.max(+sl.min,Math.min(+sl.max,v));
+  sl.value=v;showRaiseVal();
+};
+$("rUp").onclick=()=>nudge(1);
+$("rDn").onclick=()=>nudge(-1);
+/* префлоп стъпки — настройваеми от играча, пазят се локално */
+let steps=[2.1,2.5,3.5];
+try{const s=JSON.parse(localStorage.getItem("nvSteps"));if(Array.isArray(s)&&s.length===3)steps=s.map(Number);}catch(e){}
+function saveSteps(){try{localStorage.setItem("nvSteps",JSON.stringify(steps));}catch(e){}}
+function buildPreRow(){
+  const row=$("preRow");row.innerHTML="";
+  steps.forEach((st,idx)=>{
+    const g=document.createElement("div");g.className="stepgrp";
+    const b=document.createElement("button");b.className="preset stepbtn";
+    b.textContent=(st%1===0?st.toFixed(0):st.toFixed(1))+" BB";
+    b.onclick=()=>{
+      const ctx=$("sizer")._ctx;if(!ctx||!S)return;
+      const bb=S.settings.sb*2;
+      const t=Math.max(ctx.minTo,Math.min(ctx.maxTo,Math.round(st*bb)));
+      socket.emit("action",{type:"raise",target:t});
+    };
+    const ud=document.createElement("div");ud.className="updown";
+    const up=document.createElement("button");up.textContent="▲";
+    const dn=document.createElement("button");dn.textContent="▼";
+    up.onclick=()=>{steps[idx]=+(steps[idx]+0.5).toFixed(1);saveSteps();buildPreRow();};
+    dn.onclick=()=>{steps[idx]=Math.max(2,+(steps[idx]-0.5).toFixed(1));saveSteps();buildPreRow();};
+    ud.appendChild(up);ud.appendChild(dn);
+    g.appendChild(b);g.appendChild(ud);
+    row.appendChild(g);
+  });
+}
+buildPreRow();
+document.querySelectorAll("#postRow .preset").forEach(b=>b.onclick=()=>{
   const ctx=$("sizer")._ctx;if(!ctx)return;
   const{minTo,maxTo,P,toCall}=ctx;let v;
   switch(b.dataset.k){
     case"min":v=minTo;break;
-    case"t":v=S.currentBet+Math.floor((P+toCall)/3);break;
-    case"h":v=S.currentBet+Math.floor((P+toCall)/2);break;
-    case"q":v=S.currentBet+Math.floor((P+toCall)*0.75);break;
-    case"p":v=S.currentBet+(P+toCall);break;
+    case"33":v=S.currentBet+Math.floor((P+toCall)*0.33);break;
+    case"50":v=S.currentBet+Math.floor((P+toCall)*0.50);break;
+    case"75":v=S.currentBet+Math.floor((P+toCall)*0.75);break;
+    case"100":v=S.currentBet+(P+toCall);break;
     case"a":v=maxTo;break;
   }
-  v=Math.max(Math.min(v,maxTo),Math.min(minTo,maxTo));
-  $("raiseNum").value=$("raiseSlider").value=v;
+  v=Math.max(minTo,Math.min(maxTo,v));
+  socket.emit("action",{type:"raise",target:v});
 });
 
 /* ---------- НАСТРОЙКИ ---------- */
@@ -543,6 +668,7 @@ $("btnSettings").onclick=()=>{
 };
 $("setBB").onchange=e=>{local.bbView=e.target.checked;render();};
 $("setFour").onchange=e=>{local.fourColor=e.target.checked;document.body.classList.toggle("fourcolor",local.fourColor);};
+$("setAuto").onchange=e=>socket.emit("settings",{autoDeal:e.target.checked});
 $("btnApplyBlinds").onclick=()=>socket.emit("settings",{sb:+document.querySelector('input[name="blindopt"]:checked').value});
 $("btnApplyStack").onclick=()=>socket.emit("settings",{startStack:+document.querySelector('input[name="stackopt"]:checked').value});
 $("btnApplySpeed").onclick=()=>socket.emit("settings",{botSpeed:+document.querySelector('input[name="speedopt"]:checked').value});
