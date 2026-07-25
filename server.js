@@ -123,13 +123,13 @@ const rooms=new Map(); // code -> room
 function makeRoom(code){
   const room={
     code, hostId:null,
-    settings:{sb:10,startStack:2000,botSpeed:800,fillBots:"full"},
+    settings:{sb:10,startStack:2000,botSpeed:800,fillBots:"full",autoDeal:true},
     seats:Array.from({length:8},(_,i)=>emptySeat(i)),
     button:7,handNo:0,
     deck:null,deckPos:0,board:[],stage:"idle",
     currentBet:0,minRaise:20,pot:0,acting:-1,handOver:true,
     fair:null,actionLog:[],handHistory:[],lastWin:"—",
-    botTimer:null,humanTimer:null,deadline:0,pending:[],
+    botTimer:null,humanTimer:null,autoTimer:null,nextHandAt:0,deadline:0,pending:[],
     log(msg,cls){io.to(code).emit("log",{msg,cls});},
     rec(txt){room.actionLog.push(txt);}
   };
@@ -163,6 +163,7 @@ function fillBots(room){
       used.add(name);
       const s=emptySeat(i);
       s.type="bot"; s.name=name; s.chips=room.settings.startStack;
+      s.prof={agg:+(0.35+Math.random()*0.55).toFixed(2),loose:+(0.35+Math.random()*0.45).toFixed(2),bluff:+(0.05+Math.random()*0.08).toFixed(3)};
       s.st._startChips=room.settings.startStack;
       room.seats[i]=s; need--;
     }
@@ -181,7 +182,7 @@ function publicState(room){
   return {
     code:room.code, handNo:room.handNo, stage:room.stage, handOver:room.handOver,
     board:room.board, pot:room.pot, currentBet:room.currentBet, minRaise:room.minRaise,
-    acting:room.acting, button:room.button, deadline:room.deadline,
+    acting:room.acting, button:room.button, deadline:room.deadline, turnMs:45000, nextHandAt:room.nextHandAt||0,
     settings:room.settings, hostId:room.hostId,
     commit:room.fair?room.fair.commit:null,
     reveal:(room.fair&&room.handOver)?{server:room.fair.serverSeed,client:room.fair.clientSeed,nonce:room.fair.nonce}:null,
@@ -203,6 +204,8 @@ function sendHole(room){
 
 /* ============ ХОД НА РЪКАТА ============ */
 function newHand(room){
+  if(room.autoTimer){clearTimeout(room.autoTimer);room.autoTimer=null;}
+  room.nextHandAt=0;
   if(room.botTimer){clearTimeout(room.botTimer);room.botTimer=null;}
   if(room.humanTimer){clearTimeout(room.humanTimer);room.humanTimer=null;}
   // чакащи играчи сядат между ръцете
@@ -342,9 +345,13 @@ function botAct(room,i){
   room.botTimer=null;
   if(room.handOver||room.acting!==i)return;
   const p=room.seats[i];
+  const pf=p.prof||{agg:0.6,loose:0.5,bluff:0.06};
   const toCall=room.currentBet-p.bet;
   const P=room.pot+active(room).reduce((s,q)=>s+q.bet,0);
   const rnd=Math.random();
+  const sbv=SB(room), bbv=BB(room);
+  const halfBB=v=>Math.max(sbv,Math.round(v/sbv)*sbv); // закръгляне до 0.5 BB
+  const inBB=v=>((v/bbv)%1===0?(v/bbv).toFixed(0):(v/bbv).toFixed(1));
   let strength,made=-1,drawB=0,lateBonus=false;
   if(room.stage==="preflop"){
     strength=preStr(p.hole);
@@ -358,8 +365,7 @@ function botAct(room,i){
     strength=Math.min(1,res.cat/6+(res.cat===0?0.05:0.12));
     if(room.stage==="flop"||room.stage==="turn"){drawB=drawStrength(p.hole,room.board);strength+=drawB;}
   }
-  const bluff=rnd<0.07;
-  const sizeMult=0.45+Math.random()*0.4;
+  const bluff=rnd<pf.bluff;
   const madeTxt=made>=0?HAND_NAMES[made]:"";
   const drawTxt=drawB>=0.15?"силно дроу":(drawB>=0.08?"гътшот дроу":"");
   if(p.canRaiseFlag===false&&toCall>0){
@@ -368,30 +374,77 @@ function botAct(room,i){
     else{p.pendingReason="слаба ръка дори срещу къс all-in";actFold(room,i);}
     return;
   }
+  /* ---------- ПРЕФЛОП ---------- */
+  if(room.stage==="preflop"){
+    // непокачен пот (само блайндовете)
+    if(room.currentBet===bbv){
+      const openTh=0.50-pf.loose*0.10;
+      if(toCall<=0){ // опция на големия блайнд
+        if(strength>0.60&&rnd<0.45+pf.agg*0.4&&p.chips>0){
+          const t=Math.min(p.bet+p.chips,Math.max(room.currentBet+room.minRaise,halfBB(bbv*(2.5+pf.agg*1.5))));
+          p.pendingReason="рейз от блайнда до "+inBB(t)+" BB — силна ръка";
+          actRaiseTo(room,i,t);return;
+        }
+        p.pendingReason="чек от големия блайнд";actCheckCall(room,i);return;
+      }
+      if((strength>openTh+0.10)||(strength>openTh&&rnd<0.35+pf.agg*0.5)||bluff){
+        const openBB=2+pf.agg*1.3+Math.random()*0.7; // 2.0–4.0 BB според агресията
+        const t=Math.min(p.bet+p.chips,Math.max(room.currentBet+room.minRaise,halfBB(openBB*bbv)));
+        p.pendingReason=(bluff&&strength<=openTh)?("open-рейз "+inBB(t)+" BB като блъф")
+          :("отваря с рейз "+inBB(t)+" BB — "+(strength>0.72?"премиум ръка":"добра начална ръка")+(lateBonus?", късна позиция":""));
+        actRaiseTo(room,i,t);return;
+      }
+      if(strength>openTh-0.08&&rnd<0.75-pf.agg*0.35){p.pendingReason="лимп — спекулативна ръка, гледа евтин флоп";actCheckCall(room,i);return;}
+      p.pendingReason="слаба начална ръка";actFold(room,i);return;
+    }
+    // срещу рейз: 3-бет / 4-бет
+    if(toCall>0&&room.currentBet>bbv&&p.chips>toCall){
+      if(strength>0.80||(strength>0.66&&rnd<pf.agg*0.55)||(bluff&&rnd<0.5)){
+        const t=Math.min(p.bet+p.chips,Math.max(room.currentBet+room.minRaise,halfBB(room.currentBet*(2.2+pf.agg*0.9))));
+        p.pendingReason=strength>0.80?("3-бет до "+inBB(t)+" BB — много силна ръка")
+          :(strength>0.66?("3-бет до "+inBB(t)+" BB — стойност и натиск"):"3-бет блъф");
+        actRaiseTo(room,i,t);return;
+      }
+      // иначе продължава към общата кол/фолд преценка по-долу
+    }
+  }
+  /* ---------- ОБЩА ЛОГИКА (пост-флоп + префлоп срещу рейз) ---------- */
+  const sizeMult=0.45+Math.random()*0.4;
   if(toCall<=0){
-    if((strength>0.58||bluff)&&p.chips>0&&rnd<0.7){
-      p.pendingReason=(bluff&&strength<=0.58)?"блъф — залага без ръка"
-        :(room.stage==="preflop"?("силна начална ръка"+(lateBonus?", късна позиция":""))
-        :("залага за стойност: "+madeTxt+(drawTxt?" + "+drawTxt:"")));
+    const betTh=0.50+(1-pf.agg)*0.16;
+    if((strength>betTh||bluff)&&p.chips>0&&rnd<0.5+pf.agg*0.45){
+      p.pendingReason=(bluff&&strength<=betTh)?"блъф — залага без ръка"
+        :("залага за стойност: "+madeTxt+(drawTxt?" + "+drawTxt:""));
       actRaiseTo(room,i,Math.min(p.bet+p.chips,room.currentBet+Math.max(room.minRaise,Math.floor(P*sizeMult))));return;
+    }
+    if(drawB>=0.15&&rnd<pf.agg*0.5&&p.chips>0){
+      p.pendingReason="полу-блъф със силно дроу";
+      actRaiseTo(room,i,Math.min(p.bet+p.chips,room.currentBet+Math.max(room.minRaise,Math.floor(P*0.55))));return;
     }
     p.pendingReason=drawTxt?("чек с "+drawTxt+" — чака безплатна карта")
       :(room.stage!=="preflop"&&made<=0?"нищо сглобено — чек":"пасивно, гледа евтино");
     actCheckCall(room,i);return;
   }
   const potOdds=toCall/(P+toCall);
-  if(strength>0.8&&rnd<0.65&&p.chips>toCall){
-    p.pendingReason="много силна ръка"+(madeTxt?" ("+madeTxt+")":"")+" — вдига за стойност";
-    actRaiseTo(room,i,Math.min(p.bet+p.chips,room.currentBet+Math.max(room.minRaise,Math.floor(P*(sizeMult+0.1)))));return;
+  // защита на силни ръце — ре-рейз за стойност (праг зависи от агресията)
+  const valTh=0.60+(1-pf.agg)*0.18;
+  if(strength>valTh&&rnd<0.35+pf.agg*0.45&&p.chips>toCall){
+    const t=Math.min(p.bet+p.chips,room.currentBet+Math.max(room.minRaise,Math.floor((P+toCall)*(0.6+pf.agg*0.5))));
+    p.pendingReason="ре-рейз за стойност"+(madeTxt?" ("+madeTxt+")":"")+" — защитава силната си ръка";
+    actRaiseTo(room,i,t);return;
   }
-  if(strength+(bluff?0.3:0)>potOdds+0.14){
+  if(strength>0.85&&p.chips>toCall){
+    p.pendingReason="много силна ръка"+(madeTxt?" ("+madeTxt+")":"")+" — вдига за стойност";
+    actRaiseTo(room,i,Math.min(p.bet+p.chips,room.currentBet+Math.max(room.minRaise,Math.floor(P*(sizeMult+0.2)))));return;
+  }
+  if(strength+(bluff?0.3:0)>potOdds+0.14-pf.loose*0.06){
     p.pendingReason=(bluff&&strength<=potOdds)?"блъф-кол"
       :(drawTxt?(drawTxt+" — потът оправдава цената")
       :(made>=1?("плаща с "+madeTxt):"изгодна цена спрямо пота"));
     actCheckCall(room,i);return;
   }
-  if(toCall<=BB(room)&&strength>0.3){p.pendingReason="евтино доплащане";actCheckCall(room,i);return;}
-  p.pendingReason=room.stage==="preflop"?"слаба начална ръка":"слаба ръка срещу залога";
+  if(toCall<=bbv&&strength>0.30-pf.loose*0.05){p.pendingReason="евтино доплащане";actCheckCall(room,i);return;}
+  p.pendingReason=room.stage==="preflop"?"слаба ръка срещу рейза":"слаба ръка срещу залога";
   actFold(room,i);
 }
 
@@ -501,6 +554,20 @@ function showdown(room){
   room.log("Печели: "+winTxt,"win");
   room.pot=0;finishHand(room);
 }
+function scheduleAutoDeal(room){
+  if(room.autoTimer){clearTimeout(room.autoTimer);room.autoTimer=null;}
+  room.nextHandAt=0;
+  const humansOn=()=>active(room).some(p=>p.type==="human"&&p.id);
+  if(!room.settings.autoDeal||!humansOn())return;
+  const DELAY=5000;
+  room.nextHandAt=Date.now()+DELAY;
+  room.autoTimer=setTimeout(()=>{
+    room.autoTimer=null;room.nextHandAt=0;
+    if(!room.handOver||!room.settings.autoDeal||!humansOn())return;
+    room.log("Автоматично раздаване на нова ръка.","sys");
+    newHand(room);
+  },DELAY);
+}
 function finishHand(room){
   room.handOver=true;room.acting=-1;room.deadline=0;
   // история + разкриване на seed-а (проверимо от клиента)
@@ -511,6 +578,7 @@ function finishHand(room){
   });
   if(room.handHistory.length>40)room.handHistory.length=40;
   io.to(room.code).emit("history",room.handHistory.slice(0,40));
+  scheduleAutoDeal(room);
   broadcast(room);
 }
 
@@ -606,6 +674,12 @@ io.on("connection",socket=>{
       else r.log("Стек "+r.settings.startStack+" — от следващата ръка"+by+".","sys");
     }
     if(s.botSpeed&&[1400,800,350].includes(+s.botSpeed)){r.settings.botSpeed=+s.botSpeed;r.log("Скорост на ботовете обновена"+by+".","sys");}
+    if(s.autoDeal!==undefined){
+      r.settings.autoDeal=!!s.autoDeal;
+      r.log("Автоматично раздаване: "+(r.settings.autoDeal?"включено":"изключено")+by+".","sys");
+      if(r.settings.autoDeal&&r.handOver&&r.handNo>0)scheduleAutoDeal(r);
+      if(!r.settings.autoDeal&&r.autoTimer){clearTimeout(r.autoTimer);r.autoTimer=null;r.nextHandAt=0;}
+    }
     if(s.fillBots!==undefined){r.settings.fillBots=s.fillBots;r.log((s.fillBots==="full"?"Ботове: пълна маса (8)":s.fillBots?"Ботове: допълват до минимум 3 участника":"Ботове: изключени")+by+".","sys");
       if(r.handOver&&!s.fillBots)r.seats.forEach((p,i)=>{if(p.type==="bot")r.seats[i]=emptySeat(i);});
       if(r.handOver)fillBots(r);
@@ -632,6 +706,7 @@ io.on("connection",socket=>{
       // между ръцете мястото се освобождава веднага; иначе — след ръката
       const free=()=>{if(room.seats[p.seat]&&room.seats[p.seat].name===p.name&&!room.seats[p.seat].id)room.seats[p.seat]=emptySeat(p.seat);broadcast(room);};
       if(room.handOver)free(); else room.pending.push(free);
+      if(!active(room).some(q=>q.type==="human"&&q.id)&&room.autoTimer){clearTimeout(room.autoTimer);room.autoTimer=null;room.nextHandAt=0;}
       // домакинството минава към следващия човек
       if(room.hostId===socket.id){
         const nh=active(room).find(q=>q.type==="human"&&q.id);
