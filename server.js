@@ -128,7 +128,7 @@ function makeRoom(code){
     button:7,handNo:0,
     deck:null,deckPos:0,board:[],stage:"idle",
     currentBet:0,minRaise:20,pot:0,acting:-1,handOver:true,
-    fair:null,actionLog:[],handHistory:[],lastWin:"—",
+    fair:null,actionLog:[],handHistory:[],lastWin:"—",dealMap:[],lastReveal:null,
     botTimer:null,humanTimer:null,autoTimer:null,nextHandAt:0,deadline:0,pending:[],
     log(msg,cls){io.to(code).emit("log",{msg,cls});},
     rec(txt){room.actionLog.push(txt);}
@@ -186,8 +186,9 @@ function publicState(room){
     settings:room.settings, hostId:room.hostId,
     commit:room.fair?room.fair.commit:null,
     reveal:(room.fair&&room.handOver)?{server:room.fair.serverSeed,client:room.fair.clientSeed,nonce:room.fair.nonce}:null,
+    lastReveal:room.lastReveal||null,
     seats:room.seats.map(p=>({
-      seat:p.seat,type:p.type,name:p.name,chips:p.chips,bet:p.bet,
+      seat:p.seat,type:p.type,name:p.name,avatar:p.avatar||"",chips:p.chips,bet:p.bet,
       folded:p.folded,allIn:p.allIn,handName:p.showCards?p.handName:"",
       equity:p.equity,winCards:p.winCards,connected:p.type!=="human"||!!p.id,
       hole:p.showCards?p.hole:null,
@@ -238,7 +239,11 @@ function newHand(room){
   room.currentBet=BB(room); room.minRaise=BB(room);
   const order=[]; let k=room.button;
   for(let i=0;i<active(room).length;i++){k=nextIdx(room,k);order.push(k);}
-  for(let r=0;r<2;r++) for(const idx of order) room.seats[idx].hole.push(room.deck[room.deckPos++]);
+  room.dealMap=[];
+  for(let r=0;r<2;r++) for(const idx of order){
+    room.dealMap.push(room.seats[idx].name+" · карта "+(r+1));
+    room.seats[idx].hole.push(room.deck[room.deckPos++]);
+  }
   room.stage="preflop";
   active(room).forEach(p=>p.acted=false);
   room.acting=nextIdx(room,bbI);
@@ -508,8 +513,13 @@ function endBettingRound(room){
   room.acting=nextIdx(room,room.button);proceed(room);
 }
 function dealBoard(room,n){
+  room.dealMap.push("изгорена карта");
   room.deckPos++; // burn
-  for(let i=0;i<n;i++)room.board.push(room.deck[room.deckPos++]);
+  for(let i=0;i<n;i++){
+    const lbl=n===3?"FLOP":(room.board.length===3?"TURN":"RIVER");
+    room.dealMap.push(lbl);
+    room.board.push(room.deck[room.deckPos++]);
+  }
 }
 function endByFold(room){
   const w=alive(room)[0];
@@ -571,10 +581,12 @@ function scheduleAutoDeal(room){
 function finishHand(room){
   room.handOver=true;room.acting=-1;room.deadline=0;
   // история + разкриване на seed-а (проверимо от клиента)
+  room.lastReveal={no:room.handNo,server:room.fair.serverSeed,client:room.fair.clientSeed,nonce:room.fair.nonce,commit:room.fair.commit};
   room.handHistory.unshift({
     no:room.handNo,commit:room.fair.commit,server:room.fair.serverSeed,
     client:room.fair.clientSeed,nonce:room.fair.nonce,win:room.lastWin,
-    actions:room.actionLog.slice()
+    actions:room.actionLog.slice(),
+    deck:room.deck?room.deck.map(cardStr):[],used:room.deckPos,map:room.dealMap.slice()
   });
   if(room.handHistory.length>40)room.handHistory.length=40;
   io.to(room.code).emit("history",room.handHistory.slice(0,40));
@@ -592,21 +604,21 @@ const codeOf=()=> {
 io.on("connection",socket=>{
   let myRoom=null,mySeat=-1;
 
-  socket.on("create",({name,clientSeed},cb)=>{
+  socket.on("create",({name,clientSeed,avatar},cb)=>{
     const code=codeOf();
     const room=makeRoom(code);
     room.hostId=socket.id;
-    joinRoom(room,name,clientSeed,cb);
+    joinRoom(room,name,clientSeed,cb,avatar);
   });
 
-  socket.on("join",({code,name,clientSeed},cb)=>{
+  socket.on("join",({code,name,clientSeed,avatar},cb)=>{
     code=String(code||"").trim().toUpperCase();
     const room=rooms.get(code);
     if(!room)return cb({error:"Няма стая с код "+code+"."});
-    joinRoom(room,name,clientSeed,cb);
+    joinRoom(room,name,clientSeed,cb,avatar);
   });
 
-  function joinRoom(room,name,clientSeed,cb){
+  function joinRoom(room,name,clientSeed,cb,avatar){
     name=String(name||"").trim().slice(0,14)||"Гост";
     // уникално име
     let base=name,n=2;
@@ -619,6 +631,7 @@ io.on("connection",socket=>{
       const s=emptySeat(idx);
       s.type="human";s.id=socket.id;s.name=name;s.clientSeed=String(clientSeed||"").slice(0,64);
       s.chips=room.settings.startStack;s.st._startChips=room.settings.startStack;
+      s.avatar=String(avatar||"").slice(0,4);
       room.seats[idx]=s;
       mySeat=idx;
       socket.emit("seated",{seat:idx,code:room.code,host:room.hostId===socket.id});
