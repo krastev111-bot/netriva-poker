@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NETRIVA POKER PRO · Онлайн маса</title>
+<style>
+  :root{
+    --felt:#0f3d2e; --felt-deep:#071b13; --rail:#241407;
+    --card-face:#faf6ee; --ink:#181818; --red:#c0392b;
+    --dia:#1f6fb2; --club:#1f8a4c;
+    --gold:#d4af6a; --gold-hi:#f0d9a8; --mint:#7fd8b4;
+    --mono-bg:#0c1310; --mono-ink:#9fe8c8;
+    --ok:#2ecc71; --bad:#e74c3c;
+    --panel:#10241c; --line:#1f4034; --chip:#e8c78f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Georgia,'Times New Roman',serif;
+    background:radial-gradient(ellipse at 50% 20%, #0d2f23 0%, var(--felt-deep) 85%);
+    color:#e9e4d8;min-height:100vh;padding:10px 10px 30px}
+  .wrap{max-width:1040px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+  header h1{font-size:1.15rem;letter-spacing:.06em;color:var(--gold);font-weight:normal}
+  header h1 b{color:var(--gold-hi)}
+  .hdr-right{display:flex;gap:12px;align-items:center}
+  .hdr-stats{display:flex;gap:16px;align-items:baseline}
+  .hdr-stat{font-size:.85rem;color:var(--chip);white-space:nowrap}
+  .hdr-stat b{color:#fff;font-size:1.15rem;font-weight:bold;letter-spacing:.03em;margin-left:2px}
+  @media(max-width:620px){
+    .hdr-right{width:100%;justify-content:space-between;align-items:flex-start}
+    .hdr-stats{flex-direction:column;gap:3px}
+  }
+  .gear{font-size:1.05rem;padding:6px 12px;background:var(--gold);color:#241a08;border:1px solid var(--gold);font-weight:bold;border-radius:8px;cursor:pointer}
+  .gear.on{background:var(--gold-hi);border-color:var(--gold-hi);box-shadow:0 0 10px rgba(240,217,168,.45)}
+  .roomtag{font-family:'Courier New',monospace;font-size:.8rem;color:var(--mint);background:var(--mono-bg);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer}
+  .lbl{font-family:'Courier New',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint)}
+  .note{font-size:.72rem;color:#8fae9e;line-height:1.55}
+  /* fair strip */
+  .fair{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 11px;margin-bottom:8px}
+  .fair-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .hashline{font-family:'Courier New',monospace;font-size:.65rem;color:var(--mono-ink);background:var(--mono-bg);padding:3px 8px;border-radius:5px;border:1px solid var(--line);word-break:break-all;flex:1;min-width:180px}
+  .vbadge{font-family:'Courier New',monospace;font-size:.7rem;padding:3px 10px;border-radius:5px;white-space:nowrap}
+  .vbadge.ok{background:rgba(46,204,113,.14);color:var(--ok);border:1px solid rgba(46,204,113,.4)}
+  .vbadge.wait{background:rgba(212,175,106,.1);color:var(--gold);border:1px solid rgba(212,175,106,.35)}
+  .fair summary{cursor:pointer;color:#8fae9e;font-size:.73rem;margin-top:5px}
+  .fair .detail-grid{display:grid;gap:6px;margin-top:8px}
+  .fair .detail-grid input,.fair .detail-grid textarea{width:100%;font-family:'Courier New',monospace;font-size:.68rem;padding:5px 8px;border-radius:5px;background:var(--mono-bg);color:var(--mono-ink);border:1px solid var(--line)}
+  /* маса */
+  .tablewrap{position:relative;width:100%;padding-top:58%;margin-bottom:8px}
+  @media(min-width:900px){.tablewrap{padding-top:54%}}
+  .table{position:absolute;inset:0}
+  .oval{position:absolute;left:13%;right:13%;top:16%;bottom:16%;
+    background:radial-gradient(ellipse at 50% 42%, #17603f 0%, #0c3325 78%);
+    border:9px solid var(--rail);border-radius:50%/50%;
+    box-shadow:0 12px 44px rgba(0,0,0,.55), inset 0 0 70px rgba(0,0,0,.45)}
+  .oval::after{content:"NETRIVA";position:absolute;left:50%;top:63%;transform:translate(-50%,-50%);
+    font-size:1.5rem;letter-spacing:.4em;color:rgba(212,175,106,.13);font-family:Georgia,serif}
+  .center{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+    display:flex;flex-direction:column;align-items:center;gap:5px;z-index:3}
+  .board{display:flex;gap:5px}
+  .potline{font-size:.82rem;color:var(--gold-hi);letter-spacing:.03em;background:rgba(0,0,0,.35);padding:2px 12px;border-radius:11px}
+  .stageline{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mint)}
+  .winbanner{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+    background:rgba(8,20,15,.92);border:1px solid var(--gold);border-radius:10px;
+    padding:12px 22px;font-size:.95rem;color:var(--gold-hi);z-index:9;text-align:center;display:none;max-width:80%}
+  .winbanner .bsub{font-size:.8rem;color:#b9c9bf}
+  .seat{position:absolute;transform:translate(-50%,-50%);width:118px;text-align:center;z-index:4;
+    border-radius:10px;padding:4px 3px 5px;border:1px solid transparent;background:rgba(6,16,12,.55);
+    transition:border-color .2s, box-shadow .2s}
+  .seat.acting{border-color:var(--gold);box-shadow:0 0 14px rgba(212,175,106,.5)}
+  .seat.folded{opacity:.4}
+  .seat.gone{opacity:.25;border-style:dashed;border-color:var(--line)}
+  .seat .name{font-size:.68rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .seat .stack{font-size:.64rem;color:var(--chip)}
+  .seat .tag{font-family:'Courier New',monospace;font-size:.55rem;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:#e0a196;margin-left:3px}
+  .seat .timer{font-family:'Courier New',monospace;font-size:.6rem;color:var(--gold-hi)}
+  .hole{display:flex;justify-content:center;gap:4px;margin-top:3px}
+  .handname{font-size:.62rem;color:var(--mint);min-height:12px;margin-top:2px}
+  .seat.hero{width:150px;background:rgba(6,16,12,.7)}
+  .seat.hero .name{font-size:.78rem;color:var(--gold-hi)}
+  .dealerbtn{display:inline-block;width:14px;height:14px;border-radius:50%;
+    background:#f5f0e4;color:#241a08;font-size:.56rem;font-weight:bold;
+    line-height:14px;vertical-align:middle;margin-left:3px;font-family:Arial,sans-serif}
+  .betchip{position:absolute;transform:translate(-50%,-50%);z-index:5;
+    font-size:.66rem;color:#241a08;background:var(--chip);border-radius:10px;
+    padding:1px 8px;box-shadow:0 1px 4px rgba(0,0,0,.5);white-space:nowrap}
+  .card{width:38px;height:54px;border-radius:5px;background:var(--card-face);color:var(--ink);
+    display:flex;flex-direction:column;justify-content:space-between;padding:3px 4px;box-shadow:0 2px 5px rgba(0,0,0,.45)}
+  .card .r{font-size:.78rem;font-weight:bold;line-height:1}
+  .card .s{font-size:.88rem;line-height:1;align-self:flex-end}
+  .card.c-h{color:var(--red)} .card.c-d2{color:var(--red)}
+  body.fourcolor .card.c-d2{color:var(--dia)}
+  body.fourcolor .card.c-c2{color:var(--club)}
+  .card.back{background:repeating-linear-gradient(45deg,#7a1f1f,#7a1f1f 4px,#8e2a2a 4px,#8e2a2a 8px);border:2px solid #f0e6d2}
+  .card.back .r,.card.back .s{visibility:hidden}
+  .board .card{width:46px;height:65px}
+  .seat.hero .card{width:48px;height:68px}
+  .seat.hero .card .r{font-size:.95rem}
+  @media(max-width:640px){
+    .seat{width:86px}.seat.hero{width:118px}
+    .card{width:28px;height:41px}
+    .card .r{font-size:.62rem}.card .s{font-size:.72rem}
+    .board .card{width:36px;height:52px}
+    .seat.hero .card{width:38px;height:55px}
+    .oval::after{font-size:.9rem}
+  }
+  /* лента действия */
+  .actions{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+  .actions .msg{font-size:.84rem;color:#cfe0d6;margin-bottom:8px;min-height:16px;text-align:center}
+  .btnrow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center}
+  button{font-family:Georgia,serif;font-size:.88rem;padding:10px 18px;border-radius:8px;
+    border:1px solid var(--gold);background:transparent;color:var(--gold);cursor:pointer;letter-spacing:.03em}
+  button.primary{background:var(--gold);color:#241a08;font-weight:bold}
+  button.primary:not(:disabled):hover{background:var(--gold-hi);border-color:var(--gold-hi)}
+  button.danger{border-color:#a85c50;color:#e0a196}
+  button.preset{font-size:.72rem;padding:6px 10px;border-color:#6b8a7b;color:#a8cbb9}
+  button:disabled{opacity:.32;cursor:not-allowed}
+  button:not(:disabled):hover{filter:brightness(1.15)}
+  .sizer{display:flex;flex-direction:column;gap:7px;align-items:center;width:100%}
+  .sizer .presets{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  .sizer .fine{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+  input[type=range]{width:230px;accent-color:var(--gold)}
+  /* --- активен играч: пулс + лента за време --- */
+  .seat.acting{border-color:var(--gold);animation:actpulse 1.15s ease-in-out infinite}
+  @keyframes actpulse{0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,0)}50%{box-shadow:0 0 16px 4px rgba(212,175,55,.55)}}
+  .tbar{height:5px;border-radius:3px;background:rgba(255,255,255,.13);margin-top:3px;overflow:hidden}
+  .tbar i{display:block;height:100%;width:100%;background:#4fae6d;transition:width .45s linear}
+  .tbar i.warn{background:#c94b3f}
+  /* --- жетони --- */
+  .chips{display:flex;gap:3px;align-items:flex-end;justify-content:center}
+  .chipcol{display:flex;flex-direction:column}
+  .chip{width:15px;height:15px;border-radius:50%;border:2px dashed rgba(255,255,255,.75);box-sizing:border-box;margin-top:-11px;box-shadow:0 1px 2px rgba(0,0,0,.5)}
+  .chipcol .chip:first-child{margin-top:0}
+  .chips.big .chip{width:19px;height:19px;margin-top:-14px}
+  .chips.big .chipcol .chip:first-child{margin-top:0}
+  .c-blue{background:#3a6ea5}.c-red{background:#b3403a}.c-green{background:#3f8f5a}.c-black{background:#40403f}.c-purple{background:#7b4fa0}
+  .betchip .amt{display:block;margin-top:3px}
+  .potchips{display:flex;justify-content:center;margin-top:5px}
+  /* --- нов панел за залози --- */
+  .stepgrp{display:flex;align-items:center;gap:2px}
+  .stepgrp .stepbtn{font-size:.82rem;padding:7px 12px;border-color:var(--gold);color:var(--gold-hi);font-weight:600}
+  .updown{display:flex;flex-direction:column;gap:1px}
+  .updown button{font-size:.55rem;line-height:1;padding:3px 5px;border-radius:4px}
+  .raisegrp{display:flex;align-items:stretch;gap:2px}
+  .raiseval{min-width:110px;text-align:center;font-family:'Courier New',monospace;font-size:.95rem;color:var(--gold-hi);
+    border:1px solid var(--line);border-radius:7px;padding:7px 8px;background:rgba(0,0,0,.25)}
+  .raiseval small{display:block;font-size:.62rem;color:#9db3a6}
+
+  input[type=number],input[type=text]{width:92px;font-family:'Courier New',monospace;font-size:.9rem;
+    padding:7px 8px;border-radius:6px;background:var(--mono-bg);color:var(--gold-hi);border:1px solid var(--line);text-align:center}
+  /* настройки */
+  .settings{display:none;background:var(--panel);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+  .settings h2{font-size:.9rem;color:var(--gold);font-weight:normal;margin-bottom:8px}
+  .set-grid{display:grid;grid-template-columns:1fr;gap:8px}
+  .set-item{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.8rem;flex-wrap:wrap}
+  .stackopts{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.76rem}
+  .applybtn{background:var(--gold);color:#241a08;font-weight:bold;font-size:.72rem;padding:6px 12px;border-radius:7px;border:1px solid var(--gold);cursor:pointer}
+  .applybtn:hover{background:var(--gold-hi);border-color:var(--gold-hi)}
+  .switch{position:relative;display:inline-block;width:38px;height:20px}
+  .switch input{opacity:0;width:0;height:0}
+  .switch span{position:absolute;cursor:pointer;inset:0;background:#28453a;border-radius:20px;transition:.2s}
+  .switch span::before{content:"";position:absolute;height:14px;width:14px;left:3px;top:3px;background:#cfd8d2;border-radius:50%;transition:.2s}
+  .switch input:checked+span{background:var(--gold)}
+  .switch input:checked+span::before{transform:translateX(18px)}
+  /* панели */
+
+  /* --- оформление: маса вляво, странична колона вдясно --- */
+  .layout{display:grid;grid-template-columns:1fr;gap:8px}
+  @media(min-width:1100px){
+    .wrap{max-width:1420px}
+    .layout{grid-template-columns:minmax(0,1fr) 350px;align-items:start}
+    .sidebar{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow-y:auto}
+  }
+  /* --- сгъваем дневник --- */
+  .logfold summary{cursor:pointer;font-family:'Courier New',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+  .logfold summary::-webkit-details-marker{display:none}
+  .logfold summary::before{content:"\25B8";transition:transform .2s;color:var(--gold)}
+  .logfold[open] summary::before{transform:rotate(90deg)}
+  .logfold .logbox{margin-top:6px}
+  /* --- честна игра: анимиран поток --- */
+  .fflow{display:flex;flex-direction:column;margin:4px 0 10px}
+  .fstep{display:flex;gap:10px;align-items:flex-start;position:relative;padding:5px 0 11px}
+  .fdot{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);background:#0c1d16;flex-shrink:0;margin-top:2px;position:relative;z-index:1;box-sizing:border-box}
+  .fstep:not(:last-child)::before{content:"";position:absolute;left:6px;top:20px;bottom:-2px;width:2px;background:var(--line)}
+  .fstep.done .fdot{background:var(--mint);border-color:var(--mint)}
+  .fstep.done:not(:last-child)::before{background:var(--mint)}
+  .fstep.now .fdot{background:var(--gold);border-color:var(--gold-hi);animation:fpulse 1.2s infinite}
+  @keyframes fpulse{0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,.55)}50%{box-shadow:0 0 0 8px rgba(212,175,55,0)}}
+  .fstep .ft b{color:var(--chip);display:block;font-size:.74rem;margin-bottom:2px}
+  .fstep.now .ft b,.fstep.done .ft b{color:var(--gold-hi)}
+  .fstep .ft span{color:#9db3a6;font-size:.67rem;line-height:1.4;display:block}
+  .cols{display:grid;grid-template-columns:1fr;gap:8px}
+  @media(min-width:900px){.cols{grid-template-columns:2fr 1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .panel h3{font-family:'Courier New',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);margin-bottom:6px}
+  .logbox{font-size:.74rem;line-height:1.6;max-height:230px;overflow-y:auto}
+  .logbox .sys{color:#8fae9e}.logbox .win{color:var(--gold-hi)}.logbox .fair-l{color:var(--mint)}
+  .histbox{font-size:.72rem;max-height:300px;overflow-y:auto}
+  .histbox details{border-bottom:1px solid var(--line);padding:4px 0}
+  .histbox summary{cursor:pointer;color:var(--chip)}
+  .histbox .act{font-family:'Courier New',monospace;font-size:.66rem;color:#b9c9bf;padding-left:8px;line-height:1.6}
+  .histbox .seeds{font-family:'Courier New',monospace;font-size:.6rem;color:var(--mono-ink);word-break:break-all;margin:4px 0 2px;padding-left:8px}
+  table.stats{width:100%;border-collapse:collapse;font-size:.72rem}
+  table.stats th,table.stats td{padding:4px 6px;text-align:right;border-bottom:1px solid var(--line)}
+  table.stats th{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.08em;color:var(--mint);text-transform:uppercase}
+  table.stats td:first-child,table.stats th:first-child{text-align:left}
+  /* лоби */
+  .lobby{position:fixed;inset:0;background:rgba(4,12,9,.94);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+  .lobbycard{background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:22px;max-width:420px;width:100%}
+  .lobbycard h2{color:var(--gold-hi);font-weight:normal;margin-bottom:4px;letter-spacing:.05em}
+  .lobbycard .field{margin:12px 0}
+  .lobbycard label{display:block;font-size:.74rem;color:#8fae9e;margin-bottom:4px}
+  .lobbycard input{width:100%;text-align:left;font-size:1rem;padding:9px 10px}
+  .lobbycard .or{text-align:center;color:#8fae9e;font-size:.75rem;margin:10px 0;letter-spacing:.2em}
+  .err{color:var(--bad);font-size:.78rem;min-height:16px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="lobby" id="lobby">
+  <div class="lobbycard">
+    <h2>♠ NETRIVA POKER PRO</h2>
+    <div class="note">Онлайн маса · Texas Hold'em · до 8 реални играчи, свободните места допълват ботове.</div>
+    <div class="field"><label>Твоето име</label><input type="text" id="lbName" maxlength="14" placeholder="напр. Георги"></div>
+    <div class="field"><label>Client seed (по избор — твоят принос към разбъркването)</label><input type="text" id="lbSeed" maxlength="64" placeholder="оставяш празно = автоматичен"></div>
+    <button class="primary" id="btnCreate" style="width:100%">➕ Създай нова маса</button>
+    <div class="or">— ИЛИ —</div>
+    <div class="field"><label>Код на съществуваща маса</label><input type="text" id="lbCode" maxlength="5" placeholder="напр. K7M2P" style="text-transform:uppercase"></div>
+    <button id="btnJoin" style="width:100%">🚪 Влез в масата</button>
+    <div class="err" id="lbErr"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <h1>♠ <b>NETRIVA</b> POKER PRO · Texas Hold'em · 8-max</h1>
+    <div class="hdr-right">
+      <div class="hdr-stats">
+        <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
+        <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
+      </div>
+      <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span>
+      <button class="gear" id="btnSettings" title="Настройки">⚙</button>
+    </div>
+  </header>
+
+  <div class="settings" id="settingsPanel">
+    <h2>Настройки</h2>
+    <div class="set-grid">
+      <div class="set-item"><span>Показвай сумите в BB (само за теб)</span>
+        <label class="switch"><input type="checkbox" id="setBB"><span></span></label></div>
+      <div class="set-item"><span>Автоматична нова ръка (общо за масата)</span>
+        <label class="switch"><input type="checkbox" id="setAuto" checked><span></span></label></div>
+      <div class="set-item"><span>Четирицветно тесте (само за теб)</span>
+        <label class="switch"><input type="checkbox" id="setFour"><span></span></label></div>
+      <div id="hostSettings">
+        <div class="set-item" style="margin-top:6px"><span class="lbl">Настройки на масата — общи, всеки играч може да ги променя (вижда се в дневника кой какво е сменил)</span></div>
+        <div class="set-item"><span>Блайндове</span>
+          <span class="stackopts">
+            <label><input type="radio" name="blindopt" value="10" checked> 10 / 20</label>
+            <label><input type="radio" name="blindopt" value="25"> 25 / 50</label>
+            <label><input type="radio" name="blindopt" value="50"> 50 / 100</label>
+            <button class="applybtn" id="btnApplyBlinds">✔ Приложи</button>
+          </span></div>
+        <div class="set-item"><span>Стек</span>
+          <span class="stackopts">
+            <label><input type="radio" name="stackopt" value="2000" checked> 2 000</label>
+            <label><input type="radio" name="stackopt" value="5000"> 5 000</label>
+            <label><input type="radio" name="stackopt" value="10000"> 10 000</label>
+            <button class="applybtn" id="btnApplyStack">✔ Приложи</button>
+          </span></div>
+        <div class="set-item"><span>Скорост на ботовете</span>
+          <span class="stackopts">
+            <label><input type="radio" name="speedopt" value="1400"> Бавно</label>
+            <label><input type="radio" name="speedopt" value="800" checked> Нормално</label>
+            <label><input type="radio" name="speedopt" value="350"> Бързо</label>
+            <button class="applybtn" id="btnApplySpeed">✔ Приложи</button>
+          </span></div>
+        <div class="set-item"><span>Ботове на празните места</span>
+          <span class="stackopts">
+            <label><input type="radio" name="botopt" value="min"> Минимум 3 участника</label>
+            <label><input type="radio" name="botopt" value="full" checked> Пълна маса (8)</label>
+            <label><input type="radio" name="botopt" value="off"> Без ботове</label>
+            <button class="applybtn" id="btnApplyBots">✔ Приложи</button>
+          </span></div>
+      </div>
+      <div class="set-item"><span>Твоят client seed (от следващата ръка)</span>
+        <span class="stackopts"><input type="text" id="mySeed" maxlength="64" style="width:180px;text-align:left">
+        <button class="applybtn" id="btnApplySeed">✔ Запиши</button></span></div>
+    </div>
+    <div class="note" style="margin-top:8px">Блайндове и стек се прилагат с ✔ Приложи — веднага между ръцете, или от следващата ръка, ако тече игра.</div>
+  </div>
+
+  <div class="fair">
+    <div class="fair-top">
+      <span class="lbl">SHA-256 печат</span>
+      <span class="hashline" id="commitLine">— очаква ръка —</span>
+      <span class="vbadge wait" id="vbadge">ЗАПЕЧАТАНО</span>
+    </div>
+    <details id="fairDetails">
+      <summary>Пълни данни (seeds / nonce) — разкриват се след края на ръката</summary>
+      <div class="detail-grid">
+        <div><span class="lbl">Server seed</span><input id="revServer" readonly value="—"></div>
+        <div><span class="lbl">Client seed (комбиниран от всички играчи)</span><textarea id="revClient" readonly rows="2">—</textarea></div>
+        <div><span class="lbl">Nonce</span><input id="revNonce" readonly value="—"></div>
+        <button class="applybtn" id="btnVerify" disabled>🔎 Провери: SHA-256(server seed) = печатът?</button>
+        <div class="note" id="verifyOut"></div>
+      </div>
+      <div class="note" style="margin-top:6px">Server seed-ът живее на сървъра. Печатът се публикува <i>преди</i> раздаването; seed-ът се разкрива <i>след</i> ръката — двата ключа + nonce определят реда на 52-те карти чрез HMAC.</div>
+    </details>
+  </div>
+
+  <div class="layout">
+  <div class="mainCol">
+  <div class="tablewrap">
+    <div class="table" id="tableEl">
+      <div class="oval"></div>
+      <div class="center">
+        <div class="stageline" id="stageLine"></div>
+        <div class="board" id="boardEl"></div>
+        <div class="potline" id="potLine" style="display:none"></div>
+      </div>
+      <div class="winbanner" id="winBanner"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <div class="msg" id="msg">Свързване…</div>
+    <div class="btnrow" id="hostRow" style="display:none">
+      <button class="primary" id="btnNewHand">Нова ръка</button>
+    </div>
+    <div class="btnrow" id="handControls" style="display:none">
+      <button class="danger" id="btnFold">Fold</button>
+      <button class="primary" id="btnCall">Check</button>
+      <div class="sizer" id="sizer">
+        <div class="presets" id="preRow"></div>
+        <div class="presets" id="postRow">
+          <button class="preset" data-k="min">Min</button>
+          <button class="preset" data-k="33">33%</button>
+          <button class="preset" data-k="50">50%</button>
+          <button class="preset" data-k="75">75%</button>
+          <button class="preset" data-k="100">100%</button>
+          <button class="preset" data-k="a">All-in</button>
+        </div>
+        <div class="fine">
+          <input type="range" id="raiseSlider">
+          <div class="raiseval" id="raiseShow">—</div>
+          <div class="raisegrp">
+            <button id="btnRaise" class="primary">Raise</button>
+            <div class="updown"><button id="rUp">▲</button><button id="rDn">▼</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <details class="panel logfold" style="margin-bottom:8px"><summary>Дневник на масата</summary><div class="logbox" id="logEl"></div></details>
+    <div class="panel"><h3>Статистика на играчите (тази сесия)</h3>
+      <table class="stats" id="statsTbl"><thead><tr>
+        <th>Играч</th><th>Стек</th><th>Ръце</th><th>VPIP %</th><th>PFR %</th><th>Win</th><th>SD W/L</th>
+      </tr></thead><tbody></tbody></table>
+      <div class="note" style="margin-top:6px">VPIP = % ръце с доброволно вложени пари префлоп · PFR = % ръце с рейз префлоп.</div>
+    </div>
+  </div><!-- /mainCol -->
+  <div class="sidebar">
+    <div class="panel" style="margin-bottom:8px"><h3>Честна игра — на живо</h3>
+      <div class="fflow">
+        <div class="fstep" id="fs1"><div class="fdot"></div><div class="ft"><b>1 · Печат преди раздаване</b><span>Сървърът публикува SHA-256 отпечатък на тайния си seed — тестето е „заключено", преди да видиш и една карта.</span></div></div>
+        <div class="fstep" id="fs2"><div class="fdot"></div><div class="ft"><b>2 · Играе се ръката</b><span>Никой — включително сървърът — не може да промени реда на картите, без печатът да спре да съвпада.</span></div></div>
+        <div class="fstep" id="fs3"><div class="fdot"></div><div class="ft"><b>3 · Разкриване след ръката</b><span>Server seed-ът се показва. Заедно с client seed-овете на играчите и nonce той определя разбъркването чрез HMAC-SHA256.</span></div></div>
+        <div class="fstep" id="fs4"><div class="fdot"></div><div class="ft"><b>4 · Провери сам</b><span>SHA-256(разкрития seed) трябва да е равен на печата от стъпка 1 — едно натискане, без доверие на честна дума.</span></div></div>
+      </div>
+      <button class="applybtn" id="btnGoVerify" style="width:100%">🔎 Провери с реалните данни</button>
+    </div>
+    <div class="panel"><h3>История на ръцете (клик за детайли — с рационал на ботовете)</h3>
+      <div class="histbox" id="histEl">Още няма изиграни ръце.</div>
+    </div>
+  </div><!-- /sidebar -->
+  </div><!-- /layout -->
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const RANKS=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+const SUITS=["♠","♥","♦","♣"];
+const SUITCLS=["","c-h","c-d2","c-c2"];
+const SEAT_POS=[[50,96],[15,85],[3,50],[15,15],[50,4],[85,15],[97,50],[85,85]];
+const grp=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00A0");
+
+let socket=null,S=null,mySeat=-1,myHole=null,amHost=false,local={bbView:false,fourColor:false};
+let deadlineTimer=null;
+
+function fmt(n){
+  if(!S)return grp(n);
+  const BB=S.settings.sb*2;
+  return local.bbView?(grp((n/BB).toFixed(n%BB===0?0:1))+" BB"):grp(n);
+}
+function cardEl(c,extra){
+  const d=document.createElement("div");
+  d.className="card "+(c?SUITCLS[c.s]:"back")+(extra||"");
+  d.innerHTML=c?('<span class="r">'+RANKS[c.r]+'</span><span class="s">'+SUITS[c.s]+'</span>')
+              :'<span class="r">X</span><span class="s">X</span>';
+  return d;
+}
+function log(msg,cls){
+  const d=document.createElement("div");
+  if(cls)d.className=cls;
+  d.textContent=msg;
+  $("logEl").appendChild(d);
+  $("logEl").scrollTop=$("logEl").scrollHeight;
+}
+
+/* ---------- ЛОБИ ---------- */
+function connect(){
+  socket=io();
+  socket.on("connect",()=>{ $("msg").textContent="Свързан. Влез или създай маса."; });
+  socket.on("state",st=>{S=st;render();});
+  socket.on("hole",d=>{if(d.seat===mySeat)myHole=d.hole;render();});
+  socket.on("seated",d=>{mySeat=d.seat;amHost=amHost||d.host;$("lobby").style.display="none";updateRoomTag();render();});
+  socket.on("waiting",d=>{$("lobby").style.display="none";updateRoomTag();$("msg").textContent="Изчакваш края на текущата ръка, за да седнеш.";});
+  socket.on("youAreHost",()=>{amHost=true;render();});
+  socket.on("log",d=>log(d.msg,d.cls));
+  socket.on("banner",d=>{
+    const b=$("winBanner");b.innerHTML=d.html;b.style.display="block";
+    setTimeout(()=>{b.style.display="none";},5200);
+  });
+  socket.on("history",renderHist);
+  socket.on("disconnect",()=>{$("msg").textContent="Връзката прекъсна — презареди страницата.";});
+}
+connect();
+const urlCode=new URLSearchParams(location.search).get("r");
+if(urlCode)$("lbCode").value=urlCode.toUpperCase();
+
+$("btnCreate").onclick=()=>{
+  socket.emit("create",{name:$("lbName").value,clientSeed:$("lbSeed").value},res=>{
+    if(res.error)$("lbErr").textContent=res.error;else amHost=true;
+  });
+};
+$("btnJoin").onclick=()=>{
+  if(!$("lbCode").value.trim())return $("lbErr").textContent="Въведи код на маса.";
+  socket.emit("join",{code:$("lbCode").value,name:$("lbName").value,clientSeed:$("lbSeed").value},res=>{
+    if(res.error)$("lbErr").textContent=res.error;
+  });
+};
+function updateRoomTag(){
+  if(!S)return;
+  $("roomTag").textContent="Маса: "+S.code+" 📋";
+}
+$("roomTag").onclick=()=>{
+  const url=location.origin+location.pathname+"?r="+(S?S.code:"");
+  navigator.clipboard&&navigator.clipboard.writeText(url).then(()=>log("Линк за покана копиран: "+url,"sys"),()=>log("Линк: "+url,"sys"));
+};
+
+/* ---------- РЕНДЕР ---------- */
+
+function chipStackEl(amount,big){
+  const bb=S.settings.sb*2, sb=S.settings.sb;
+  const wrap=document.createElement("div");wrap.className="chips"+(big?" big":"");
+  const denoms=[[bb*25,"c-purple"],[bb*10,"c-black"],[bb*5,"c-green"],[bb,"c-red"],[sb,"c-blue"]];
+  let rest=amount;const cols=[];
+  denoms.forEach(([d,cls])=>{
+    if(d<=0)return;
+    let n=Math.floor(rest/d);
+    if(n>0){rest-=n*d;cols.push([Math.min(n,big?8:5),cls]);}
+  });
+  if(!cols.length)cols.push([1,"c-blue"]);
+  cols.slice(0,4).forEach(([n,cls])=>{
+    const col=document.createElement("div");col.className="chipcol";
+    for(let k=0;k<n;k++){const c=document.createElement("i");c.className="chip "+cls;col.appendChild(c);}
+    wrap.appendChild(col);
+  });
+  return wrap;
+}
+const bbTxt=v=>{const bb=S.settings.sb*2;const x=v/bb;return (x%1===0?x.toFixed(0):x.toFixed(1))+" BB";};
+const amtTxt=v=>local.bbView?bbTxt(v):fmt(v);
+
+
+function updateFairFlow(){
+  const st=[$("fs1"),$("fs2"),$("fs3"),$("fs4")];
+  if(!st[0])return;
+  st.forEach(e=>e.classList.remove("done","now"));
+  if(!S||!S.commit)return;
+  if(!S.handOver){ st[0].classList.add("done"); st[1].classList.add("now"); }
+  else if(S.reveal){ st[0].classList.add("done"); st[1].classList.add("done"); st[2].classList.add("done"); st[3].classList.add("now"); }
+  else { st[0].classList.add("now"); }
+}
+
+function render(){
+  if(!S)return;
+  updateRoomTag();
+  $("blindsHdr").textContent=S.settings.sb+"/"+S.settings.sb*2;
+  if(document.activeElement!==$("setAuto"))$("setAuto").checked=S.settings.autoDeal!==false;
+  updateFairFlow();
+  const me=mySeat>=0?S.seats[mySeat]:null;
+  $("heroChips").textContent=me&&me.type!=="empty"?fmt(me.chips):"—";
+  $("hostRow").style.display=(mySeat>=0&&S.handOver)?"flex":"none";
+  // печат
+  $("commitLine").textContent=S.commit||"— очаква ръка —";
+  const vb=$("vbadge");
+  if(S.reveal){vb.className="vbadge ok";vb.textContent="РАЗКРИТО";
+    $("revServer").value=S.reveal.server;$("revClient").value=S.reveal.client;$("revNonce").value=S.reveal.nonce;
+    $("btnVerify").disabled=false;
+  }else{vb.className="vbadge wait";vb.textContent=S.commit?"ЗАПЕЧАТАНО":"—";
+    $("revServer").value="—";$("revClient").value="—";$("revNonce").value="—";
+    $("btnVerify").disabled=true;$("verifyOut").textContent="";
+  }
+  renderTable();
+  renderControls();
+  renderStats();
+}
+function renderTable(){
+  const t=$("tableEl");
+  [...t.querySelectorAll(".seat,.betchip")].forEach(e=>e.remove());
+  const rot=i=>SEAT_POS[mySeat>=0?((i-mySeat+8)%8):i];
+  S.seats.forEach((p,i)=>{
+    if(p.type==="empty")return;
+    const [x,y]=rot(i);
+    const d=document.createElement("div");
+    d.className="seat"+(i===mySeat?" hero":"")+(p.folded&&!S.handOver?" folded":"")+(i===S.acting?" acting":"")+(!p.connected?" gone":"");
+    d.style.left=x+"%";d.style.top=y+"%";
+    let nm='<div class="name">'+p.name+(p.type==="bot"?'<span class="tag">bot</span>':"")+(i===S.button?'<span class="dealerbtn">D</span>':"")+(!p.connected?'<span class="tag">off</span>':"")+'</div>';
+    let stack='<div class="stack">'+fmt(p.chips)+(p.allIn?" · all-in":"")+'</div>';
+    let timer=(i===S.acting&&S.deadline)?'<div class="timer" data-deadline="'+S.deadline+'"><span class="tsec"></span><div class="tbar"><i></i></div></div>':"";
+    d.innerHTML=nm+stack+timer;
+    const hl=document.createElement("div");hl.className="hole";
+    const showable=p.hole||((i===mySeat)&&myHole&&!S.handOver&&!p.folded?myHole:null);
+    if(!S.handOver||p.hole){
+      if(showable&&!p.folded){showable.forEach(c=>hl.appendChild(cardEl(c,p.winCards?" win":"")));}
+      else if(!p.folded&&S.stage!=="idle"&&!S.handOver){hl.appendChild(cardEl(null));hl.appendChild(cardEl(null));}
+    }
+    d.appendChild(hl);
+    const hn=document.createElement("div");hn.className="handname";
+    hn.textContent=(p.handName||"")+(p.equity!=null&&!S.handOver?"  "+p.equity+"%":"");
+    d.appendChild(hn);
+    t.appendChild(d);
+    if(p.bet>0){
+      const bc=document.createElement("div");bc.className="betchip";
+      bc.appendChild(chipStackEl(p.bet,false));
+      const lbl=document.createElement("span");lbl.className="amt";lbl.textContent=amtTxt(p.bet);
+      bc.appendChild(lbl);
+      bc.style.left=(x+(50-x)*0.33)+"%";bc.style.top=(y+(42-y)*0.33)+"%";
+      t.appendChild(bc);
+    }
+  });
+  const b=$("boardEl");b.innerHTML="";
+  S.board.forEach(c=>b.appendChild(cardEl(c)));
+  $("stageLine").textContent=S.handOver?(S.handNo?"ръка №"+S.handNo+" · край":"очаква ръка"):S.stage;
+  $("potLine").style.display=S.pot>0||!S.handOver?"block":"none";
+  const potTotal=S.pot+S.seats.reduce((s,p)=>s+(p.bet||0),0);
+  $("potLine").textContent="Пот: "+amtTxt(potTotal);
+  const oldPC=t.querySelector(".potchips");if(oldPC)oldPC.remove();
+  if(potTotal>0&&!S.handOver){
+    const pc=document.createElement("div");pc.className="potchips";
+    pc.appendChild(chipStackEl(potTotal,true));
+    $("potLine").parentNode.insertBefore(pc,$("potLine").nextSibling);
+  }
+  startCountdown();
+}
+function startCountdown(){
+  if(deadlineTimer){clearInterval(deadlineTimer);deadlineTimer=null;}
+  const el=document.querySelector(".timer[data-deadline]");
+  if(!el)return;
+  const dl=+el.dataset.deadline;
+  const total=(S&&S.turnMs)||45000;
+  const sec=el.querySelector(".tsec"),bar=el.querySelector(".tbar i");
+  const tick=()=>{
+    const rem=Math.max(0,dl-Date.now());
+    const s=Math.ceil(rem/1000);
+    if(sec)sec.textContent="⏱ "+s+" с";
+    if(bar){const pct=Math.max(0,Math.min(100,100*rem/total));bar.style.width=pct+"%";bar.classList.toggle("warn",rem<total*0.28);}
+    if(rem<=0&&deadlineTimer){clearInterval(deadlineTimer);deadlineTimer=null;}
+  };
+  tick();deadlineTimer=setInterval(tick,400);
+}
+let autoMsgTimer=null;
+function renderControls(){
+  const my=S.acting===mySeat&&!S.handOver&&mySeat>=0;
+  $("handControls").style.display=my?"flex":"none";
+  if(autoMsgTimer){clearInterval(autoMsgTimer);autoMsgTimer=null;}
+  if(S.handOver){
+    const upd=()=>{
+      if(!S.handOver)return;
+      if(S.nextHandAt&&S.nextHandAt>Date.now()){
+        const s=Math.ceil((S.nextHandAt-Date.now())/1000);
+        $("msg").textContent="Нова ръка след "+s+" с… (или натисни „Нова ръка“)";
+      }else{
+        $("msg").textContent=mySeat>=0?"Натисни „Нова ръка“, за да раздадеш — всеки на масата може.":"Сядаш от следващата ръка.";
+      }
+    };
+    upd();
+    if(S.nextHandAt)autoMsgTimer=setInterval(upd,500);
+  }else if(my){
+    const me=S.seats[mySeat];
+    const toCall=S.currentBet-me.bet;
+    $("msg").textContent="Твой ред."+(toCall>0?" За плащане: "+bbTxt(Math.min(toCall,me.chips))+" ("+fmt(Math.min(toCall,me.chips))+")":"");
+    $("btnCall").textContent=toCall<=0?"Check":"Call "+bbTxt(Math.min(toCall,me.chips));
+    const minTo=S.currentBet+S.minRaise, maxTo=me.bet+me.chips;
+    const canRaise=maxTo>S.currentBet;
+    $("sizer").style.display=canRaise?"flex":"none";
+    if(canRaise){
+      const sbv=S.settings.sb;
+      const sl=$("raiseSlider");
+      sl.min=Math.min(minTo,maxTo);sl.max=maxTo;sl.step=sbv;
+      if(+sl.value<+sl.min||+sl.value>+sl.max)sl.value=Math.min(minTo,maxTo);
+      const P=S.pot+S.seats.reduce((s,p)=>s+(p.bet||0),0);
+      $("sizer")._ctx={minTo,maxTo,P,toCall};
+      // редове според етапа: префлоп → стъпки в BB; след флопа → проценти от пота
+      $("preRow").style.display=S.stage==="preflop"?"flex":"none";
+      $("postRow").style.display=S.stage!=="preflop"?"flex":"none";
+      showRaiseVal();
+    }
+  }else{
+    const act=S.seats[S.acting];
+    $("msg").textContent=act?("Ред на "+act.name+"…"):"";
+  }
+}
+function showRaiseVal(){
+  const v=+$("raiseSlider").value||0;
+  $("raiseShow").innerHTML=bbTxt(v)+"<small>"+fmt(v)+" жетона</small>";
+}
+function renderStats(){
+  const tb=$("statsTbl").querySelector("tbody");tb.innerHTML="";
+  S.seats.filter(p=>p.type!=="empty").forEach(p=>{
+    const st=p.st,h=st.hands||0;
+    const tr=document.createElement("tr");
+    tr.innerHTML="<td>"+p.name+(p.type==="bot"?" 🤖":"")+"</td><td>"+fmt(p.chips)+"</td><td>"+h+"</td>"+
+      "<td>"+(h?Math.round(100*st.vpip/h):0)+"</td><td>"+(h?Math.round(100*st.pfr/h):0)+"</td>"+
+      "<td>"+st.won+"</td><td>"+st.sdW+"/"+st.sdL+"</td>";
+    tb.appendChild(tr);
+  });
+}
+function renderHist(list){
+  const el=$("histEl");
+  if(!list||!list.length){el.textContent="Още няма изиграни ръце.";return;}
+  el.innerHTML="";
+  list.forEach(h=>{
+    const d=document.createElement("details");
+    const s=document.createElement("summary");
+    s.textContent="Ръка №"+h.no+" · печели: "+h.win;
+    d.appendChild(s);
+    const seeds=document.createElement("div");seeds.className="seeds";
+    seeds.textContent="commit "+h.commit.slice(0,20)+"… · server "+h.server.slice(0,20)+"… · nonce "+h.nonce;
+    d.appendChild(seeds);
+    h.actions.forEach(a=>{
+      const r=document.createElement("div");r.className="act";r.textContent=a;d.appendChild(r);
+    });
+    el.appendChild(d);
+  });
+}
+
+/* ---------- ДЕЙСТВИЯ ---------- */
+$("btnNewHand").onclick=()=>socket.emit("newHand");
+$("btnFold").onclick=()=>socket.emit("action",{type:"fold"});
+$("btnCall").onclick=()=>socket.emit("action",{type:"check_call"});
+$("btnRaise").onclick=()=>socket.emit("action",{type:"raise",target:+$("raiseSlider").value});
+$("raiseSlider").oninput=()=>showRaiseVal();
+/* разцепен Raise: стрелките местят с 0.5 BB */
+const nudge=dir=>{
+  const ctx=$("sizer")._ctx;if(!ctx)return;
+  const sbv=S.settings.sb, sl=$("raiseSlider");
+  let v=(+sl.value||ctx.minTo)+dir*sbv;
+  v=Math.max(+sl.min,Math.min(+sl.max,v));
+  sl.value=v;showRaiseVal();
+};
+$("rUp").onclick=()=>nudge(1);
+$("rDn").onclick=()=>nudge(-1);
+/* префлоп стъпки — настройваеми от играча, пазят се локално */
+let steps=[2.1,2.5,3.5];
+try{const s=JSON.parse(localStorage.getItem("nvSteps"));if(Array.isArray(s)&&s.length===3)steps=s.map(Number);}catch(e){}
+function saveSteps(){try{localStorage.setItem("nvSteps",JSON.stringify(steps));}catch(e){}}
+function buildPreRow(){
+  const row=$("preRow");row.innerHTML="";
+  steps.forEach((st,idx)=>{
+    const g=document.createElement("div");g.className="stepgrp";
+    const b=document.createElement("button");b.className="preset stepbtn";
+    b.textContent=(st%1===0?st.toFixed(0):st.toFixed(1))+" BB";
+    b.onclick=()=>{
+      const ctx=$("sizer")._ctx;if(!ctx||!S)return;
+      const bb=S.settings.sb*2;
+      const t=Math.max(ctx.minTo,Math.min(ctx.maxTo,Math.round(st*bb)));
+      socket.emit("action",{type:"raise",target:t});
+    };
+    const ud=document.createElement("div");ud.className="updown";
+    const up=document.createElement("button");up.textContent="▲";
+    const dn=document.createElement("button");dn.textContent="▼";
+    up.onclick=()=>{steps[idx]=+(steps[idx]+0.5).toFixed(1);saveSteps();buildPreRow();};
+    dn.onclick=()=>{steps[idx]=Math.max(2,+(steps[idx]-0.5).toFixed(1));saveSteps();buildPreRow();};
+    ud.appendChild(up);ud.appendChild(dn);
+    g.appendChild(b);g.appendChild(ud);
+    row.appendChild(g);
+  });
+}
+buildPreRow();
+document.querySelectorAll("#postRow .preset").forEach(b=>b.onclick=()=>{
+  const ctx=$("sizer")._ctx;if(!ctx)return;
+  const{minTo,maxTo,P,toCall}=ctx;let v;
+  switch(b.dataset.k){
+    case"min":v=minTo;break;
+    case"33":v=S.currentBet+Math.floor((P+toCall)*0.33);break;
+    case"50":v=S.currentBet+Math.floor((P+toCall)*0.50);break;
+    case"75":v=S.currentBet+Math.floor((P+toCall)*0.75);break;
+    case"100":v=S.currentBet+(P+toCall);break;
+    case"a":v=maxTo;break;
+  }
+  v=Math.max(minTo,Math.min(maxTo,v));
+  socket.emit("action",{type:"raise",target:v});
+});
+
+/* ---------- НАСТРОЙКИ ---------- */
+$("btnSettings").onclick=()=>{
+  const s=$("settingsPanel");
+  const open=s.style.display!=="block";
+  s.style.display=open?"block":"none";
+  $("btnSettings").classList.toggle("on",open);
+};
+$("setBB").onchange=e=>{local.bbView=e.target.checked;render();};
+$("btnGoVerify").onclick=()=>{
+  const d=$("fairDetails");if(d)d.open=true;
+  const f=document.querySelector(".fair");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});
+};
+$("setFour").onchange=e=>{local.fourColor=e.target.checked;document.body.classList.toggle("fourcolor",local.fourColor);};
+$("setAuto").onchange=e=>socket.emit("settings",{autoDeal:e.target.checked});
+$("btnApplyBlinds").onclick=()=>socket.emit("settings",{sb:+document.querySelector('input[name="blindopt"]:checked').value});
+$("btnApplyStack").onclick=()=>socket.emit("settings",{startStack:+document.querySelector('input[name="stackopt"]:checked').value});
+$("btnApplySpeed").onclick=()=>socket.emit("settings",{botSpeed:+document.querySelector('input[name="speedopt"]:checked').value});
+$("btnApplyBots").onclick=()=>{
+  const v=document.querySelector('input[name="botopt"]:checked').value;
+  socket.emit("settings",{fillBots:v==="off"?false:(v==="full"?"full":true)});
+};
+$("btnApplySeed").onclick=()=>socket.emit("seed",$("mySeed").value);
+
+/* ---------- ПРОВЕРКА НА ПЕЧАТА ---------- */
+$("btnVerify").onclick=async()=>{
+  try{
+    const hex=$("revServer").value.trim();
+    const bytes=new Uint8Array(hex.length/2);
+    for(let i=0;i<bytes.length;i++)bytes[i]=parseInt(hex.substr(i*2,2),16);
+    const dig=await crypto.subtle.digest("SHA-256",bytes);
+    const out=[...new Uint8Array(dig)].map(b=>b.toString(16).padStart(2,"0")).join("");
+    const ok=out===$("commitLine").textContent.trim();
+    $("verifyOut").textContent=ok?"✓ Съвпада — печатът е публикуван преди раздаването и отговаря на разкрития server seed."
+      :"✗ НЕ съвпада с текущия печат (възможно е печатът вече да е за следващата ръка — сравни в Историята).";
+  }catch(e){$("verifyOut").textContent="Грешка при проверката: "+e.message;}
+};
+})();
+</script>
+</body>
+</html>
