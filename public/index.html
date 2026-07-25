@@ -202,9 +202,11 @@
   .updown{display:flex;flex-direction:column;gap:1px}
   .updown button{font-size:.55rem;line-height:1;padding:3px 5px;border-radius:4px}
   .raisegrp{display:flex;align-items:stretch;gap:2px}
-  .raiseval{min-width:110px;text-align:center;font-family:'Courier New',monospace;font-size:.95rem;color:var(--gold-hi);
-    border:1px solid var(--line);border-radius:7px;padding:7px 8px;background:rgba(0,0,0,.25)}
-  .raiseval small{display:block;font-size:.62rem;color:#9db3a6}
+  .raiseval{min-width:128px;text-align:center;font-family:'Courier New',monospace;font-size:1.28rem;
+    color:#fff;font-weight:700;letter-spacing:.03em;
+    border:1px solid var(--line);border-radius:7px;padding:6px 10px;background:rgba(0,0,0,.25);
+    display:flex;flex-direction:column;justify-content:center}
+  .raiseval small{display:block;font-size:.78rem;font-weight:400;color:var(--gold);letter-spacing:.02em;margin-top:1px}
 
   input[type=number],input[type=text]{width:92px;font-family:'Courier New',monospace;font-size:.9rem;
     padding:7px 8px;border-radius:6px;background:var(--mono-bg);color:var(--gold-hi);border:1px solid var(--line);text-align:center}
@@ -246,7 +248,7 @@
   /* --- пост-флоп бутони: бял болд текст, All-in плътно червен --- */
   #postRow .preset{color:#fff;font-weight:700;letter-spacing:.02em}
   #postRow .preset[data-k="a"]{background:linear-gradient(180deg,#d4574a,#a53225);border-color:#e2705f;
-    font-size:.92rem;padding:9px 15px;color:#fff;font-weight:800;box-shadow:0 2px 8px rgba(165,50,37,.4)}
+    font-size:.92rem;min-width:104px;padding:9px 12px;color:#fff;font-weight:800;box-shadow:0 2px 8px rgba(165,50,37,.4)}
   #postRow .preset[data-k="a"]:hover{filter:brightness(1.1);animation:riskr .85s ease-in-out infinite}
   /* --- рискови цветове на опциите за залог --- */
   .rowlbl{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.14em;color:var(--mint);text-transform:uppercase;align-self:center;margin-right:4px;white-space:nowrap}
@@ -277,7 +279,8 @@
   #btnFold:hover{background:rgba(190,55,42,.32);color:#ffd7d0}
   #btnCall{background:linear-gradient(180deg,#eecb6a,#c9a23e);color:#241a05;border-color:#eecb6a;font-weight:700}
   #btnCall:hover{filter:brightness(1.08)}
-  #btnRaise{background:linear-gradient(180deg,#d4574a,#a53225);color:#fff;border-color:#e2705f;font-weight:700}
+  #btnRaise{background:linear-gradient(180deg,#d4574a,#a53225);color:#fff;border-color:#e2705f;font-weight:800;
+    min-width:104px;font-size:.92rem;box-shadow:0 2px 8px rgba(165,50,37,.4)}
   #btnRaise:hover{filter:brightness(1.1)}
   /* --- реакции --- */
   .emobar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px}
@@ -447,7 +450,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v35</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
+      <span class="ver" id="verTag">v36</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -1074,7 +1077,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v35 · 25.07";
+const NV_VER="v36 · 25.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
