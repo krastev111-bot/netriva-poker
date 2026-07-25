@@ -163,6 +163,32 @@
   .switch input:checked+span{background:var(--gold)}
   .switch input:checked+span::before{transform:translateX(18px)}
   /* панели */
+
+  /* --- оформление: маса вляво, странична колона вдясно --- */
+  .layout{display:grid;grid-template-columns:1fr;gap:8px}
+  @media(min-width:1100px){
+    .wrap{max-width:1420px}
+    .layout{grid-template-columns:minmax(0,1fr) 350px;align-items:start}
+    .sidebar{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow-y:auto}
+  }
+  /* --- сгъваем дневник --- */
+  .logfold summary{cursor:pointer;font-family:'Courier New',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+  .logfold summary::-webkit-details-marker{display:none}
+  .logfold summary::before{content:"\25B8";transition:transform .2s;color:var(--gold)}
+  .logfold[open] summary::before{transform:rotate(90deg)}
+  .logfold .logbox{margin-top:6px}
+  /* --- честна игра: анимиран поток --- */
+  .fflow{display:flex;flex-direction:column;margin:4px 0 10px}
+  .fstep{display:flex;gap:10px;align-items:flex-start;position:relative;padding:5px 0 11px}
+  .fdot{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);background:#0c1d16;flex-shrink:0;margin-top:2px;position:relative;z-index:1;box-sizing:border-box}
+  .fstep:not(:last-child)::before{content:"";position:absolute;left:6px;top:20px;bottom:-2px;width:2px;background:var(--line)}
+  .fstep.done .fdot{background:var(--mint);border-color:var(--mint)}
+  .fstep.done:not(:last-child)::before{background:var(--mint)}
+  .fstep.now .fdot{background:var(--gold);border-color:var(--gold-hi);animation:fpulse 1.2s infinite}
+  @keyframes fpulse{0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,.55)}50%{box-shadow:0 0 0 8px rgba(212,175,55,0)}}
+  .fstep .ft b{color:var(--chip);display:block;font-size:.74rem;margin-bottom:2px}
+  .fstep.now .ft b,.fstep.done .ft b{color:var(--gold-hi)}
+  .fstep .ft span{color:#9db3a6;font-size:.67rem;line-height:1.4;display:block}
   .cols{display:grid;grid-template-columns:1fr;gap:8px}
   @media(min-width:900px){.cols{grid-template-columns:2fr 1fr}}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -270,7 +296,7 @@
       <span class="hashline" id="commitLine">— очаква ръка —</span>
       <span class="vbadge wait" id="vbadge">ЗАПЕЧАТАНО</span>
     </div>
-    <details>
+    <details id="fairDetails">
       <summary>Пълни данни (seeds / nonce) — разкриват се след края на ръката</summary>
       <div class="detail-grid">
         <div><span class="lbl">Server seed</span><input id="revServer" readonly value="—"></div>
@@ -283,6 +309,8 @@
     </details>
   </div>
 
+  <div class="layout">
+  <div class="mainCol">
   <div class="tablewrap">
     <div class="table" id="tableEl">
       <div class="oval"></div>
@@ -325,20 +353,29 @@
     </div>
   </div>
 
-  <div class="cols">
-    <div>
-      <div class="panel" style="margin-bottom:8px"><h3>Дневник на масата</h3><div class="logbox" id="logEl"></div></div>
-      <div class="panel"><h3>Статистика на играчите (тази сесия)</h3>
-        <table class="stats" id="statsTbl"><thead><tr>
-          <th>Играч</th><th>Стек</th><th>Ръце</th><th>VPIP %</th><th>PFR %</th><th>Win</th><th>SD W/L</th>
-        </tr></thead><tbody></tbody></table>
-        <div class="note" style="margin-top:6px">VPIP = % ръце с доброволно вложени пари префлоп · PFR = % ръце с рейз префлоп.</div>
+    <details class="panel logfold" style="margin-bottom:8px"><summary>Дневник на масата</summary><div class="logbox" id="logEl"></div></details>
+    <div class="panel"><h3>Статистика на играчите (тази сесия)</h3>
+      <table class="stats" id="statsTbl"><thead><tr>
+        <th>Играч</th><th>Стек</th><th>Ръце</th><th>VPIP %</th><th>PFR %</th><th>Win</th><th>SD W/L</th>
+      </tr></thead><tbody></tbody></table>
+      <div class="note" style="margin-top:6px">VPIP = % ръце с доброволно вложени пари префлоп · PFR = % ръце с рейз префлоп.</div>
+    </div>
+  </div><!-- /mainCol -->
+  <div class="sidebar">
+    <div class="panel" style="margin-bottom:8px"><h3>Честна игра — на живо</h3>
+      <div class="fflow">
+        <div class="fstep" id="fs1"><div class="fdot"></div><div class="ft"><b>1 · Печат преди раздаване</b><span>Сървърът публикува SHA-256 отпечатък на тайния си seed — тестето е „заключено", преди да видиш и една карта.</span></div></div>
+        <div class="fstep" id="fs2"><div class="fdot"></div><div class="ft"><b>2 · Играе се ръката</b><span>Никой — включително сървърът — не може да промени реда на картите, без печатът да спре да съвпада.</span></div></div>
+        <div class="fstep" id="fs3"><div class="fdot"></div><div class="ft"><b>3 · Разкриване след ръката</b><span>Server seed-ът се показва. Заедно с client seed-овете на играчите и nonce той определя разбъркването чрез HMAC-SHA256.</span></div></div>
+        <div class="fstep" id="fs4"><div class="fdot"></div><div class="ft"><b>4 · Провери сам</b><span>SHA-256(разкрития seed) трябва да е равен на печата от стъпка 1 — едно натискане, без доверие на честна дума.</span></div></div>
       </div>
+      <button class="applybtn" id="btnGoVerify" style="width:100%">🔎 Провери с реалните данни</button>
     </div>
     <div class="panel"><h3>История на ръцете (клик за детайли — с рационал на ботовете)</h3>
       <div class="histbox" id="histEl">Още няма изиграни ръце.</div>
     </div>
-  </div>
+  </div><!-- /sidebar -->
+  </div><!-- /layout -->
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -439,11 +476,23 @@ function chipStackEl(amount,big){
 const bbTxt=v=>{const bb=S.settings.sb*2;const x=v/bb;return (x%1===0?x.toFixed(0):x.toFixed(1))+" BB";};
 const amtTxt=v=>local.bbView?bbTxt(v):fmt(v);
 
+
+function updateFairFlow(){
+  const st=[$("fs1"),$("fs2"),$("fs3"),$("fs4")];
+  if(!st[0])return;
+  st.forEach(e=>e.classList.remove("done","now"));
+  if(!S||!S.commit)return;
+  if(!S.handOver){ st[0].classList.add("done"); st[1].classList.add("now"); }
+  else if(S.reveal){ st[0].classList.add("done"); st[1].classList.add("done"); st[2].classList.add("done"); st[3].classList.add("now"); }
+  else { st[0].classList.add("now"); }
+}
+
 function render(){
   if(!S)return;
   updateRoomTag();
   $("blindsHdr").textContent=S.settings.sb+"/"+S.settings.sb*2;
   if(document.activeElement!==$("setAuto"))$("setAuto").checked=S.settings.autoDeal!==false;
+  updateFairFlow();
   const me=mySeat>=0?S.seats[mySeat]:null;
   $("heroChips").textContent=me&&me.type!=="empty"?fmt(me.chips):"—";
   $("hostRow").style.display=(mySeat>=0&&S.handOver)?"flex":"none";
@@ -667,6 +716,10 @@ $("btnSettings").onclick=()=>{
   $("btnSettings").classList.toggle("on",open);
 };
 $("setBB").onchange=e=>{local.bbView=e.target.checked;render();};
+$("btnGoVerify").onclick=()=>{
+  const d=$("fairDetails");if(d)d.open=true;
+  const f=document.querySelector(".fair");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});
+};
 $("setFour").onchange=e=>{local.fourColor=e.target.checked;document.body.classList.toggle("fourcolor",local.fourColor);};
 $("setAuto").onchange=e=>socket.emit("settings",{autoDeal:e.target.checked});
 $("btnApplyBlinds").onclick=()=>socket.emit("settings",{sb:+document.querySelector('input[name="blindopt"]:checked').value});
