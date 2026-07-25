@@ -37,7 +37,10 @@
   }
   .gear{font-size:1.05rem;padding:6px 12px;background:var(--gold);color:#241a08;border:1px solid var(--gold);font-weight:bold;border-radius:8px;cursor:pointer}
   .gear.on{background:var(--gold-hi);border-color:var(--gold-hi);box-shadow:0 0 10px rgba(240,217,168,.45)}
-  .roomtag{font-family:'Courier New',monospace;font-size:.8rem;color:var(--mint);background:var(--mono-bg);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer}
+  .roomtag{font-family:'Courier New',monospace;font-size:.8rem;color:var(--mint);background:var(--mono-bg);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer;
+    transition:transform .15s,border-color .15s,color .15s;display:inline-block}
+  .roomtag:hover{transform:scale(1.07);border-color:var(--gold);color:var(--gold-hi)}
+  .applybtn.applied{background:#2c9a63 !important;color:#fff !important;border-color:#42e6a4 !important}
   .lbl{font-family:'Courier New',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint)}
   .note{font-size:.72rem;color:#8fae9e;line-height:1.55}
   /* fair strip */
@@ -67,8 +70,10 @@
       inset 0 0 80px rgba(0,0,0,.5),
       inset 0 3px 14px rgba(255,255,255,.06)}
   .oval::before{content:"";position:absolute;inset:6%;border:1px solid rgba(212,175,55,.16);border-radius:50%/50%;pointer-events:none}
-  .tablewrap::before{content:"♠";position:absolute;left:-2%;top:-6%;font-size:9rem;color:rgba(212,175,55,.05);pointer-events:none;z-index:0}
-  .tablewrap::after{content:"♦";position:absolute;right:-1%;bottom:-10%;font-size:9rem;color:rgba(212,175,55,.05);pointer-events:none;z-index:0}
+  .tablewrap::before{content:"♠";position:absolute;left:-2%;top:-6%;font-size:9rem;color:rgba(44,154,99,.14);pointer-events:none;z-index:0}
+  .tablewrap::after{content:"♣";position:absolute;right:-1%;top:-6%;font-size:9rem;color:rgba(44,154,99,.14);pointer-events:none;z-index:0}
+  .table::before{content:"♥";position:absolute;left:-1%;bottom:-8%;font-size:9rem;color:rgba(44,154,99,.14);pointer-events:none;z-index:0}
+  .table::after{content:"♦";position:absolute;right:-1%;bottom:-8%;font-size:9rem;color:rgba(44,154,99,.14);pointer-events:none;z-index:0}
   .oval::after{content:"NETRIVA";position:absolute;left:50%;top:63%;transform:translate(-50%,-50%);
     font-size:1.5rem;letter-spacing:.4em;color:rgba(212,175,106,.13);font-family:Georgia,serif}
   .center{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
@@ -86,15 +91,15 @@
   .seat.acting{border-color:var(--gold);box-shadow:0 0 14px rgba(212,175,106,.5)}
   .seat.folded{opacity:.4}
   .seat.gone{opacity:.25;border-style:dashed;border-color:var(--line)}
-  .seat .name{font-size:.8rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .seat .stack{font-size:.74rem;color:var(--chip)}
+  .seat .name{font-size:.92rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .seat .stack{font-size:.8rem;color:var(--chip)}
   .seat .stack b{color:#fff;font-weight:700;letter-spacing:.02em}
   .seat .tag{font-family:'Courier New',monospace;font-size:.55rem;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:#e0a196;margin-left:3px}
   .seat .timer{font-family:'Courier New',monospace;font-size:.6rem;color:var(--gold-hi)}
   .hole{display:flex;justify-content:center;gap:4px;margin-top:3px}
   .handname{font-size:.62rem;color:var(--mint);min-height:12px;margin-top:2px}
   .seat.hero{width:150px;background:rgba(6,16,12,.7)}
-  .seat.hero .name{font-size:.9rem;color:var(--gold-hi)}
+  .seat.hero .name{font-size:1.02rem;color:var(--gold-hi)}
   .dealerbtn{display:inline-block;width:14px;height:14px;border-radius:50%;
     background:#f5f0e4;color:#241a08;font-size:.56rem;font-weight:bold;
     line-height:14px;vertical-align:middle;margin-left:3px;font-family:Arial,sans-serif}
@@ -110,7 +115,12 @@
   .card.c-h{color:var(--red)} .card.c-d2{color:var(--red)}
   body.fourcolor .card.c-d2{color:var(--dia)}
   body.fourcolor .card.c-c2{color:var(--club)}
-  .card.back{background:repeating-linear-gradient(45deg,#7a1f1f,#7a1f1f 4px,#8e2a2a 4px,#8e2a2a 8px);border:2px solid #f0e6d2}
+  .card.back{border:2px solid #e9d9b8;position:relative;
+    background:
+      repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 2px,transparent 2px 7px),
+      repeating-linear-gradient(-45deg,rgba(255,255,255,.05) 0 2px,transparent 2px 7px),
+      radial-gradient(ellipse at 50% 40%,#8e2626,#5d1414 80%)}
+  .card.back::after{content:"";position:absolute;inset:3px;border:1px solid rgba(212,175,55,.55);border-radius:3px}
   .card.back .r,.card.back .s{visibility:hidden}
   .board .card{width:46px;height:65px}
   .seat.hero .card{width:48px;height:68px}
@@ -218,8 +228,8 @@
   @keyframes wonpulse{0%,100%{box-shadow:0 0 0 0 rgba(66,230,164,0)}50%{box-shadow:0 0 20px 5px rgba(66,230,164,.6)}}
   .seat.lostseat{border-color:#4c4c4c;opacity:.72;animation:lostpulse 1.5s ease-in-out infinite}
   @keyframes lostpulse{0%,100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}50%{box-shadow:0 0 16px 5px rgba(0,0,0,.8)}}
-  .winbanner{animation:wbpulse 1.2s ease-in-out infinite}
-  @keyframes wbpulse{0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,.0)}50%{box-shadow:0 0 26px 6px rgba(212,175,55,.5)}}
+  .winbanner{animation:wbpulse 1.15s ease-in-out infinite;border:1px solid rgba(66,230,164,.55) !important}
+  @keyframes wbpulse{0%,100%{box-shadow:0 0 0 0 rgba(66,230,164,0)}50%{box-shadow:0 0 26px 7px rgba(66,230,164,.55)}}
   /* --- казино цветове на действията --- */
   #btnFold{border-color:#c0483c;color:#f0a89e;background:rgba(150,40,30,.16)}
   #btnFold:hover{background:rgba(190,55,42,.32);color:#ffd7d0}
@@ -269,6 +279,14 @@
   .avbtn svg{width:30px;height:30px;display:block}
   .avbtn{padding:3px}
 
+
+  /* --- палмови листа долу вдясно --- */
+  body::before{content:"";position:fixed;right:0;top:0;bottom:0;width:300px;pointer-events:none;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20260%20200%27%3E%3Cg%20fill%3D%27%232c9a63%27%20fill-opacity%3D%27.12%27%3E%3Cpath%20d%3D%27M250%20100%20C%20200%2040%20130%2020%2050%2030%20C%20110%2070%20180%2096%20240%20104Z%27/%3E%3Cpath%20d%3D%27M254%20110%20C%20190%20100%20120%20108%2060%20140%20C%20130%20150%20200%20138%20250%20118Z%27/%3E%3Cpath%20d%3D%27M246%2096%20C%20220%2040%20176%2012%20120%204%20C%20150%2050%20194%2084%20238%2098Z%27/%3E%3C/g%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20240%20300%27%3E%3Cg%20fill%3D%27%232c9a63%27%20fill-opacity%3D%27.10%27%3E%3Cpath%20d%3D%27M230%20290%20C%20170%20240%20140%20170%20150%2090%20C%20200%20150%20226%20220%20234%20280Z%27/%3E%3Cpath%20d%3D%27M236%20300%20C%20200%20260%20190%20200%20208%20140%20C%20236%20200%20244%20260%20240%20296Z%27/%3E%3Cpath%20d%3D%27M224%20296%20C%20150%20280%20100%20240%2080%20180%20C%20150%20210%20200%20250%20226%20288Z%27/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat:no-repeat,no-repeat;
+    background-position:right 10px bottom 220px, right -20px bottom -30px;
+    background-size:230px 170px, 220px 280px}
+  @media(max-width:900px){body::before{display:none}}
   /* --- палмов декор вляво --- */
   body::after{content:"";position:fixed;left:0;top:0;bottom:0;width:300px;pointer-events:none;z-index:0;
     background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20240%20900%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%2711%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M118%20900%20C%2096%20700%20108%20520%2092%20378%27/%3E%3Cpath%20d%3D%27M132%20900%20C%20134%20720%20120%20540%20100%20384%27/%3E%3C/g%3E%3Cg%20fill%3D%27%232c9a63%27%20fill-opacity%3D%27.13%27%3E%3Cpath%20d%3D%27M92%20376%20C%2032%20338%2012%20298%206%20248%20C%2062%20278%2096%20318%20105%20358Z%27/%3E%3Cpath%20d%3D%27M94%20370%20C%2062%20298%2062%20238%2086%20188%20C%20110%20248%20110%20318%20104%20362Z%27/%3E%3Cpath%20d%3D%27M98%20366%20C%20112%20288%20152%20248%20202%20234%20C%20178%20298%20142%20346%20106%20364Z%27/%3E%3Cpath%20d%3D%27M90%20378%20C%2042%20378%2014%20364%202%20338%20C%2052%20342%2084%20356%2098%20372Z%27/%3E%3Cpath%20d%3D%27M102%20370%20C%20152%20348%20198%20348%20238%20370%20C%20188%20388%20138%20386%20104%20376Z%27/%3E%3C/g%3E%3Ccircle%20cx%3D%2798%27%20cy%3D%27376%27%20r%3D%279%27%20fill%3D%27%23a35c22%27%20fill-opacity%3D%27.3%27/%3E%3Ccircle%20cx%3D%27112%27%20cy%3D%27382%27%20r%3D%278%27%20fill%3D%27%23a35c22%27%20fill-opacity%3D%27.3%27/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20260%20200%27%3E%3Cg%20fill%3D%27%232c9a63%27%20fill-opacity%3D%27.11%27%3E%3Cpath%20d%3D%27M10%20100%20C%2060%2040%20130%2020%20210%2030%20C%20150%2070%2080%2096%2020%20104Z%27/%3E%3Cpath%20d%3D%27M6%20110%20C%2070%20100%20140%20108%20200%20140%20C%20130%20150%2060%20138%2010%20118Z%27/%3E%3Cpath%20d%3D%27M14%2096%20C%2040%2040%2084%2012%20140%204%20C%20110%2050%2066%2084%2022%2098Z%27/%3E%3C/g%3E%3C/svg%3E");
@@ -376,7 +394,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v27</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
+      <span class="ver" id="verTag">v28</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -920,7 +938,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v27 · 25.07";
+const NV_VER="v28 · 25.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -1015,6 +1033,17 @@ const EMOTES=["👍","👏","😂","😮","😢","😡","🔥","🎉"];
     if(!pop.contains(ev.target)&&ev.target!==fab)pop.classList.remove("open");
   });
 })();
+
+/* --- визуално потвърждение на Приложи --- */
+["btnApplyBlinds","btnApplyStack","btnApplySpeed","btnApplyBots","btnApplySeed"].forEach(id=>{
+  const b=$(id);if(!b)return;
+  b.addEventListener("click",()=>{
+    if(b._t)clearTimeout(b._t);
+    if(!b._orig)b._orig=b.textContent;
+    b.textContent="✔ Приложено";b.classList.add("applied");
+    b._t=setTimeout(()=>{b.textContent=b._orig;b.classList.remove("applied");b._t=null;},1400);
+  });
+});
 $("btnNewHand").onclick=()=>socket.emit("newHand");
 $("btnFold").onclick=()=>socket.emit("action",{type:"fold"});
 $("btnCall").onclick=()=>socket.emit("action",{type:"check_call"});
