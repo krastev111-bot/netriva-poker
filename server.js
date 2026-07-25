@@ -524,7 +524,7 @@ function dealBoard(room,n){
 function endByFold(room){
   const w=alive(room)[0];
   active(room).forEach(p=>{room.pot+=p.bet;p.bet=0;});
-  w.chips+=room.pot;w.st.won++;room.lastWin=w.name;
+  w.chips+=room.pot;w.st.won++;room.lastWin=w.name;w.winCards=true;
   room.rec(w.name+" печели "+room.pot+" (останалите fold).");
   io.to(room.code).emit("banner",{html:w.name+" печели "+room.pot});
   room.log(w.name+" печели "+room.pot+" (останалите fold).","win");
