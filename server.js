@@ -620,6 +620,25 @@ io.on("connection",socket=>{
 
   function joinRoom(room,name,clientSeed,cb,avatar){
     name=String(name||"").trim().slice(0,14)||"Гост";
+    // връщане след прекъсване: същото име → същото място и стек
+    const back=active(room).find(q=>q.type==="human"&&!q.id&&q.name===name);
+    if(back){
+      back.id=socket.id;
+      if(clientSeed)back.clientSeed=String(clientSeed).slice(0,64);
+      if(avatar)back.avatar=String(avatar).slice(0,4);
+      if(back._grace){clearTimeout(back._grace);back._grace=null;}
+      myRoom=room;mySeat=back.seat;
+      socket.join(room.code);
+      if(!room.hostId)room.hostId=socket.id;
+      socket.emit("seated",{seat:back.seat,code:room.code,host:room.hostId===socket.id});
+      room.log(name+" се върна на мястото си.","sys");
+      if(!room.handOver&&back.hole&&back.hole.length&&!back.folded)
+        io.to(back.id).emit("hole",{seat:back.seat,hole:back.hole});
+      cb({ok:true,code:room.code,host:room.hostId===socket.id,rejoined:true});
+      socket.emit("history",room.handHistory.slice(0,40));
+      broadcast(room);
+      return;
+    }
     // уникално име
     let base=name,n=2;
     while(active(room).some(p=>p.name===name))name=base+" "+(n++);
@@ -730,13 +749,17 @@ io.on("connection",socket=>{
     const p=mySeat>=0?room.seats[mySeat]:null;
     if(p&&p.id===socket.id){
       p.id=null;
-      room.log(p.name+" се разкачи.","sys");
-      if(!room.handOver&&!p.folded&&room.acting===mySeat){
-        p.pendingReason="разкачване — авто-fold";actFold(room,mySeat);
-      }
-      // между ръцете мястото се освобождава веднага; иначе — след ръката
+      room.log(p.name+" се разкачи — мястото се пази 90 секунди за връщане.","sys");
+      // НЕ фолдваме веднага: ако му дойде редът, 45-сек. таймер ще реши сам
       const free=()=>{if(room.seats[p.seat]&&room.seats[p.seat].name===p.name&&!room.seats[p.seat].id)room.seats[p.seat]=emptySeat(p.seat);broadcast(room);};
-      if(room.handOver)free(); else room.pending.push(free);
+      if(p._grace)clearTimeout(p._grace);
+      p._grace=setTimeout(()=>{
+        p._grace=null;
+        if(p.id)return; // върнал се е навреме
+        room.log(p.name+" не се върна — мястото се освобождава.","sys");
+        if(room.handOver)free(); else room.pending.push(free);
+        broadcast(room);
+      },90000);
       if(!active(room).some(q=>q.type==="human"&&q.id)&&room.autoTimer){clearTimeout(room.autoTimer);room.autoTimer=null;room.nextHandAt=0;}
       // домакинството минава към следващия човек
       if(room.hostId===socket.id){
