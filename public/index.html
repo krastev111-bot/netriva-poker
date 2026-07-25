@@ -105,16 +105,18 @@
     line-height:14px;vertical-align:middle;margin-left:3px;font-family:Arial,sans-serif}
   .betchip{position:absolute;transform:translate(-50%,-50%);z-index:5;
     display:flex;flex-direction:column;align-items:center;gap:3px;white-space:nowrap}
-  .betchip .amt{font-size:.62rem;color:var(--gold-hi);background:rgba(5,12,9,.75);
+  .betchip .amt{font-size:.66rem;color:#fff;font-weight:700;letter-spacing:.02em;background:rgba(5,12,9,.78);
     border:1px solid rgba(212,175,55,.45);border-radius:9px;padding:1px 8px;
     box-shadow:0 1px 4px rgba(0,0,0,.5)}
   .card{width:38px;height:54px;border-radius:5px;background:var(--card-face);color:var(--ink);
     display:flex;flex-direction:column;justify-content:space-between;padding:3px 4px;box-shadow:0 2px 5px rgba(0,0,0,.45)}
   .card .r{font-size:.78rem;font-weight:bold;line-height:1}
   .card .s{font-size:.88rem;line-height:1;align-self:flex-end}
-  .card.c-h{color:var(--red)} .card.c-d2{color:var(--red)}
-  body.fourcolor .card.c-d2{color:var(--dia)}
-  body.fourcolor .card.c-c2{color:var(--club)}
+  .card{font-weight:700}
+  .card.c-h{color:#cf1d18} .card.c-d2{color:#cf1d18}
+  .card.c-s2,.card.c-c2{color:#161a1c}
+  body.fourcolor .card.c-d2{color:#1565d8}
+  body.fourcolor .card.c-c2{color:#1e8e3e}
   .card.back{border:2px solid #e9d9b8;position:relative;
     background:
       repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 2px,transparent 2px 7px),
@@ -122,7 +124,9 @@
       radial-gradient(ellipse at 50% 40%,#8e2626,#5d1414 80%)}
   .card.back::after{content:"";position:absolute;inset:3px;border:1px solid rgba(212,175,55,.55);border-radius:3px}
   .card.back .r,.card.back .s{visibility:hidden}
-  .board .card{width:46px;height:65px}
+  .board .card{width:52px;height:73px;box-shadow:0 5px 12px rgba(0,0,0,.55);border:1px solid #d8cfb8}
+  .board .card .r{font-size:1.08rem;font-weight:800}
+  .board .card .s{font-size:1.2rem;font-weight:700}
   .seat.hero .card{width:48px;height:68px}
   .seat.hero .card .r{font-size:.95rem}
   @media(max-width:640px){
@@ -218,6 +222,21 @@
   .ver{font-family:'Courier New',monospace;font-size:.6rem;color:#7d998b;border:1px solid var(--line);border-radius:5px;padding:2px 6px;white-space:nowrap}
   #sndBtn{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.95rem;cursor:pointer;line-height:1}
   #sndBtn:hover{border-color:var(--gold)}
+
+  #potLine b{color:#fff;font-weight:700;font-size:1.12em;letter-spacing:.02em}
+
+  /* --- рискови цветове на опциите за залог --- */
+  .rowlbl{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.14em;color:var(--mint);text-transform:uppercase;align-self:center;margin-right:4px;white-space:nowrap}
+  .stepbtn b{color:#fff;font-weight:700;font-size:1.05em}
+  .preset.r-low{border-color:#2c9a63;background:rgba(44,154,99,.10)}
+  .preset.r-mid{border-color:#d6b74a;background:rgba(214,183,74,.10)}
+  .preset.r-high{border-color:#c0483c;background:rgba(192,72,60,.12)}
+  .preset.r-low:hover{animation:riskg .85s ease-in-out infinite;color:#c8f5de}
+  .preset.r-mid:hover{animation:risky .85s ease-in-out infinite;color:#ffedb0}
+  .preset.r-high:hover{animation:riskr .85s ease-in-out infinite;color:#ffd3cc}
+  @keyframes riskg{0%,100%{box-shadow:0 0 0 0 rgba(66,230,164,0)}50%{box-shadow:0 0 13px 3px rgba(66,230,164,.55)}}
+  @keyframes risky{0%,100%{box-shadow:0 0 0 0 rgba(230,200,80,0)}50%{box-shadow:0 0 13px 3px rgba(230,200,80,.55)}}
+  @keyframes riskr{0%,100%{box-shadow:0 0 0 0 rgba(230,80,60,0)}50%{box-shadow:0 0 14px 4px rgba(230,80,60,.6)}}
   /* --- обратна връзка и празнични пулсове --- */
   .roomtag.copied{color:#42e6a4 !important;border-color:#42e6a4 !important;text-shadow:0 0 8px rgba(66,230,164,.5)}
   .oval.pulse-gold{animation:rimgold 1.15s ease-in-out 2}
@@ -394,7 +413,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v28</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
+      <span class="ver" id="verTag">v30</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -495,12 +514,13 @@
       <div class="sizer" id="sizer">
         <div class="presets" id="preRow"></div>
         <div class="presets" id="postRow">
-          <button class="preset" data-k="min">Min</button>
-          <button class="preset" data-k="33">33%</button>
-          <button class="preset" data-k="50">50%</button>
-          <button class="preset" data-k="75">75%</button>
-          <button class="preset" data-k="100">100%</button>
-          <button class="preset" data-k="a">All-in</button>
+          <span class="rowlbl">Post-flop</span>
+          <button class="preset r-low" data-k="min">Min</button>
+          <button class="preset r-low" data-k="33">33%</button>
+          <button class="preset r-mid" data-k="50">50%</button>
+          <button class="preset r-mid" data-k="75">75%</button>
+          <button class="preset r-high" data-k="100">100%</button>
+          <button class="preset r-high" data-k="a">All-in</button>
         </div>
         <div class="fine">
           <input type="range" id="raiseSlider">
@@ -748,7 +768,7 @@ function renderTable(){
   $("stageLine").textContent=S.handOver?(S.handNo?"ръка №"+S.handNo+" · край":"очаква ръка"):S.stage;
   $("potLine").style.display=S.pot>0||!S.handOver?"block":"none";
   const potTotal=S.pot+S.seats.reduce((s,p)=>s+(p.bet||0),0);
-  $("potLine").textContent="Пот: "+amtTxt(potTotal);
+  $("potLine").innerHTML='Пот: <b>'+amtTxt(potTotal)+'</b>';
   const oldPC=t.querySelector(".potchips");if(oldPC)oldPC.remove();
   if(potTotal>0&&!S.handOver){
     const pc=document.createElement("div");pc.className="potchips";
@@ -938,7 +958,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v28 · 25.07";
+const NV_VER="v30 · 25.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -1065,10 +1085,12 @@ try{const s=JSON.parse(localStorage.getItem("nvSteps"));if(Array.isArray(s)&&s.l
 function saveSteps(){try{localStorage.setItem("nvSteps",JSON.stringify(steps));}catch(e){}}
 function buildPreRow(){
   const row=$("preRow");row.innerHTML="";
+  const lb=document.createElement("span");lb.className="rowlbl";lb.textContent="Pre-flop";row.appendChild(lb);
+  const RISK=["r-low","r-mid","r-high"];
   steps.forEach((st,idx)=>{
     const g=document.createElement("div");g.className="stepgrp";
-    const b=document.createElement("button");b.className="preset stepbtn";
-    b.textContent=(st%1===0?st.toFixed(0):st.toFixed(1))+" BB";
+    const b=document.createElement("button");b.className="preset stepbtn "+(RISK[idx]||"r-high");
+    b.innerHTML="<b>"+(st%1===0?st.toFixed(0):st.toFixed(1))+"</b> BB";
     b.onclick=()=>{
       const ctx=$("sizer")._ctx;if(!ctx||!S)return;
       const bb=S.settings.sb*2;
