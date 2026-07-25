@@ -81,7 +81,7 @@
   .board{display:flex;gap:5px}
   .potline{font-size:.82rem;color:var(--gold-hi);letter-spacing:.03em;background:rgba(0,0,0,.35);padding:2px 12px;border-radius:11px}
   .stageline{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mint)}
-  .winbanner{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+  .winbanner{position:absolute;left:50%;top:64%;transform:translate(-50%,-50%);
     background:rgba(8,20,15,.92);border:1px solid var(--gold);border-radius:10px;
     padding:12px 22px;font-size:.95rem;color:var(--gold-hi);z-index:9;text-align:center;display:none;max-width:80%}
   .winbanner .bsub{font-size:.8rem;color:#b9c9bf}
@@ -90,6 +90,15 @@
     transition:border-color .2s, box-shadow .2s}
   .seat.acting{border-color:var(--gold);box-shadow:0 0 14px rgba(212,175,106,.5)}
   .seat.folded{opacity:.4}
+  .seat.hero.folded{transition:opacity .18s}
+  .seat.hero.folded:hover{opacity:1;z-index:9}
+  .seat.hero.folded .peek{display:none}
+  .seat.hero.folded:hover .peek{display:flex;gap:3px;justify-content:center;margin-top:3px;
+    animation:peekin .22s ease-out}
+  @keyframes peekin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .seat.hero.folded:hover .hole{display:none}
+  .peek .card{opacity:.92;filter:saturate(.9)}
+  .peeklbl{font-size:.55rem;color:#8fae9e;letter-spacing:.08em;text-transform:uppercase}
   .seat.gone{opacity:.25;border-style:dashed;border-color:var(--line)}
   .seat .name{font-size:.92rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .seat .stack{font-size:.8rem;color:var(--chip)}
@@ -108,11 +117,17 @@
   .betchip .amt{font-size:.66rem;color:#fff;font-weight:700;letter-spacing:.02em;background:rgba(5,12,9,.78);
     border:1px solid rgba(212,175,55,.45);border-radius:9px;padding:1px 8px;
     box-shadow:0 1px 4px rgba(0,0,0,.5)}
-  .card{width:38px;height:54px;border-radius:5px;background:var(--card-face);color:var(--ink);
-    display:flex;flex-direction:column;justify-content:space-between;padding:3px 4px;box-shadow:0 2px 5px rgba(0,0,0,.45)}
-  .card .r{font-size:.78rem;font-weight:bold;line-height:1}
-  .card .s{font-size:.88rem;line-height:1;align-self:flex-end}
-  .card{font-weight:700}
+  .card{width:44px;height:62px;border-radius:6px;background:linear-gradient(160deg,#fffdf8,#f2ece0);color:var(--ink);
+    position:relative;box-shadow:0 3px 7px rgba(0,0,0,.5);border:1px solid #cfc6b2;
+    font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;overflow:hidden}
+  .card .cnr{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:.92}
+  .card .cnr.tl{left:3px;top:2px}
+  .card .cnr.br{right:3px;bottom:2px;transform:rotate(180deg)}
+  .card .cnr .r{font-size:.82rem;font-weight:900;letter-spacing:-.04em}
+  .card .cnr .s{font-size:.6rem;font-style:normal;margin-top:-1px}
+  .card .pip{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);
+    font-size:1.5rem;line-height:1;opacity:.95;text-shadow:0 1px 1px rgba(0,0,0,.12)}
   .card.c-h{color:#cf1d18} .card.c-d2{color:#cf1d18}
   .card.c-s2,.card.c-c2{color:#161a1c}
   body.fourcolor .card.c-d2{color:#1565d8}
@@ -123,19 +138,24 @@
       repeating-linear-gradient(-45deg,rgba(255,255,255,.05) 0 2px,transparent 2px 7px),
       radial-gradient(ellipse at 50% 40%,#8e2626,#5d1414 80%)}
   .card.back::after{content:"";position:absolute;inset:3px;border:1px solid rgba(212,175,55,.55);border-radius:3px}
-  .card.back .r,.card.back .s{visibility:hidden}
-  .board .card{width:52px;height:73px;box-shadow:0 5px 12px rgba(0,0,0,.55);border:1px solid #d8cfb8}
-  .board .card .r{font-size:1.08rem;font-weight:800}
-  .board .card .s{font-size:1.2rem;font-weight:700}
-  .seat.hero .card{width:48px;height:68px}
-  .seat.hero .card .r{font-size:.95rem}
+  .card.back .cnr,.card.back .pip{visibility:hidden}
+  .board .card{width:62px;height:87px;box-shadow:0 6px 15px rgba(0,0,0,.6)}
+  .board .card .cnr .r{font-size:1.15rem}
+  .board .card .cnr .s{font-size:.85rem}
+  .board .card .pip{font-size:2.15rem}
+  .seat.hero .card{width:56px;height:79px}
+  .seat.hero .card .cnr .r{font-size:1.05rem}
+  .seat.hero .card .cnr .s{font-size:.78rem}
+  .seat.hero .card .pip{font-size:1.95rem}
   @media(max-width:640px){
     .tablewrap{margin-bottom:40px}
     .seat{width:86px}.seat.hero{width:118px}
-    .card{width:28px;height:41px}
-    .card .r{font-size:.62rem}.card .s{font-size:.72rem}
-    .board .card{width:36px;height:52px}
-    .seat.hero .card{width:38px;height:55px}
+    .card{width:32px;height:45px}
+    .card .cnr .r{font-size:.66rem}.card .cnr .s{font-size:.5rem}.card .pip{font-size:1.15rem}
+    .board .card{width:44px;height:62px}
+    .board .card .cnr .r{font-size:.85rem}.board .card .pip{font-size:1.6rem}
+    .seat.hero .card{width:44px;height:62px}
+    .seat.hero .card .cnr .r{font-size:.85rem}.seat.hero .card .pip{font-size:1.6rem}
     .oval::after{font-size:.9rem}
   }
   /* лента действия */
@@ -280,6 +300,17 @@
   .emopop button{font-size:1.2rem;padding:5px 7px;border-radius:8px;border:1px solid var(--line);background:rgba(0,0,0,.28);cursor:pointer;line-height:1;transition:transform .12s}
   .emopop button:hover{transform:scale(1.2);border-color:var(--gold)}
   @media(max-width:640px){.emofab{left:auto;right:2%;top:88%}.emopop{left:auto;right:2%;transform:translate(0,-100%)}}
+
+  /* --- резюме на ръката --- */
+  .hsum{margin:6px 0 2px;border:1px solid rgba(212,175,55,.35);border-radius:8px;overflow:hidden}
+  .hsum table{width:100%;border-collapse:collapse;font-size:.63rem}
+  .hsum th{background:rgba(212,175,55,.10);color:var(--mint);font-weight:normal;letter-spacing:.08em;
+    text-transform:uppercase;font-size:.55rem;padding:3px 5px;text-align:left}
+  .hsum td{padding:3px 5px;border-top:1px solid rgba(255,255,255,.05)}
+  .hsum tr.w td{color:#7fe8b4;font-weight:700}
+  .hsum tr.l td{color:#c98a84}
+  .hsum .bd{font-family:'Courier New',monospace;color:#e9e4d8}
+  .snapbtn{width:100%;margin-top:5px;font-size:.62rem;padding:5px}
   /* --- тесте в историята --- */
   .dvttl{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mint);margin:6px 0 3px}
   .dcard{display:inline-block;font-family:'Courier New',monospace;font-size:.68rem;padding:1px 4px;margin:1px;border-radius:4px;border:1px solid var(--line)}
@@ -413,7 +444,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v30</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
+      <span class="ver" id="verTag">v31</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -581,8 +612,13 @@ function fmt(n){
 function cardEl(c,extra){
   const d=document.createElement("div");
   d.className="card "+(c?SUITCLS[c.s]:"back")+(extra||"");
-  d.innerHTML=c?('<span class="r">'+RANKS[c.r]+'</span><span class="s">'+SUITS[c.s]+'</span>')
-              :'<span class="r">X</span><span class="s">X</span>';
+  if(c){
+    const R=RANKS[c.r],S=SUITS[c.s];
+    d.innerHTML=
+      '<span class="cnr tl"><b class="r">'+R+'</b><i class="s">'+S+'</i></span>'+
+      '<span class="pip">'+S+'</span>'+
+      '<span class="cnr br"><b class="r">'+R+'</b><i class="s">'+S+'</i></span>';
+  }else d.innerHTML='<span class="pip">•</span>';
   return d;
 }
 function log(msg,cls){
@@ -750,6 +786,13 @@ function renderTable(){
       else if(!p.folded&&S.stage!=="idle"&&!S.handOver){hl.appendChild(cardEl(null));hl.appendChild(cardEl(null));}
     }
     d.appendChild(hl);
+    if(i===mySeat&&myHole&&myHole.length&&p.folded&&!S.handOver){
+      const pk=document.createElement("div");pk.className="peek";
+      myHole.forEach(c=>pk.appendChild(cardEl(c)));
+      d.appendChild(pk);
+      const lb=document.createElement("div");lb.className="peeklbl";lb.textContent="фолднати";
+      d.appendChild(lb);
+    }
     const hn=document.createElement("div");hn.className="handname";
     hn.textContent=(p.handName||"")+(p.equity!=null&&!S.handOver?"  "+p.equity+"%":"");
     d.appendChild(hn);
@@ -897,6 +940,51 @@ function renderStats(){
     tb.appendChild(tr);
   });
 }
+
+function summarizeHand(h){
+  const rows=[],acts=h.actions||[];
+  let board="";
+  const bm=acts.filter(a=>/^—\s*(FLOP|TURN|RIVER)/.test(a.trim()));
+  if(bm.length)board=bm[bm.length-1].replace(/^—\s*\w+:\s*/,"").replace(/\s*—$/,"");
+  const gains={};
+  acts.forEach(a=>{
+    const m=a.match(/Печели:\s*(.+?)\s*·\s*(.+)$/);
+    if(m)m[2].split(",").forEach(part=>{
+      const g=part.trim().match(/^(.+?)\s*\+(\d+)$/);
+      if(g)gains[g[1].trim()]=(gains[g[1].trim()]||0)+ +g[2];
+    });
+    const m2=a.match(/^(.+?)\s+печели\s+(\d+)/);
+    if(m2)gains[m2[1].trim()]=(gains[m2[1].trim()]||0)+ +m2[2];
+  });
+  const cards={};
+  const sd=acts.find(a=>/^SHOWDOWN/.test(a.trim()));
+  if(sd)sd.replace(/^SHOWDOWN:\s*/,"").split("|").forEach(part=>{
+    const m=part.trim().match(/^(.+?)\s+([^\s]+)\s*→\s*(.+)$/);
+    if(m)cards[m[1].trim()]={c:m[2],hand:m[3].trim()};
+  });
+  const names=new Set();
+  acts.forEach(a=>{const m=a.match(/^(.{1,20}?):\s*(fold|check|call|raise|all-in)/i);if(m)names.add(m[1].trim());});
+  Object.keys(gains).forEach(n=>names.add(n));
+  Object.keys(cards).forEach(n=>names.add(n));
+  const folded=new Set();
+  acts.forEach(a=>{const m=a.match(/^(.{1,20}?):\s*fold/i);if(m)folded.add(m[1].trim());});
+  [...names].forEach(n=>{
+    const g=gains[n]||0, ci=cards[n];
+    rows.push({name:n,cards:ci?ci.c+(ci.hand?" ("+ci.hand+")":""):"",
+      win:g>0,lost:!g&&(folded.has(n)||!!ci),
+      txt:g>0?("печели +"+g):(folded.has(n)?"фолд":(ci?"губи на showdown":"—"))});
+  });
+  rows.sort((a,b)=>(b.win?1:0)-(a.win?1:0));
+  return {rows,board};
+}
+function snapText(h,res){
+  let s="NETRIVA POKER · Ръка №"+h.no+"\n";
+  if(res.board)s+="Борд: "+res.board+"\n";
+  s+="—\n";
+  res.rows.forEach(r=>{s+=r.name+" · "+(r.cards||"—")+" · "+r.txt+"\n";});
+  s+="—\nПечат: "+(h.commit||"").slice(0,24)+"…\nServer seed: "+(h.server||"").slice(0,24)+"…\nNonce: "+h.nonce+"\n";
+  return s;
+}
 function renderHist(list){
   const el=$("histEl");
   if(!list||!list.length){el.textContent="Още няма изиграни ръце.";return;}
@@ -929,6 +1017,31 @@ function renderHist(list){
       }
       d.appendChild(r);
     });
+    // --- резюме: кой колко печели/губи ---
+    const res=summarizeHand(h);
+    if(res.rows.length){
+      const box=document.createElement("div");box.className="hsum";
+      let html='<table><thead><tr><th>Играч</th><th>Карти</th><th>Резултат</th></tr></thead><tbody>';
+      res.rows.forEach(r=>{
+        html+='<tr class="'+(r.win?"w":(r.lost?"l":""))+'"><td>'+r.name+'</td><td class="bd">'+(r.cards||"—")+'</td><td>'+r.txt+'</td></tr>';
+      });
+      html+='</tbody></table>';
+      box.innerHTML=html;
+      d.appendChild(box);
+      if(res.board){
+        const bd=document.createElement("div");bd.className="dvleg";bd.innerHTML="<b>Борд:</b> "+res.board;d.appendChild(bd);
+      }
+      const sb=document.createElement("button");sb.className="applybtn snapbtn";sb.textContent="📋 Копирай резюмето на ръката";
+      sb.onclick=ev=>{
+        ev.stopPropagation();
+        const txt=snapText(h,res);
+        navigator.clipboard&&navigator.clipboard.writeText(txt).then(()=>{
+          sb.textContent="✔ Копирано!";sb.classList.add("applied");
+          setTimeout(()=>{sb.textContent="📋 Копирай резюмето на ръката";sb.classList.remove("applied");},1500);
+        });
+      };
+      d.appendChild(sb);
+    }
     if(h.deck&&h.deck.length){
       const ttl=document.createElement("div");ttl.className="dvttl";
       ttl.textContent="Тесте — ред на 52-те карти (зелено = раздадени · сиво = изгорени · тъмно = неизиграни):";
@@ -958,7 +1071,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v30 · 25.07";
+const NV_VER="v31 · 25.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
