@@ -242,6 +242,12 @@
 
   #potLine b{color:#fff;font-weight:700;font-size:1.28em;letter-spacing:.03em}
 
+
+  /* --- пост-флоп бутони: бял болд текст, All-in плътно червен --- */
+  #postRow .preset{color:#fff;font-weight:700;letter-spacing:.02em}
+  #postRow .preset[data-k="a"]{background:linear-gradient(180deg,#d4574a,#a53225);border-color:#e2705f;
+    font-size:.92rem;padding:9px 15px;color:#fff;font-weight:800;box-shadow:0 2px 8px rgba(165,50,37,.4)}
+  #postRow .preset[data-k="a"]:hover{filter:brightness(1.1);animation:riskr .85s ease-in-out infinite}
   /* --- рискови цветове на опциите за залог --- */
   .rowlbl{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.14em;color:var(--mint);text-transform:uppercase;align-self:center;margin-right:4px;white-space:nowrap}
   .stepbtn b{color:#fff;font-weight:700;font-size:1.05em}
@@ -441,7 +447,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v34</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
+      <span class="ver" id="verTag">v35</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -1068,7 +1074,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v34 · 25.07";
+const NV_VER="v35 · 25.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
