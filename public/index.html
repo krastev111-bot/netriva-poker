@@ -200,6 +200,14 @@
   .goldshine{color:var(--gold-hi);font-weight:bold}
   .roomtag b{color:#fff;font-weight:700;letter-spacing:.06em}
 
+
+  /* --- раздаване и полет на пота --- */
+  @keyframes dealin{from{opacity:0;transform:translateY(-55px) scale(.55) rotate(-9deg)}to{opacity:1;transform:none}}
+  .flychips{position:absolute;transform:translate(-50%,-50%);z-index:8;pointer-events:none;
+    transition:left .95s cubic-bezier(.3,.7,.35,1),top .95s cubic-bezier(.3,.7,.35,1),opacity .95s}
+  .ver{font-family:'Courier New',monospace;font-size:.6rem;color:#7d998b;border:1px solid var(--line);border-radius:5px;padding:2px 6px;white-space:nowrap}
+  #sndBtn{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.95rem;cursor:pointer;line-height:1}
+  #sndBtn:hover{border-color:var(--gold)}
   /* --- обратна връзка и празнични пулсове --- */
   .roomtag.copied{color:#42e6a4 !important;border-color:#42e6a4 !important;text-shadow:0 0 8px rgba(66,230,164,.5)}
   .oval.pulse-gold{animation:rimgold 1.15s ease-in-out 2}
@@ -368,7 +376,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span>
+      <span class="ver" id="verTag">v27</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -525,7 +533,7 @@ const SEAT_POS=[[50,96],[15,85],[3,50],[15,15],[50,4],[85,15],[97,50],[85,85]];
 const grp=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00A0");
 
 let socket=null,S=null,mySeat=-1,myHole=null,amHost=false,local={bbView:false,fourColor:false};
-let deadlineTimer=null;let lastRV=null;let prevCB=0,prevAllIn=0,rimTimer=null;
+let deadlineTimer=null;let lastRV=null;let prevCB=0,prevAllIn=0,rimTimer=null;let lastJoin=null;let lastAnimHand=0,flownHand=0,prevBetSum=0,wasMyTurn=false;
 
 function fmt(n){
   if(!S)return grp(n);
@@ -550,14 +558,26 @@ function log(msg,cls){
 /* ---------- ЛОБИ ---------- */
 function connect(){
   socket=io();
-  socket.on("connect",()=>{ $("msg").textContent="Свързан. Влез или създай маса."; });
+  socket.on("connect",()=>{
+    if(lastJoin){
+      $("msg").textContent="Връзката се възстанови — връщам те на мястото…";
+      socket.emit("join",{code:lastJoin.code,name:lastJoin.name,clientSeed:lastJoin.seed,avatar:myAvatar},res=>{
+        if(res&&res.error){$("msg").textContent=res.error;lastJoin=null;$("lobby").style.display="flex";}
+      });
+    }else $("msg").textContent="Свързан. Влез или създай маса.";
+  });
   socket.on("state",st=>{S=st;render();});
   socket.on("hole",d=>{if(d.seat===mySeat)myHole=d.hole;render();});
-  socket.on("seated",d=>{mySeat=d.seat;amHost=amHost||d.host;$("lobby").style.display="none";updateRoomTag();render();});
+  socket.on("seated",d=>{
+    mySeat=d.seat;amHost=amHost||d.host;
+    lastJoin={code:d.code,name:($("lbName").value||"").trim()||((lastJoin&&lastJoin.name)||""),seed:$("lbSeed")?$("lbSeed").value:""};
+    $("lobby").style.display="none";updateRoomTag();keepAwake();render();
+  });
   socket.on("waiting",d=>{$("lobby").style.display="none";updateRoomTag();$("msg").textContent="Изчакваш края на текущата ръка, за да седнеш.";});
   socket.on("youAreHost",()=>{amHost=true;render();});
   socket.on("log",d=>log(d.msg,d.cls));
   socket.on("banner",d=>{
+    Snd.win();
     const b=$("winBanner");b.innerHTML=d.html;b.style.display="block";
     setTimeout(()=>{b.style.display="none";},5200);
   });
@@ -573,7 +593,7 @@ function connect(){
     t.appendChild(fx);
     setTimeout(()=>fx.remove(),2700);
   });
-  socket.on("disconnect",()=>{$("msg").textContent="Връзката прекъсна — презареди страницата.";});
+  socket.on("disconnect",()=>{$("msg").textContent="Връзката прекъсна — опитвам да се върна автоматично…";});
 }
 connect();
 const urlCode=new URLSearchParams(location.search).get("r");
@@ -717,6 +737,35 @@ function renderTable(){
     pc.appendChild(chipStackEl(potTotal,true));
     $("potLine").parentNode.insertBefore(pc,$("potLine").nextSibling);
   }
+  // звук при залог
+  const betSum=S.seats.reduce((a,p)=>a+(p.bet||0),0);
+  if(!S.handOver&&betSum>prevBetSum)Snd.chips(2);
+  prevBetSum=S.handOver?0:betSum;
+  // раздаване: картите долитат
+  if(S.handNo&&S.handNo!==lastAnimHand&&!S.handOver){
+    lastAnimHand=S.handNo;
+    Snd.swish();
+    t.querySelectorAll(".seat .card").forEach((c,i)=>{c.style.animation="dealin .42s ease-out "+(i*0.055).toFixed(2)+"s backwards";});
+  }
+  // потът лети към победителя
+  if(S.handOver&&S.handNo&&flownHand!==S.handNo){
+    const ws=S.seats.filter(p=>p.winCards);
+    if(ws.length){
+      flownHand=S.handNo;
+      ws.forEach(w=>{
+        const el=document.createElement("div");el.className="flychips";
+        el.appendChild(chipStackEl(S.settings.sb*24,false));
+        el.style.left="50%";el.style.top="42%";
+        t.appendChild(el);
+        requestAnimationFrame(()=>{
+          const pos=SEAT_POS[w.seat]||[50,50];
+          el.style.left=pos[0]+"%";el.style.top=pos[1]+"%";el.style.opacity=".12";
+        });
+        setTimeout(()=>el.remove(),1250);
+      });
+      Snd.chips(4);
+    }
+  }
   // пулс на обкова: 3-бет → златно · нов all-in → червено
   const allInCnt=S.seats.filter(p=>p.allIn&&!p.folded&&p.type!=="empty").length;
   if(!S.handOver){
@@ -753,6 +802,8 @@ function startCountdown(){
 let autoMsgTimer=null;
 function renderControls(){
   const my=S.acting===mySeat&&!S.handOver&&mySeat>=0;
+  if(my&&!wasMyTurn)Snd.ding();
+  wasMyTurn=my;
   $("handControls").style.display=my?"flex":"none";
   const ef=$("emoFab");if(ef)ef.style.display=mySeat>=0?"flex":"none";
   if(autoMsgTimer){clearInterval(autoMsgTimer);autoMsgTimer=null;}
@@ -867,6 +918,64 @@ function renderHist(list){
 
 /* ---------- ДЕЙСТВИЯ ---------- */
 
+
+/* --- звуци: синтезирани в движение, без файлове --- */
+const NV_VER="v27 · 25.07";
+const Snd=(()=>{
+  let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
+  const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
+  document.addEventListener("pointerdown",()=>{try{ac().resume();}catch(e){}},{once:true});
+  function ding(){if(muted)return;try{
+    const c=ac(),o=c.createOscillator(),g=c.createGain();
+    o.type="sine";o.frequency.value=880;o.connect(g);g.connect(c.destination);
+    const t=c.currentTime;
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.22,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.5);
+    o.frequency.exponentialRampToValueAtTime(1318,t+.09);
+    o.start(t);o.stop(t+.55);}catch(e){}}
+  function chips(n){if(muted)return;try{
+    const c=ac();
+    for(let i=0;i<Math.min(n||2,4);i++){
+      const t=c.currentTime+i*0.05;
+      const b=c.createBuffer(1,c.sampleRate*0.03,c.sampleRate),d=b.getChannelData(0);
+      for(let k=0;k<d.length;k++)d[k]=(Math.random()*2-1)*(1-k/d.length);
+      const s=c.createBufferSource();s.buffer=b;
+      const f=c.createBiquadFilter();f.type="bandpass";f.frequency.value=2500+Math.random()*1400;f.Q.value=9;
+      const g=c.createGain();g.gain.value=.32;
+      s.connect(f);f.connect(g);g.connect(c.destination);s.start(t);
+    }}catch(e){}}
+  function swish(){if(muted)return;try{
+    const c=ac(),b=c.createBuffer(1,c.sampleRate*0.16,c.sampleRate),d=b.getChannelData(0);
+    for(let k=0;k<d.length;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/d.length,2);
+    const s=c.createBufferSource();s.buffer=b;
+    const f=c.createBiquadFilter();f.type="highpass";f.frequency.value=1900;
+    const g=c.createGain();g.gain.value=.2;
+    s.connect(f);f.connect(g);g.connect(c.destination);s.start();}catch(e){}}
+  function win(){if(muted)return;try{
+    const c=ac();
+    [523,659,784].forEach((fr,i)=>{
+      const o=c.createOscillator(),g=c.createGain();
+      o.type="triangle";o.frequency.value=fr;o.connect(g);g.connect(c.destination);
+      const t=c.currentTime+i*0.09;
+      g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.18,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.42);
+      o.start(t);o.stop(t+.47);
+    });}catch(e){}}
+  return{ding,chips,swish,win,
+    get muted(){return muted;},
+    toggle(){muted=!muted;try{localStorage.setItem("nvMute",muted?"1":"0");}catch(e){}return muted;}};
+})();
+$("verTag").textContent=NV_VER;
+$("sndBtn").textContent=Snd.muted?"🔇":"🔊";
+$("sndBtn").onclick=()=>{$("sndBtn").textContent=Snd.toggle()?"🔇":"🔊";};
+/* --- wake lock: телефонът не заспива по време на игра --- */
+let wakeLock=null;
+async function keepAwake(){
+  try{if("wakeLock" in navigator&&mySeat>=0)wakeLock=await navigator.wakeLock.request("screen");}catch(e){}
+}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")keepAwake();});
+/* --- пазач срещу заспиване на Render (докато има отворена маса) --- */
+setInterval(()=>{
+  if(lastJoin)fetch(location.origin+"/",{cache:"no-store"}).catch(()=>{});
+},5*60*1000);
 /* --- аватари: векторни, вградени --- */
 const AVATAR_SVGS={"a01": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g01\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g01)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><rect x=\"18\" y=\"10\" width=\"28\" height=\"6\" rx=\"2\" fill=\"#111\"/><rect x=\"22\" y=\"0\" width=\"20\" height=\"12\" rx=\"2\" fill=\"#1b1b1b\"/><rect x=\"22\" y=\"9\" width=\"20\" height=\"3\" fill=\"#d4af37\"/><circle cx=\"32\" cy=\"30\" r=\"13\" fill=\"#e8c9a0\"/><circle cx=\"27\" cy=\"28\" r=\"1.8\" fill=\"#222\"/><circle cx=\"37\" cy=\"28\" r=\"1.8\" fill=\"#222\"/><path d=\"M27 35 q5 4 10 0\" stroke=\"#8a5a3a\" stroke-width=\"1.6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M24 48 l8 -4 8 4 -8 4z\" fill=\"#d4af37\"/><rect x=\"20\" y=\"44\" width=\"24\" height=\"14\" rx=\"4\" fill=\"#222\"/> <path d=\"M24 48 l8 -4 8 4 -8 4z\" fill=\"#d4af37\"/></svg>", "a02": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g02\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g02)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><path d=\"M15 34 q0 -22 17 -22 q17 0 17 22 q0 10 -6 14 l0 -16 q-11 6 -22 0 l0 16 q-6 -4 -6 -14z\" fill=\"#3b2417\"/><circle cx=\"32\" cy=\"31\" r=\"12\" fill=\"#f0d3b0\"/><circle cx=\"27\" cy=\"29\" r=\"1.7\" fill=\"#222\"/><circle cx=\"37\" cy=\"29\" r=\"1.7\" fill=\"#222\"/><path d=\"M28 36 q4 3 8 0\" stroke=\"#b3403a\" stroke-width=\"2\" fill=\"none\" stroke-linecap=\"round\"/><circle cx=\"44\" cy=\"40\" r=\"2\" fill=\"#d4af37\"/><path d=\"M20 50 q12 -8 24 0 l0 8 -24 0z\" fill=\"#6b1f4d\"/></svg>", "a03": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g03\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g03)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><path d=\"M14 18 l8 -10 6 10z\" fill=\"#c96a2e\"/><path d=\"M50 18 l-8 -10 -6 10z\" fill=\"#c96a2e\"/><path d=\"M32 14 q16 0 16 16 q0 12 -16 20 q-16 -8 -16 -20 q0 -16 16 -16z\" fill=\"#d97b35\"/><path d=\"M32 34 q8 -2 10 6 q-6 8 -10 10 q-4 -2 -10 -10 q2 -8 10 -6z\" fill=\"#f5e8d8\"/><rect x=\"18\" y=\"24\" width=\"12\" height=\"7\" rx=\"3\" fill=\"#111\"/><rect x=\"34\" y=\"24\" width=\"12\" height=\"7\" rx=\"3\" fill=\"#111\"/><rect x=\"29\" y=\"26\" width=\"6\" height=\"2.4\" fill=\"#111\"/><circle cx=\"32\" cy=\"42\" r=\"2.4\" fill=\"#222\"/></svg>", "a04": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g04\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g04)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><path d=\"M16 20 l6 -12 7 10z\" fill=\"#5a6470\"/><path d=\"M48 20 l-6 -12 -7 10z\" fill=\"#5a6470\"/><path d=\"M32 13 q15 2 15 17 q0 13 -15 21 q-15 -8 -15 -21 q0 -15 15 -17z\" fill=\"#78838f\"/><path d=\"M32 32 q7 0 9 7 q-5 8 -9 10 q-4 -2 -9 -10 q2 -7 9 -7z\" fill=\"#e8ecef\"/><circle cx=\"25\" cy=\"27\" r=\"2.2\" fill=\"#f4c542\"/><circle cx=\"39\" cy=\"27\" r=\"2.2\" fill=\"#f4c542\"/><circle cx=\"25\" cy=\"27\" r=\"1\" fill=\"#111\"/><circle cx=\"39\" cy=\"27\" r=\"1\" fill=\"#111\"/><circle cx=\"32\" cy=\"41\" r=\"2.6\" fill=\"#1b1b1b\"/></svg>", "a05": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g05\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g05)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><circle cx=\"18\" cy=\"16\" r=\"6\" fill=\"#e2892b\"/><circle cx=\"46\" cy=\"16\" r=\"6\" fill=\"#e2892b\"/><circle cx=\"32\" cy=\"32\" r=\"17\" fill=\"#f09b36\"/><path d=\"M32 15 l3 7 -6 0z M18 24 l7 3 -4 5z M46 24 l-7 3 4 5z\" fill=\"#1b1b1b\"/><circle cx=\"26\" cy=\"30\" r=\"2\" fill=\"#111\"/><circle cx=\"38\" cy=\"30\" r=\"2\" fill=\"#111\"/><path d=\"M32 34 q5 0 6 5 q-3 5 -6 6 q-3 -1 -6 -6 q1 -5 6 -5z\" fill=\"#fce9d0\"/><circle cx=\"32\" cy=\"37.5\" r=\"2\" fill=\"#222\"/></svg>", "a06": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g06\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g06)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><circle cx=\"32\" cy=\"32\" r=\"21\" fill=\"#a35c22\"/><circle cx=\"32\" cy=\"32\" r=\"14.5\" fill=\"#e0a44e\"/><circle cx=\"27\" cy=\"29\" r=\"1.9\" fill=\"#222\"/><circle cx=\"37\" cy=\"29\" r=\"1.9\" fill=\"#222\"/><path d=\"M32 33 q4.5 0 5.5 4.5 q-2.5 4.5 -5.5 5.5 q-3 -1 -5.5 -5.5 q1 -4.5 5.5 -4.5z\" fill=\"#f7e6c8\"/><circle cx=\"32\" cy=\"36.4\" r=\"1.8\" fill=\"#222\"/><path d=\"M12 32 a20 20 0 0 1 40 0\" stroke=\"#7c4218\" stroke-width=\"3\" fill=\"none\" stroke-dasharray=\"4 5\"/></svg>", "a07": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g07\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g07)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><path d=\"M32 8 l6 12 -12 0z\" fill=\"#5b7f9e\"/><path d=\"M32 16 q17 3 17 18 q0 9 -8 13 l-18 0 q-8 -4 -8 -13 q0 -15 17 -18z\" fill=\"#6f95b5\"/><path d=\"M20 42 q12 8 24 0 l0 6 -24 0z\" fill=\"#e9f2f7\"/><circle cx=\"25\" cy=\"30\" r=\"2\" fill=\"#111\"/><circle cx=\"39\" cy=\"30\" r=\"2\" fill=\"#111\"/><path d=\"M25 40 q7 4 14 0\" stroke=\"#123\" stroke-width=\"1.6\" fill=\"none\"/><path d=\"M27 40.8 l2 2.5 2 -2.8 2 2.8 2 -2.8 2 2.6\" stroke=\"#fff\" stroke-width=\"1.4\" fill=\"none\"/><path d=\"M30 48 l2 6 2 -6 -2 -2z\" fill=\"#b3403a\"/></svg>", "a08": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g08\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g08)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><path d=\"M18 16 l6 6 M46 16 l-6 6\" stroke=\"#6b4a2a\" stroke-width=\"4\" stroke-linecap=\"round\"/><ellipse cx=\"32\" cy=\"34\" rx=\"17\" ry=\"19\" fill=\"#8a6a42\"/><circle cx=\"25\" cy=\"29\" r=\"7\" fill=\"#f2e3c8\"/><circle cx=\"39\" cy=\"29\" r=\"7\" fill=\"#f2e3c8\"/><circle cx=\"25\" cy=\"29\" r=\"3\" fill=\"#2b2b2b\"/><circle cx=\"39\" cy=\"29\" r=\"3\" fill=\"#2b2b2b\"/><circle cx=\"26\" cy=\"28\" r=\"1\" fill=\"#fff\"/><circle cx=\"40\" cy=\"28\" r=\"1\" fill=\"#fff\"/><path d=\"M32 33 l3 5 -6 0z\" fill=\"#d4af37\"/><path d=\"M22 44 q10 6 20 0 l-3 8 -14 0z\" fill=\"#6b4a2a\"/></svg>", "a09": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g09\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g09)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><path d=\"M16 22 l7 -12 4 10z M48 22 l-7 -12 -4 10z\" fill=\"#1f7a4d\"/><path d=\"M32 12 q16 4 16 20 q0 12 -16 20 q-16 -8 -16 -20 q0 -16 16 -20z\" fill=\"#2c9a63\"/><path d=\"M32 12 l2.5 6 -5 0z M24 16 l3 5 -5 1z M40 16 l-3 5 5 1z\" fill=\"#d4af37\"/><circle cx=\"26\" cy=\"30\" r=\"2.3\" fill=\"#f4c542\"/><circle cx=\"38\" cy=\"30\" r=\"2.3\" fill=\"#f4c542\"/><rect x=\"25.3\" y=\"27.8\" width=\"1.4\" height=\"4.4\" fill=\"#111\"/><rect x=\"37.3\" y=\"27.8\" width=\"1.4\" height=\"4.4\" fill=\"#111\"/><ellipse cx=\"32\" cy=\"42\" rx=\"7\" ry=\"5\" fill=\"#1f7a4d\"/><circle cx=\"29.5\" cy=\"41\" r=\"1.2\" fill=\"#0a2419\"/><circle cx=\"34.5\" cy=\"41\" r=\"1.2\" fill=\"#0a2419\"/></svg>", "a10": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g10\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g10)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><path d=\"M18 22 l4 -12 6 8 4 -10 4 10 6 -8 4 12z\" fill=\"#d4af37\"/><rect x=\"18\" y=\"21\" width=\"28\" height=\"4\" fill=\"#b8912a\"/><circle cx=\"22\" cy=\"10\" r=\"2\" fill=\"#b3403a\"/><circle cx=\"32\" cy=\"8\" r=\"2\" fill=\"#2c9a63\"/><circle cx=\"42\" cy=\"10\" r=\"2\" fill=\"#3a6ea5\"/><circle cx=\"32\" cy=\"37\" r=\"13\" fill=\"#e8c9a0\"/><circle cx=\"27\" cy=\"35\" r=\"1.8\" fill=\"#222\"/><circle cx=\"37\" cy=\"35\" r=\"1.8\" fill=\"#222\"/><path d=\"M26 44 q6 -3 12 0 l0 3 q-6 3 -12 0z\" fill=\"#9c9c9c\"/></svg>", "a11": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g11\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g11)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><circle cx=\"32\" cy=\"32\" r=\"17\" fill=\"#23262b\"/><path d=\"M15 27 q17 -6 34 0 l0 10 q-17 6 -34 0z\" fill=\"#3a3f47\"/><circle cx=\"26\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/><circle cx=\"38\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/><circle cx=\"26.6\" cy=\"32\" r=\"1.2\" fill=\"#111\"/><circle cx=\"38.6\" cy=\"32\" r=\"1.2\" fill=\"#111\"/><path d=\"M46 24 l10 -6 -4 10z\" fill=\"#b3403a\"/></svg>", "a12": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g12\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g12)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><rect x=\"18\" y=\"18\" width=\"28\" height=\"24\" rx=\"6\" fill=\"#9aa7b4\"/><rect x=\"21\" y=\"24\" width=\"22\" height=\"10\" rx=\"4\" fill=\"#1b2530\"/><circle cx=\"27\" cy=\"29\" r=\"2.5\" fill=\"#42e6a4\"/><circle cx=\"37\" cy=\"29\" r=\"2.5\" fill=\"#42e6a4\"/><rect x=\"30.6\" y=\"8\" width=\"2.8\" height=\"8\" fill=\"#6e7a86\"/><circle cx=\"32\" cy=\"7\" r=\"2.6\" fill=\"#d4af37\"/><rect x=\"24\" y=\"44\" width=\"16\" height=\"4\" rx=\"2\" fill=\"#6e7a86\"/><rect x=\"26\" y=\"37\" width=\"12\" height=\"2.6\" rx=\"1.3\" fill=\"#42e6a4\"/></svg>", "a13": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g13\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g13)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><path d=\"M20 26 q-6 -14 4 -16 q2 8 8 8 q6 0 8 -8 q10 2 4 16z\" fill=\"#6b1f8a\"/><circle cx=\"21\" cy=\"12\" r=\"2.4\" fill=\"#f4c542\"/><circle cx=\"43\" cy=\"12\" r=\"2.4\" fill=\"#b3403a\"/><circle cx=\"32\" cy=\"34\" r=\"13\" fill=\"#f0d9c0\"/><path d=\"M25 31 l4 2 M39 31 l-4 2\" stroke=\"#222\" stroke-width=\"2\" stroke-linecap=\"round\"/><path d=\"M25 38 q7 7 14 0\" stroke=\"#b3403a\" stroke-width=\"2.4\" fill=\"none\" stroke-linecap=\"round\"/></svg>", "a14": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"g14\" cx=\"50%\" cy=\"35%\"><stop offset=\"0%\" stop-color=\"#17603f\"/><stop offset=\"100%\" stop-color=\"#0a2419\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"30\" fill=\"url(#g14)\" stroke=\"#d4af37\" stroke-width=\"2.5\"/><rect x=\"20\" y=\"14\" width=\"24\" height=\"34\" rx=\"4\" fill=\"#f4efe3\" stroke=\"#c9bfa8\" stroke-width=\"1\"/><path d=\"M32 20 q7 8 7 12 a5 5 0 0 1 -9 3 a5 5 0 0 1 -9 -3 q3 -4 11 -12z\" fill=\"#1b1b1b\" transform=\"translate(1,0)\"/><path d=\"M30 34 l3 0 -1.5 8z\" fill=\"#1b1b1b\"/><text x=\"23\" y=\"22\" font-size=\"7\" font-family=\"Georgia\" fill=\"#1b1b1b\">A</text></svg>"};
 const AVATARS=Object.keys(AVATAR_SVGS);
