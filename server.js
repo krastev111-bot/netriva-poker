@@ -700,6 +700,24 @@ io.on("connection",socket=>{
     broadcast(r);
   });
 
+  socket.on("avatar",(a)=>{
+    if(!myRoom||mySeat<0)return;
+    const p=myRoom.seats[mySeat];
+    if(!p||p.id!==socket.id)return;
+    p.avatar=String(a||"").slice(0,4);
+    broadcast(myRoom);
+  });
+
+  socket.on("react",(e)=>{
+    if(!myRoom||mySeat<0)return;
+    const p=myRoom.seats[mySeat];
+    if(!p||p.id!==socket.id)return;
+    const now=Date.now();
+    if(p._lastReact&&now-p._lastReact<1500)return; // анти-спам
+    p._lastReact=now;
+    io.to(myRoom.code).emit("react",{seat:mySeat,emoji:String(e||"").slice(0,4)});
+  });
+
   socket.on("seed",(seedStr)=>{
     if(!myRoom||mySeat<0)return;
     const p=myRoom.seats[mySeat];
