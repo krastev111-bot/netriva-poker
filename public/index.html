@@ -258,28 +258,45 @@
   @keyframes risky{0%,100%{box-shadow:0 0 0 0 rgba(230,200,80,0)}50%{box-shadow:0 0 13px 3px rgba(230,200,80,.55)}}
   @keyframes riskr{0%,100%{box-shadow:0 0 0 0 rgba(230,80,60,0)}50%{box-shadow:0 0 14px 4px rgba(230,80,60,.6)}}
 
-  /* --- бутон „Нова ръка" с вграден обратен брояч --- */
-  .nhwrap{position:relative;display:inline-flex;align-items:center}
-  #btnNewHand{position:relative;overflow:hidden;min-width:200px;display:inline-flex;align-items:center;
-    justify-content:center;gap:11px;padding:11px 22px}
-  /* тънка линия, която се източва по долния ръб */
+  /* --- док между ръцете: „Покажи картите" + „Нова ръка" в един елегантен елемент --- */
+  .dock{position:relative;display:inline-flex;align-items:stretch;gap:3px;padding:4px;
+    border-radius:999px;border:1px solid rgba(212,175,106,.40);
+    background:linear-gradient(180deg,rgba(212,175,55,.11),rgba(6,16,12,.78));
+    box-shadow:0 8px 26px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07);
+    overflow:hidden;max-width:100%}
+  .dockbtn{position:relative;z-index:1;border:none;background:transparent;border-radius:999px;
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap;
+    font-family:Georgia,serif;font-size:.9rem;letter-spacing:.02em;cursor:pointer;
+    padding:10px 20px;transition:background .18s,color .18s,transform .12s,filter .18s}
+  .dockbtn.ghost{color:#b8d0c2}
+  .dockbtn.ghost:hover{background:rgba(212,175,106,.16);color:var(--gold-hi)}
+  .dockbtn.ghost .dki{display:inline-flex;align-items:center;width:19px;height:19px;flex:0 0 auto}
+  .dockbtn.ghost .dki svg{width:19px;height:19px;display:block}
+  .dockbtn.ghost .dki rect{fill:rgba(240,217,168,.14);stroke:currentColor;stroke-width:1.3;opacity:.9}
+  .dockbtn.ghost .dki .pip{fill:currentColor;stroke:none;opacity:.85}
+  .dockbtn.main{min-width:184px;color:#241a08;font-weight:bold;
+    background:linear-gradient(180deg,var(--gold-hi),var(--gold));
+    box-shadow:0 2px 9px rgba(212,175,55,.34)}
+  .dockbtn.main:hover{filter:brightness(1.07)}
+  .dockbtn.main:active{transform:translateY(1px)}
+  .dock.hot .dockbtn.main{box-shadow:0 0 0 1px #fff3d0,0 0 20px rgba(212,175,55,.55)}
+  /* тънка линия, която се източва по долния ръб на дока */
   .nhfill{position:absolute;left:50%;bottom:0;height:2px;width:0%;transform:translateX(-50%);
     background:linear-gradient(90deg,transparent,var(--gold-hi),transparent);
-    transition:width .95s linear,opacity .3s;opacity:0;pointer-events:none}
-  .nhwrap.run .nhfill{opacity:1}
+    transition:width .95s linear,opacity .3s;opacity:0;pointer-events:none;z-index:2}
+  .dock.run .nhfill{opacity:1}
   .nhtxt{position:relative;z-index:1;letter-spacing:.02em}
   /* пръстен с числото — вътре в бутона, вляво от текста */
   .nhcount{position:relative;width:26px;height:26px;border-radius:50%;display:none;
     align-items:center;justify-content:center;flex:0 0 auto;
     font-family:'Courier New',monospace;font-size:.88rem;font-weight:700;color:#3a2c05;
     background:
-      radial-gradient(circle,#fff7e0 0 60%,transparent 61%),
-      conic-gradient(var(--gold-hi) calc(var(--p,0)*1%), rgba(255,255,255,.22) 0);
-    box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+      radial-gradient(circle,#fff8e6 0 62%,transparent 63%),
+      conic-gradient(#4a3405 calc(var(--p,0)*1%), rgba(74,52,5,.20) 0);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
   .nhcount.on{display:flex}
   .nhcount span{display:block;line-height:1;transition:transform .18s ease-out}
   .nhcount.tick span{transform:scale(1.28)}
-  .nhwrap.hot #btnNewHand{box-shadow:0 0 0 1px var(--gold-hi),0 0 16px rgba(212,175,55,.35)}
 
   .fairfold>summary{cursor:pointer;list-style:none;font-family:'Courier New',monospace;font-size:.66rem;
     letter-spacing:.12em;text-transform:uppercase;color:var(--mint);display:flex;align-items:center;gap:7px;user-select:none}
@@ -288,8 +305,33 @@
   .fairfold[open]>summary::before{transform:rotate(90deg)}
   .fairfold .okmark{color:#42e6a4;margin-left:auto;font-size:.8rem}
   .fairfold .fair{margin-top:8px;border:none;padding:0;background:none}
+  /* --- пулсиращ щит вместо катинар --- */
+  .shieldico{display:inline-flex;align-items:center;flex:0 0 auto;width:16px;height:16px}
+  .shieldico svg{width:16px;height:16px;overflow:visible;display:block}
+  .shieldico .sh{fill:rgba(66,230,164,.15);stroke:#42e6a4;stroke-width:1.7;
+    stroke-linejoin:round;animation:shpulse 2.2s ease-in-out infinite}
+  .shieldico .chk{fill:none;stroke:#8affd2;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes shpulse{0%,100%{filter:drop-shadow(0 0 0 rgba(66,230,164,0))}
+    50%{filter:drop-shadow(0 0 6px rgba(66,230,164,.95))}}
+  /* --- мини-график на стека в дясната колона --- */
+  .mini{margin-bottom:8px}
+  .mini .mtop{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 0 5px}
+  .mini .mval{font-family:Georgia,serif;font-size:1.32rem;font-weight:700;color:#fff;letter-spacing:.03em}
+  .mini .mdelta{font-family:Georgia,serif;font-size:1.08rem;font-weight:700;color:#fff;
+    letter-spacing:.03em;white-space:nowrap}
+  .mini .mdelta i{font-style:normal;font-size:.86em;margin-right:4px}
+  .mini .mdelta.up i{color:#42e6a4}
+  .mini .mdelta.dn i{color:#c96a5e}
+  .sgraph-mini{width:100%;height:48px;display:block}
+  .mini .mfoot{font-size:.55rem;color:#7d998b;letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
+  .mini .mempty{font-size:.68rem;color:#7d998b;padding:6px 0 2px}
+  .sgraph-lbl b{color:#fff;font-weight:700;font-size:1.28em;letter-spacing:.03em}
+  .sgraph-lbl i{font-style:normal}
+  .sgraph-lbl i.up{color:#42e6a4}
+  .sgraph-lbl i.dn{color:#c96a5e}
 
   /* --- авто-действия --- */
+  .autorow.dim{opacity:.4;pointer-events:none}
   .autorow{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:7px}
   .autorow label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;
     font-size:.72rem;color:#9db3a6;padding:4px 10px;border:1px solid var(--line);border-radius:20px;
@@ -606,6 +648,22 @@
     #postRow .preset{font-size:.72rem;padding:9px 2px}
     .stepgrp .stepbtn{font-size:.72rem;padding:9px 2px}
   }
+  /* --- докът и мини-графиката на телефон --- */
+  @media(max-width:760px){
+    #hostRow{justify-content:center}
+    .dock{width:100%;padding:3px}
+    .actions .dockbtn{flex:1 1 auto;font-size:.86rem;padding:12px 10px;border-radius:999px;min-width:0}
+    .actions .dockbtn.main{min-width:0;flex:1 1 58%}
+    .actions .dockbtn.ghost{flex:1 1 42%}
+    .dockbtn.ghost .dki{display:none}
+    .mini .mval{font-size:1.2rem}
+    .mini .mdelta{font-size:1rem}
+    .sgraph-mini{height:42px}
+  }
+  @media(max-width:390px){
+    .actions .dockbtn{font-size:.76rem;padding:11px 6px;gap:7px}
+    .nhcount{width:22px;height:22px;font-size:.76rem}
+  }
 </style>
 </head>
 <body>
@@ -708,10 +766,10 @@
   <div class="actions">
     <div class="msg" id="msg">Свързване…</div>
     <div class="btnrow" id="hostRow" style="display:none">
-      <button class="applybtn" id="btnShow" style="display:none;margin-right:8px">🃏 Покажи картите</button>
-      <div class="nhwrap">
-        <button class="primary" id="btnNewHand"><span class="nhcount" id="nhCount"><span></span></span><span class="nhtxt">Нова ръка</span><span class="nhfill" id="nhFill"></span></button>
-        
+      <div class="dock" id="handDock">
+        <button class="dockbtn ghost" id="btnShow" style="display:none"><span class="dki"><svg viewBox="0 0 22 22" aria-hidden="true"><rect x="2.2" y="4.6" width="9.4" height="13.2" rx="2" transform="rotate(-11 6.9 11.2)"/><rect x="10.4" y="4.2" width="9.4" height="13.2" rx="2"/><path class="pip" d="M15.1 8.2l1.9 2.6-1.9 2.6-1.9-2.6z"/></svg></span><span>Покажи картите</span></button>
+        <button class="dockbtn main" id="btnNewHand"><span class="nhcount" id="nhCount"><span></span></span><span class="nhtxt">Нова ръка</span></button>
+        <span class="nhfill" id="nhFill"></span>
       </div>
     </div>
     <div class="autorow" id="autoRow" style="display:none">
@@ -756,7 +814,7 @@
     </div>
   </div><!-- /mainCol -->
   <div class="sidebar">
-    <details class="panel fairfold" style="margin-bottom:8px"><summary>🔒 Честна игра · провери сам <b class="okmark">✓</b></summary>
+    <details class="panel fairfold" style="margin-bottom:8px"><summary><span class="shieldico"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="sh" d="M12 2.3l7.4 2.8v6.1c0 4.7-3.1 8.7-7.4 10.5-4.3-1.8-7.4-5.8-7.4-10.5V5.1L12 2.3z"/><path class="chk" d="M8.4 11.9l2.6 2.6 4.7-5"/></svg></span> Честна игра · провери сам <b class="okmark">✓</b></summary>
       <div class="fflow">
         <div class="fstep" id="fs1"><div class="fdot"></div><div class="ft"><b>1 · Печат преди раздаване</b><span>Сървърът публикува SHA-256 отпечатък на тайния си seed — тестето е „заключено", преди да видиш и една карта.</span></div></div>
         <div class="fstep" id="fs2"><div class="fdot"></div><div class="ft"><b>2 · Играе се ръката</b><span>Никой — включително сървърът — не може да промени реда на картите, без печатът да спре да съвпада.</span></div></div>
@@ -783,6 +841,10 @@
   </div>
           <button class="applybtn" id="btnGoVerify" style="width:100%;margin-top:8px">🔎 Отвори пълните данни</button>
     </details>
+    <div class="panel mini" id="miniStack"><h3>Твоят стек · тази сесия</h3>
+      <div class="mtop"><span class="mval" id="mStackVal">—</span><span class="mdelta" id="mStackDelta"></span></div>
+      <div id="sGraphMini"><div class="mempty">Графиката се появява след втората ръка.</div></div>
+    </div>
     <div class="panel"><h3>История на ръцете (клик за детайли — с рационал на ботовете)</h3>
       <div class="histbox" id="histEl">Още няма изиграни ръце.</div>
     </div>
@@ -949,6 +1011,7 @@ function render(){
   updateFairFlow();
   const me=mySeat>=0?S.seats[mySeat]:null;
   $("heroChips").textContent=me&&me.type!=="empty"?fmt(me.chips):"—";
+  const ms=$("miniStack");if(ms)ms.style.display=(me&&me.type!=="empty")?"block":"none";
   $("hostRow").style.display=(mySeat>=0&&S.handOver)?"flex":"none";
   // печат
   $("commitLine").textContent=S.commit||"— очаква ръка —";
@@ -1074,10 +1137,17 @@ function renderTable(){
   // авто-действия при твой ред
   if(!S.handOver&&S.acting===mySeat&&mySeat>=0&&!autoFired){autoFired=tryAuto();}
   if(S.acting!==mySeat)autoFired=false;
-  // ред с авто-действия се вижда докато тече ръка и си на масата
+  // ред с авто-действия: стои постоянно, докато си на масата (не мига)
   const ar=$("autoRow");
-  if(ar)ar.style.display=(mySeat>=0&&!S.handOver&&S.acting!==mySeat&&!S.seats[mySeat].folded)?"flex":"none";
-  if(S.handOver)clearAuto();
+  if(ar){
+    const me2=mySeat>=0?S.seats[mySeat]:null;
+    const onTable=!!(me2&&me2.type!=="empty");
+    ar.style.display=onTable?"flex":"none";
+    ar.classList.toggle("dim",!!(onTable&&!S.handOver&&me2.folded));
+  }
+  // изчистване само веднъж — при приключване на ръката, за да може да се маркира предварително
+  if(S.handOver){ if(clearedHand!==S.handNo){clearedHand=S.handNo;clearAuto();} }
+  else clearedHand=-1;
   // бутон „Покажи картите"
   const bs=$("btnShow");
   if(bs){
@@ -1119,7 +1189,7 @@ function renderControls(){
   const ef=$("emoFab");if(ef)ef.style.display=mySeat>=0?"flex":"none";
   if(autoMsgTimer){clearInterval(autoMsgTimer);autoMsgTimer=null;}
   if(S.handOver){
-    const fill=$("nhFill"),cnt=$("nhCount"),wrap=document.querySelector(".nhwrap");
+    const fill=$("nhFill"),cnt=$("nhCount"),wrap=$("handDock");
     const TOT=5000; let lastSec=-1;
     const upd=()=>{
       if(!S.handOver){if(fill)fill.style.width="0%";if(cnt)cnt.classList.remove("on");if(wrap)wrap.classList.remove("hot","run");return;}
@@ -1322,7 +1392,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v46 · 26.07";
+const NV_VER="v47 · 26.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -1431,6 +1501,7 @@ const EMOTES=["👍","👏","😂","😮","😢","😡","🔥","🎉"];
 
 /* ================= АВТО-ДЕЙСТВИЯ ================= */
 const AC={fold:false,checkFold:false,call:false};
+let clearedHand=-1;
 function clearAuto(){
   AC.fold=AC.checkFold=AC.call=false;
   ["acFold","acCheckFold","acCall"].forEach(id=>{const e=$(id);if(e)e.checked=false;});
@@ -1508,19 +1579,37 @@ function pushStack(){
   if(!last||last.h!==S.handNo){stackHist.push({h:S.handNo,v:me.chips});if(stackHist.length>120)stackHist.shift();}
   else last.v=me.chips;
 }
-function drawGraph(){
-  const el=$("sGraph");if(!el)return;
-  if(stackHist.length<2){el.innerHTML="";return;}
-  const W=300,H=70,vals=stackHist.map(s=>s.v);
+function sparkSVG(vals,W,H,col,cls){
   const mn=Math.min(...vals),mx=Math.max(...vals),rg=(mx-mn)||1;
-  const pts=stackHist.map((s,i)=>[(i/(stackHist.length-1))*W,H-4-((s.v-mn)/rg)*(H-10)]);
+  const pts=vals.map((v,i)=>[(i/(vals.length-1))*W,H-4-((v-mn)/rg)*(H-10)]);
   const d=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
-  const up=vals[vals.length-1]>=vals[0];
-  const col=up?"#42e6a4":"#c96a5e";
-  el.innerHTML='<svg class="sgraph" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+  const last=pts[pts.length-1];
+  return '<svg class="'+cls+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
     '<path d="'+d+' L '+W+' '+H+' L 0 '+H+' Z" fill="'+col+'" opacity=".13"/>'+
     '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round"/>'+
-    '</svg><div class="sgraph-lbl">Стек през сесията · '+(up?"▲":"▼")+" "+bbTxt(vals[vals.length-1]-vals[0])+'</div>';
+    '<circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="2.6" fill="'+col+'"/>'+
+    '</svg>';
+}
+function drawGraph(){
+  const el=$("sGraph"),mel=$("sGraphMini"),mv=$("mStackVal"),md=$("mStackDelta");
+  // текущият стек се показва винаги, дори преди да има крива
+  if(mv&&S&&mySeat>=0&&S.seats[mySeat])mv.textContent=fmt(S.seats[mySeat].chips);
+  if(stackHist.length<2){
+    if(el)el.innerHTML="";
+    if(mel)mel.innerHTML='<div class="mempty">Графиката се появява след втората ръка.</div>';
+    if(md)md.textContent="";
+    return;
+  }
+  const vals=stackHist.map(s=>s.v);
+  const diff=vals[vals.length-1]-vals[0];
+  const up=diff>=0;
+  const col=up?"#42e6a4":"#c96a5e";
+  const arrow='<i class="'+(up?"up":"dn")+'">'+(up?"▲":"▼")+'</i>';
+  if(el)el.innerHTML=sparkSVG(vals,300,70,col,"sgraph")+
+    '<div class="sgraph-lbl">Стек през сесията · '+arrow+'<b>'+bbTxt(diff)+'</b></div>';
+  if(mel)mel.innerHTML=sparkSVG(vals,300,48,col,"sgraph-mini")+
+    '<div class="mfoot">'+stackHist.length+' ръце · начало '+bbTxt(vals[0])+'</div>';
+  if(md){md.className="mdelta "+(up?"up":"dn");md.innerHTML=arrow+bbTxt(diff);}
 }
 
 /* ================= КЛАВИШНИ КОМБИНАЦИИ ================= */
