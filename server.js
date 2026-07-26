@@ -217,7 +217,7 @@ function newHand(room){
   active(room).forEach(p=>{
     if(p.chips<=0){p.st.net+=p.chips-p.st._startChips;p.st._startChips=start;p.chips=start;room.log(p.name+": rebuy "+start,"sys");}
     Object.assign(p,{hole:[],folded:false,allIn:false,bet:0,contrib:0,acted:false,
-      showCards:false,winCards:false,handName:"",canRaiseFlag:true,equity:null,pendingReason:""});
+      showCards:false,winCards:false,handName:"",canRaiseFlag:true,equity:null,pendingReason:"",_shown:false});
     p.st.hands++;p.st._vp=false;p.st._pf=false;
   });
   room.board=[];room.pot=0;room.handOver=false;room.actionLog=[];
@@ -716,6 +716,19 @@ io.on("connection",socket=>{
       if(r.handOver&&!s.fillBots)r.seats.forEach((p,i)=>{if(p.type==="bot")r.seats[i]=emptySeat(i);});
       if(r.handOver)fillBots(r);
     }
+    broadcast(r);
+  });
+
+  socket.on("showCards",()=>{
+    if(!myRoom||mySeat<0)return;
+    const r=myRoom,p=r.seats[mySeat];
+    if(!p||p.id!==socket.id||!r.handOver||!p.hole||!p.hole.length)return;
+    if(p._shown)return;
+    p._shown=true;p.showCards=true;
+    const txt=p.hole.map(cardStr).join(" ");
+    r.log(p.name+" показва: "+txt,"sys");
+    if(r.handHistory[0])r.handHistory[0].actions.push(p.name+" показва картите си: "+txt);
+    io.to(r.code).emit("history",r.handHistory.slice(0,40));
     broadcast(r);
   });
 
