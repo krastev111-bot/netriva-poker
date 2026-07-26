@@ -756,6 +756,34 @@ io.on("connection",socket=>{
     if(p&&p.id===socket.id){p.clientSeed=String(seedStr||"").slice(0,64);socket.emit("log",{msg:"Твоят client seed е записан — влиза от следващата ръка.",cls:"sys"});}
   });
 
+  socket.on("leaveTable",()=>{
+    if(!myRoom||mySeat<0)return;
+    const room=myRoom,p=room.seats[mySeat];
+    if(!p||p.id!==socket.id)return;
+    if(p._grace){clearTimeout(p._grace);p._grace=null;}
+    room.log(p.name+" напуска масата.","sys");
+    const seat=p.seat,nm=p.name;
+    const free=()=>{
+      const q=room.seats[seat];
+      if(q&&q.name===nm)room.seats[seat]=emptySeat(seat);
+      broadcast(room);
+    };
+    if(room.handOver)free();
+    else{
+      p.id=null;
+      if(room.acting===seat)actFold(room,seat); else {p.folded=true;p.acted=true;}
+      room.pending.push(free);
+    }
+    if(room.hostId===socket.id){
+      const nh=active(room).find(q=>q.type==="human"&&q.id);
+      room.hostId=nh?nh.id:null;
+      if(nh)io.to(nh.id).emit("youAreHost");
+    }
+    socket.leave(room.code);
+    myRoom=null;mySeat=-1;
+    broadcast(room);
+  });
+
   socket.on("disconnect",()=>{
     if(!myRoom)return;
     const room=myRoom;
