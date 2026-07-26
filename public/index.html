@@ -11,6 +11,7 @@
     --dia:#1f6fb2; --club:#1f8a4c;
     --gold:#d4af6a; --gold-hi:#f0d9a8; --mint:#7fd8b4;
     --mono-bg:#0c1310; --mono-ink:#9fe8c8;
+  --mono:ui-monospace,'SF Mono','Cascadia Mono','Segoe UI Mono',Menlo,Consolas,'Liberation Mono',monospace;
     --ok:#2ecc71; --bad:#e74c3c;
     --panel:#10241c; --line:#1f4034; --chip:#e8c78f;
   }
@@ -41,30 +42,31 @@
   .gear:hover{background:linear-gradient(180deg,#fff1c2,#f0cf72);color:#1b1200;border-color:#fff3d0;
     box-shadow:0 0 0 1px #fff3d0,0 0 20px rgba(240,207,114,.65)}
   .gear.on{background:linear-gradient(180deg,#fff1c2,#f0cf72);border-color:#fff3d0;box-shadow:0 0 12px rgba(240,217,168,.5)}
-  .roomtag{font-family:'Courier New',monospace;font-size:.8rem;color:var(--mint);background:var(--mono-bg);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer;
+  .roomtag{font-family:var(--mono);font-size:.8rem;color:var(--mint);background:var(--mono-bg);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer;
     transition:transform .15s,border-color .15s,color .15s;display:inline-block}
   .roomtag:hover{transform:scale(1.07);border-color:var(--gold);color:var(--gold-hi)}
   .applybtn.applied{background:#2c9a63 !important;color:#fff !important;border-color:#42e6a4 !important}
-  .lbl{font-family:'Courier New',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint)}
+  .lbl{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mint)}
   .note{font-size:.72rem;color:#8fae9e;line-height:1.55}
   /* fair strip */
   .fair{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 11px;margin-bottom:8px}
   .fair-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .hashline{font-family:'Courier New','Consolas',monospace;font-size:.7rem;line-height:1.5;color:#fff;
+  .hashline{font-family:var(--mono);font-size:.7rem;line-height:1.5;color:#fff;
     background:#000;padding:6px 9px;border-radius:5px;border:1px solid #2b3a33;word-break:break-all;flex:1;min-width:180px;
     box-shadow:inset 0 0 12px rgba(66,230,164,.10)}
-  .sealpanel{margin-bottom:8px}
+  .sealpanel{margin-bottom:7px;padding:8px 10px}
+  .fairfold{padding:8px 10px}
   .sealpanel .fair{background:none;border:none;padding:0;margin:0}
   .sealpanel .fair-top{gap:8px;row-gap:6px}
   .sealpanel .fair-top .lbl{flex:1 1 auto}
   .sealpanel .hashline{order:3;flex:1 0 100%;min-width:0}
   .sealpanel #fairDetails{display:none}
-  .vbadge{font-family:'Courier New',monospace;font-size:.7rem;padding:3px 10px;border-radius:5px;white-space:nowrap}
+  .vbadge{font-family:var(--mono);font-size:.7rem;padding:3px 10px;border-radius:5px;white-space:nowrap}
   .vbadge.ok{background:rgba(46,204,113,.14);color:var(--ok);border:1px solid rgba(46,204,113,.4)}
   .vbadge.wait{background:rgba(212,175,106,.1);color:var(--gold);border:1px solid rgba(212,175,106,.35)}
   .fair summary{cursor:pointer;color:#8fae9e;font-size:.73rem;margin-top:5px}
   .fair .detail-grid{display:grid;gap:6px;margin-top:8px}
-  .fair .detail-grid input,.fair .detail-grid textarea{width:100%;font-family:'Courier New',monospace;font-size:.68rem;padding:5px 8px;border-radius:5px;background:var(--mono-bg);color:var(--mono-ink);border:1px solid var(--line)}
+  .fair .detail-grid input,.fair .detail-grid textarea{width:100%;font-family:var(--mono);font-size:.68rem;padding:5px 8px;border-radius:5px;background:var(--mono-bg);color:var(--mono-ink);border:1px solid var(--line)}
   /* маса */
   .tablewrap{position:relative;width:100%;padding-top:58%;margin-bottom:52px}
   @media(min-width:900px){.tablewrap{padding-top:54%}}
@@ -96,7 +98,7 @@
     display:flex;flex-direction:column;align-items:center;gap:5px;z-index:3}
   .board{display:flex;gap:5px}
   .potline{font-size:.9rem;color:var(--gold-hi);letter-spacing:.03em;background:rgba(0,0,0,.35);padding:2px 12px;border-radius:11px}
-  .stageline{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mint)}
+  .stageline{font-family:var(--mono);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mint)}
   .winbanner{position:absolute;left:50%;top:64%;transform:translate(-50%,-50%);
     background:rgba(8,20,15,.92);border:1px solid var(--gold);border-radius:10px;
     padding:12px 22px;font-size:.95rem;color:var(--gold-hi);z-index:9;text-align:center;display:none;max-width:80%}
@@ -133,16 +135,36 @@
   .gcard:hover .gface{opacity:1}
   .gcard:hover .gback{opacity:0}
   .gcard .gback{transition:opacity .18s}
-  .ghosthint{font-family:'Courier New',monospace;font-size:.54rem;letter-spacing:.12em;
+  .ghosthint{font-family:var(--mono);font-size:.54rem;letter-spacing:.12em;
     text-transform:uppercase;color:#7d998b;text-align:center;margin-top:19px;opacity:.75}
   .seat.gone{opacity:.25;border-style:dashed;border-color:var(--line)}
   .seat .name{font-size:1.06rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .seat .stack{font-size:.8rem;color:var(--chip)}
   .seat .stack b{color:#fff;font-weight:700;font-size:1.15rem;letter-spacing:.03em}
-  .seat .tag{font-family:'Courier New',monospace;font-size:.72rem;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:#e0a196;margin-left:3px}
-  .seat .timer{font-family:'Courier New',monospace;font-size:.6rem;color:var(--gold-hi)}
+  .seat .tag{font-family:var(--mono);font-size:.72rem;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:#e0a196;margin-left:3px}
+  .seat .timer{font-family:var(--mono);font-size:.6rem;color:var(--gold-hi)}
   .hole{display:flex;justify-content:center;gap:4px;margin-top:3px}
   .handname{font-size:.62rem;color:var(--mint);min-height:12px;margin-top:2px}
+  .handname.mine{font-size:.72rem;color:#d9ecdf;letter-spacing:.01em;font-weight:600;
+    white-space:nowrap;overflow:visible}
+  /* позицията и последното действие стоят НАД картончето, за да не ядат от името */
+  .postag{position:absolute;right:1px;top:-10px;z-index:5;
+    font-family:var(--mono);font-size:.55rem;
+    color:#6f9d86;letter-spacing:.1em;line-height:1;white-space:nowrap;
+    background:rgba(6,16,12,.9);padding:1px 4px;border-radius:3px}
+  .seat.hero .postag{color:#9ad9b8;font-weight:700}
+  .odds{color:#ffd98a;font-weight:700}
+  /* --- последното действие на всяко място --- */
+  .lastact{position:absolute;left:1px;top:-11px;z-index:6;
+    font-family:var(--mono);font-size:.58rem;
+    letter-spacing:.06em;padding:2px 7px;border-radius:20px;white-space:nowrap;
+    background:rgba(6,16,12,.94);border:1px solid var(--line);color:#9db3a6;
+    box-shadow:0 2px 8px rgba(0,0,0,.5)}
+  .lastact.la-fold{color:#c98a80;border-color:rgba(190,90,72,.45)}
+  .lastact.la-call{color:#7ac4a0;border-color:rgba(122,196,160,.45)}
+  .lastact.la-check{color:#8fae9e}
+  .lastact.la-raise,.lastact.la-allin{color:#f0d9a8;border-color:rgba(212,175,106,.6);
+    background:rgba(40,28,6,.94)}
   .seat.hero{width:150px;background:rgba(6,16,12,.7)}
   .seat.hero .name{font-size:1.18rem;color:var(--gold-hi)}
   .dealerbtn{display:inline-block;width:14px;height:14px;border-radius:50%;
@@ -209,7 +231,7 @@
   .chip{width:22px;height:22px;border-radius:50%;border:2.5px dashed rgba(255,255,255,.92);box-sizing:border-box;margin-top:-15px;position:relative;
     box-shadow:inset 0 0 0 3px rgba(255,255,255,.28), inset 0 0 0 5px rgba(0,0,0,.18), inset 0 -4px 5px rgba(0,0,0,.42), inset 0 2px 3px rgba(255,255,255,.2), 0 2px 4px rgba(0,0,0,.7)}
   .chip b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-family:'Courier New',monospace;font-size:8.5px;font-weight:700;color:#fff;
+    font-family:var(--mono);font-size:8.5px;font-weight:700;color:#fff;
     text-shadow:0 1px 2px rgba(0,0,0,.9);letter-spacing:-.5px}
   .chipcol .chip:first-child{margin-top:0}
   .chipcol{filter:drop-shadow(0 3px 3px rgba(0,0,0,.35))}
@@ -231,7 +253,7 @@
   .stepgrp{flex-direction:column;gap:3px;flex:1 1 0;min-width:0;max-width:180px}
   .stepgrp .stepbtn{width:100%;font-size:.95rem;padding:9px 6px;white-space:nowrap}
   .stepgrp .stepbtn b{font-size:1.18em}
-  .stepedit{width:100%;font-family:'Courier New',monospace;font-size:1rem;font-weight:700;text-align:center;
+  .stepedit{width:100%;font-family:var(--mono);font-size:1rem;font-weight:700;text-align:center;
     padding:9px 4px;border-radius:8px;background:#000;color:#fff;border:1px solid var(--gold-hi)}
   .steprow{display:flex;gap:3px;width:100%}
   .steprow button{flex:1 1 0;min-width:0;font-family:Georgia,serif;font-size:.92rem;font-weight:700;
@@ -242,13 +264,13 @@
   .steprow .sedit svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.5;
     stroke-linecap:round;stroke-linejoin:round}
   .raisegrp{display:flex;align-items:stretch;gap:2px}
-  .raiseval{min-width:128px;text-align:center;font-family:'Courier New',monospace;font-size:1.28rem;
+  .raiseval{min-width:128px;text-align:center;font-family:var(--mono);font-size:1.28rem;
     color:#fff;font-weight:700;letter-spacing:.03em;
     border:1px solid var(--line);border-radius:7px;padding:6px 10px;background:rgba(0,0,0,.25);
     display:flex;flex-direction:column;justify-content:center}
   .raiseval small{display:block;font-size:.78rem;font-weight:400;color:var(--gold);letter-spacing:.02em;margin-top:1px}
 
-  input[type=number],input[type=text]{width:92px;font-family:'Courier New',monospace;font-size:.9rem;
+  input[type=number],input[type=text]{width:92px;font-family:var(--mono);font-size:.9rem;
     padding:7px 8px;border-radius:6px;background:var(--mono-bg);color:var(--gold-hi);border:1px solid var(--line);text-align:center}
   /* настройки */
   .settings{display:none;background:var(--panel);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:8px}
@@ -258,6 +280,10 @@
   .stackopts{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.76rem}
   .applybtn{background:var(--gold);color:#241a08;font-weight:bold;font-size:.72rem;padding:6px 12px;border-radius:7px;border:1px solid var(--gold);cursor:pointer}
   .applybtn:hover{background:var(--gold-hi);border-color:var(--gold-hi)}
+  .applybtn.danger-btn{background:linear-gradient(180deg,#c95446,#9c2c20);border-color:#e2705f;color:#fff}
+  .applybtn.danger-btn:hover{background:linear-gradient(180deg,#e2705f,#b8382a);border-color:#ff9a88}
+  .applybtn.armed{background:linear-gradient(180deg,#fff0c2,#f0cf72)!important;color:#2a1c02!important;
+    border-color:#fff3d0!important;animation:cfpulse .7s ease-in-out infinite}
   .switch{position:relative;display:inline-block;width:38px;height:20px}
   .switch input{opacity:0;width:0;height:0}
   .switch span{position:absolute;cursor:pointer;inset:0;background:#28453a;border-radius:20px;transition:.2s}
@@ -278,7 +304,7 @@
   @keyframes dealin{from{opacity:0;transform:translateY(-55px) scale(.55) rotate(-9deg)}to{opacity:1;transform:none}}
   .flychips{position:absolute;transform:translate(-50%,-50%);z-index:8;pointer-events:none;
     transition:left .95s cubic-bezier(.3,.7,.35,1),top .95s cubic-bezier(.3,.7,.35,1),opacity .95s}
-  .ver{font-family:'Courier New',monospace;font-size:.6rem;color:#7d998b;border:1px solid var(--line);border-radius:5px;padding:2px 6px;white-space:nowrap}
+  .ver{font-family:var(--mono);font-size:.6rem;color:#7d998b;border:1px solid var(--line);border-radius:5px;padding:2px 6px;white-space:nowrap}
   #sndBtn{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;
     line-height:0;display:inline-flex;align-items:center;transition:border-color .15s,background .15s}
   #sndBtn:hover{border-color:var(--gold);background:rgba(212,175,55,.10)}
@@ -331,7 +357,7 @@
   @keyframes cfpulse{0%,100%{box-shadow:0 0 0 1px #fff3d0,0 0 10px rgba(240,207,114,.35)}
     50%{box-shadow:0 0 0 1px #fff3d0,0 0 24px rgba(240,207,114,.8)}}
   /* --- рискови цветове на опциите за залог --- */
-  .rowlbl{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.14em;color:var(--mint);text-transform:uppercase;align-self:center;margin-right:4px;white-space:nowrap}
+  .rowlbl{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;color:var(--mint);text-transform:uppercase;align-self:center;margin-right:4px;white-space:nowrap}
   .stepbtn b{color:#fff;font-weight:700;font-size:1.05em}
   .preset.r-low{border-color:#2c9a63;background:rgba(44,154,99,.10)}
   .preset.r-mid{border-color:#d6b74a;background:rgba(214,183,74,.10)}
@@ -385,7 +411,7 @@
   /* пръстен с числото — вътре в бутона, вляво от текста */
   .nhcount{position:relative;width:26px;height:26px;border-radius:50%;display:none;
     align-items:center;justify-content:center;flex:0 0 auto;
-    font-family:'Courier New',monospace;font-size:.88rem;font-weight:700;color:#3a2c05;
+    font-family:var(--mono);font-size:.88rem;font-weight:700;color:#3a2c05;
     background:
       radial-gradient(circle,#fff8e6 0 62%,transparent 63%),
       conic-gradient(#4a3405 calc(var(--p,0)*1%), rgba(74,52,5,.20) 0);
@@ -394,7 +420,7 @@
   .nhcount span{display:block;line-height:1;transition:transform .18s ease-out}
   .nhcount.tick span{transform:scale(1.28)}
 
-  .fairfold>summary{cursor:pointer;list-style:none;font-family:'Courier New',monospace;font-size:.66rem;
+  .fairfold>summary{cursor:pointer;list-style:none;font-family:var(--mono);font-size:.66rem;
     letter-spacing:.12em;text-transform:uppercase;color:var(--mint);display:flex;align-items:center;gap:7px;user-select:none}
   .fairfold>summary::-webkit-details-marker{display:none}
   .fairfold>summary::before{content:"\25B8";transition:transform .2s;color:var(--gold)}
@@ -422,7 +448,7 @@
   .sgraph-mini .gl{stroke:rgba(255,255,255,.10);stroke-width:1}
   .sgraph-mini .glb{stroke:rgba(212,175,106,.45);stroke-width:1;stroke-dasharray:4 4}
   .sgraph-mini .ax{stroke:rgba(255,255,255,.24);stroke-width:1.2}
-  .sgraph-mini text{fill:#8fae9e;font-family:'Courier New',monospace;font-size:9px}
+  .sgraph-mini text{fill:#8fae9e;font-family:var(--mono);font-size:9px}
   .sgraph-mini text.axt{fill:#7d998b;font-size:8px;letter-spacing:.08em}
   .mini .mfoot{font-size:.55rem;color:#7d998b;letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
   .mini .mempty{font-size:.68rem;color:#7d998b;padding:6px 0 2px}
@@ -486,11 +512,11 @@
   .hsum td{padding:3px 5px;border-top:1px solid rgba(255,255,255,.05)}
   .hsum tr.w td{color:#7fe8b4;font-weight:700}
   .hsum tr.l td{color:#c98a84}
-  .hsum .bd{font-family:'Courier New',monospace;color:#e9e4d8}
+  .hsum .bd{font-family:var(--mono);color:#e9e4d8}
   .snapbtn{width:100%;margin-top:5px;font-size:.62rem;padding:5px}
   /* --- тесте в историята --- */
-  .dvttl{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mint);margin:6px 0 3px}
-  .dcard{display:inline-block;font-family:'Courier New',monospace;font-size:.68rem;padding:1px 4px;margin:1px;border-radius:4px;border:1px solid var(--line)}
+  .dvttl{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mint);margin:6px 0 3px}
+  .dcard{display:inline-block;font-family:var(--mono);font-size:.68rem;padding:1px 4px;margin:1px;border-radius:4px;border:1px solid var(--line)}
   .dcard.used{background:#1f8a4d;color:#eafff2;border-color:#39d47f;font-weight:700}
   .dcard.rest{background:#123526;color:#7fbf9f}
   .dvleg{font-size:.62rem;color:#9db3a6;margin-top:4px;line-height:1.55}
@@ -542,7 +568,7 @@
     .decorL{display:block}
   }
   /* --- сгъваем дневник --- */
-  .logfold summary{cursor:pointer;font-family:'Courier New',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+  .logfold summary{cursor:pointer;font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
   .logfold summary::-webkit-details-marker{display:none}
   .logfold summary::before{content:"\25B8";transition:transform .2s;color:var(--gold)}
   .logfold[open] summary::before{transform:rotate(90deg)}
@@ -564,13 +590,13 @@
   .panel{background:linear-gradient(180deg, rgba(212,175,55,.045), transparent 26%), var(--panel);
     border:1px solid var(--line);border-radius:10px;padding:10px 12px;
     box-shadow:0 4px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04)}
-  .panel h3{font-family:'Courier New',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);margin-bottom:6px}
+  .panel h3{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);margin-bottom:6px}
   .logbox{font-size:.74rem;line-height:1.6;max-height:230px;overflow-y:auto}
   .logbox .sys{color:#8fae9e}.logbox .win{color:var(--gold-hi)}.logbox .fair-l{color:var(--mint)}
   .histbox{font-size:.82rem;max-height:440px;overflow-y:auto}
   .histbox details{border-bottom:1px solid var(--line);padding:4px 0}
   .histbox summary{cursor:pointer;color:var(--chip)}
-  .histbox .act{font-family:'Courier New',monospace;font-size:.78rem;color:#c6d6cc;padding-left:8px;line-height:1.75}
+  .histbox .act{font-family:var(--mono);font-size:.78rem;color:#c6d6cc;padding-left:8px;line-height:1.75}
 
 
   .histbox details>summary{transition:background .15s,color .15s,padding-left .15s;border-radius:5px;padding:3px 4px;font-size:.8rem}
@@ -578,7 +604,7 @@
   .histbox .act.stg{font-size:.74rem}
   /* --- картите в историята: бели рангове на черно, боите пазят цвета си --- */
   .histbox .cbox,.hsum .cbox{display:inline-block;background:#000;border:1px solid #2b3a33;
-    border-radius:4px;padding:1px 7px;margin:0 2px;font-family:'Courier New',monospace;
+    border-radius:4px;padding:1px 7px;margin:0 2px;font-family:var(--mono);
     font-size:1.04em;letter-spacing:.03em;color:#fff;vertical-align:baseline;
     box-shadow:inset 0 0 10px rgba(66,230,164,.09)}
   .cbox b{color:#fff;font-weight:700}
@@ -606,10 +632,10 @@
   .act.a-show{color:#ffe9a8;background:rgba(212,175,55,.09);border-radius:5px;padding:2px 6px;margin:3px 0}
   .act.a-deal{color:#9db3a6}
   .dcard.burnc{background:linear-gradient(160deg,#3a3a3a,#1d1d1d);color:#c9c9c9;border-color:#5c5c5c;font-weight:700}
-  .histbox .seeds{font-family:'Courier New',monospace;font-size:.6rem;color:var(--mono-ink);word-break:break-all;margin:4px 0 2px;padding-left:8px}
+  .histbox .seeds{font-family:var(--mono);font-size:.6rem;color:var(--mono-ink);word-break:break-all;margin:4px 0 2px;padding-left:8px}
   table.stats{width:100%;border-collapse:collapse;font-size:.72rem}
   table.stats th,table.stats td{padding:4px 6px;text-align:right;border-bottom:1px solid var(--line)}
-  table.stats th{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.08em;color:var(--mint);text-transform:uppercase}
+  table.stats th{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;color:var(--mint);text-transform:uppercase}
   table.stats td:first-child,table.stats th:first-child{text-align:left}
   /* лоби */
   .lobby{position:fixed;inset:0;background:rgba(4,12,9,.94);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
@@ -806,7 +832,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v56</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <span class="ver" id="verTag">v57</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -818,6 +844,8 @@
         <label class="switch"><input type="checkbox" id="setBB" checked><span></span></label></div>
       <div class="set-item"><span>Твоят аватар (сменя се по всяко време)</span>
         <span class="avrow" id="avRow2"></span></div>
+      <div class="set-item"><span>Напусни масата — мястото се освобождава веднага</span>
+        <button class="applybtn danger-btn" id="btnLeave">Напусни</button></div>
       <div class="set-item"><span>Автоматична нова ръка (общо за масата)</span>
         <label class="switch"><input type="checkbox" id="setAuto" checked><span></span></label></div>
       <div class="set-item"><span>Четирицветно тесте (само за теб)</span>
@@ -975,6 +1003,111 @@ const $=id=>document.getElementById(id);
 const RANKS=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
 const SUITS=["♠","♥","♦","♣"];
 const SUITCLS=["","c-h","c-d2","c-c2"];
+/* ---------- оценка на ръката, местно (пренесено 1:1 от сървъра) ---------- */
+const HAND_NAMES=["Висока карта","Чифт","Два чифта","Тройка","Кента","Флъш","Фул хаус","Каре","Кента флъш"];
+function score5(cs){
+  const rs=cs.map(c=>c.r).sort((a,b)=>b-a);
+  const flush=cs.every(c=>c.s===cs[0].s);
+  const counts={};rs.forEach(r=>counts[r]=(counts[r]||0)+1);
+  const groups=Object.entries(counts).map(([r,n])=>({r:+r,n})).sort((a,b)=>b.n-a.n||b.r-a.r);
+  let sh=-1;const uniq=[...new Set(rs)];
+  if(uniq.length===5){
+    if(uniq[0]-uniq[4]===4)sh=uniq[0];
+    else if(uniq[0]===12&&uniq[1]===3&&uniq[1]-uniq[4]===3)sh=3;
+  }
+  let cat,tie;
+  if(flush&&sh>=0){cat=8;tie=[sh];}
+  else if(groups[0].n===4){cat=7;tie=[groups[0].r,groups[1].r];}
+  else if(groups[0].n===3&&groups[1].n===2){cat=6;tie=[groups[0].r,groups[1].r];}
+  else if(flush){cat=5;tie=rs;}
+  else if(sh>=0){cat=4;tie=[sh];}
+  else if(groups[0].n===3){cat=3;tie=[groups[0].r,groups[1].r,groups[2].r];}
+  else if(groups[0].n===2&&groups[1].n===2){cat=2;tie=[groups[0].r,groups[1].r,groups[2].r];}
+  else if(groups[0].n===2){cat=1;tie=[groups[0].r,groups[1].r,groups[2].r,groups[3].r];}
+  else{cat=0;tie=rs;}
+  let v=cat;for(let i=0;i<5;i++)v=v*16+(tie[i]!==undefined?tie[i]+1:0);
+  return{v,cat,tie};
+}
+function best7(cards){
+  if(cards.length<5)return null;
+  if(cards.length===5)return score5(cards);
+  let best=null;
+  (function rec(start,chosen){
+    if(chosen.length===5){const s2=score5(chosen.map(i=>cards[i]));if(!best||s2.v>best.v)best=s2;return;}
+    for(let i=start;i<=cards.length-(5-chosen.length);i++){chosen.push(i);rec(i+1,chosen);chosen.pop();}
+  })(0,[]);
+  return best;
+}
+/* дроу с брой аути — само докато има какво да дойде */
+function drawInfo(hole,board){
+  const cards=hole.concat(board);
+  if(board.length<3||board.length>=5)return null;
+  const made=best7(cards);
+  const sc={};cards.forEach(c=>sc[c.s]=(sc[c.s]||0)+1);
+  const fd=Object.values(sc).some(n=>n===4);
+  const rset=new Set(cards.map(c=>c.r));
+  if(rset.has(12))rset.add(-1);
+  const arr=[...rset].sort((a,b)=>a-b);
+  let run=1,maxRun=1;
+  for(let k=1;k<arr.length;k++){run=(arr[k]===arr[k-1]+1)?run+1:1;maxRun=Math.max(maxRun,run);}
+  let sd=null;
+  if(maxRun>=5)sd=null;
+  else if(maxRun===4)sd="oesd";
+  else{for(let lo=-1;lo<=8;lo++){let c2=0;for(let r=lo;r<lo+5;r++)if(rset.has(r))c2++;if(c2===4){sd="gut";break;}}}
+  const parts=[];let outs=0;
+  if(fd&&(!made||made.cat<5)){parts.push("флъш дроу");outs+=9;}
+  if(sd==="oesd"&&(!made||made.cat<4)){parts.push("двустранна кента");outs+=8;}
+  else if(sd==="gut"&&(!made||made.cat<4)){parts.push("гътшот");outs+=4;}
+  if(!parts.length)return null;
+  if(fd&&sd)outs-=2; // застъпващи се аути
+  return{txt:parts.join(" + "),outs};
+}
+/* префлоп описание на двете си карти */
+const RANKPL=["двойки","тройки","четворки","петици","шестици","седмици","осмици",
+  "деветки","десетки","валета","дами","попове","аса"];
+/* пълно име на ръката, а не само видът ѝ */
+function handFull(res){
+  const t=res.tie||[],R=RANKS,P=RANKPL;
+  switch(res.cat){
+    case 8:return "Кента флъш до "+R[t[0]];
+    case 7:return "Каре "+P[t[0]];
+    case 6:return "Фул хаус: "+P[t[0]]+" над "+P[t[1]];
+    case 5:return "Флъш до "+R[t[0]];
+    case 4:return "Кента до "+R[t[0]];
+    case 3:return "Тройка "+P[t[0]];
+    case 2:return "Два чифта: "+P[t[0]]+" и "+P[t[1]];
+    case 1:return "Чифт "+P[t[0]];
+    default:return "Висока карта "+R[t[0]];
+  }
+}
+function preTxt(h){
+  const [a,b]=h,hi=Math.max(a.r,b.r),lo=Math.min(a.r,b.r);
+  if(a.r===b.r)return "Чифт "+RANKPL[a.r];
+  const su=a.s===b.s?" едноцветни":"";
+  const cn=(hi-lo===1)?" конектори":"";
+  return RANKS[hi]+RANKS[lo]+su+cn;
+}
+function heroHandTxt(hole,board){
+  if(!hole||hole.length<2)return "";
+  if(!board||board.length<3)return preTxt(hole);
+  const r=best7(hole.concat(board));
+  const d=drawInfo(hole,board);
+  return handFull(r)+(d?" · "+d.txt+" ("+d.outs+" аута)":"");
+}
+/* позиции спрямо бутона */
+function seatPositions(){
+  if(!S)return{};
+  const occ=[];for(let k=0;k<8;k++){const i=(S.button+k)%8;if(S.seats[i].type!=="empty")occ.push(i);}
+  const n=occ.length,out={};
+  if(n<2)return out;
+  if(n===2){out[occ[0]]="BTN/SB";out[occ[1]]="BB";return out;}
+  out[occ[0]]="BTN";out[occ[1]]="SB";out[occ[2]]="BB";
+  const rest=n-3;
+  const TAB={0:[],1:["CO"],2:["UTG","CO"],3:["UTG","MP","CO"],
+             4:["UTG","UTG+1","MP","CO"],5:["UTG","UTG+1","MP","MP+1","CO"]};
+  (TAB[rest]||[]).forEach((lbl,k)=>{out[occ[3+k]]=lbl;});
+  return out;
+}
 const SEAT_POS_D=[[50,96],[15,85],[3,50],[15,15],[50,4],[85,15],[97,50],[85,85]];
 const SEAT_POS_M=[[50,95],[18,82],[10,50],[18,17],[50,5],[82,17],[90,50],[82,82]];
 const isMob=()=>window.matchMedia("(max-width:1340px)").matches;
@@ -1038,6 +1171,19 @@ function ghostBoard(b){
   hint.textContent="какво щеше да дойде · посочи карта";
   b.insertAdjacentElement("afterend",hint);
 }
+/* дневникът е единственият източник за „кой какво направи последно" —
+   разчита се веднъж тук и се показва като етикетче на мястото */
+let lastActs={},lastActStage="",lastActHand=-1;
+function noteAct(msg){
+  const m=String(msg||"").match(/^(.{1,20}?):\s*(fold|check|call|raise до|all-in)\s*([0-9]*)/i);
+  if(!m)return;
+  const k=m[2].toLowerCase();
+  const kind=k==="fold"?"fold":k==="check"?"check":k==="call"?"call":k==="all-in"?"allin":"raise";
+  const amt=m[3]?+m[3]:0;
+  const txt=kind==="fold"?"FOLD":kind==="check"?"CHECK":kind==="allin"?"ALL-IN":
+            kind==="call"?("CALL "+(S?bbTxt(amt):amt)):("RAISE "+(S?bbTxt(amt):amt));
+  lastActs[m[1]]={kind,txt};
+}
 function log(msg,cls){
   const d=document.createElement("div");
   if(cls)d.className=cls;
@@ -1066,7 +1212,7 @@ function connect(){
   });
   socket.on("waiting",d=>{$("lobby").style.display="none";updateRoomTag();$("msg").textContent="Изчакваш края на текущата ръка, за да седнеш.";});
   socket.on("youAreHost",()=>{amHost=true;render();});
-  socket.on("log",d=>log(d.msg,d.cls));
+  socket.on("log",d=>{noteAct(d.msg);log(d.msg,d.cls);});
   socket.on("banner",d=>{
     Snd.win();
     const b=$("winBanner");b.innerHTML=d.html;b.style.display="block";
@@ -1220,13 +1366,16 @@ function render(){
   renderControls();
   renderStats();
 }
-let mouseX=-1,mouseY=-1,peekRect=null;
+let mouseX=-1,mouseY=-1,peekRect=null,prevBets=[0,0,0,0,0,0,0,0],prevPotVal=0;
 document.addEventListener("mousemove",e=>{mouseX=e.clientX;mouseY=e.clientY;},{passive:true});
 document.addEventListener("mouseleave",()=>{mouseX=-1;mouseY=-1;});
 function renderTable(){
   const t=$("tableEl");
   [...t.querySelectorAll(".seat,.betchip")].forEach(e=>e.remove());
   const rot=i=>SEAT_POS[mySeat>=0?((i-mySeat+8)%8):i];
+  const POSMAP=seatPositions();
+  // етикетите живеят до края на текущата улица
+  if(S.handNo!==lastActHand||S.stage!==lastActStage){lastActs={};lastActHand=S.handNo;lastActStage=S.stage;}
   const peekSeats=[];
   S.seats.forEach((p,i)=>{
     if(p.type==="empty")return;
@@ -1234,7 +1383,9 @@ function renderTable(){
     const d=document.createElement("div");
     d.className="seat"+(i===mySeat?" hero":"")+(p.folded&&!S.handOver?" folded":"")+((i===mySeat&&p.folded&&myHole&&myHole.length)?" peekme":"")+(i===S.acting?" acting":"")+(!p.connected?" gone":"")+(S.handOver&&p.winCards?" wonseat":"")+(S.handOver&&p.showCards&&!p.winCards?" lostseat":"");
     d.style.left=x+"%";d.style.top=y+"%";
-    let nm='<div class="name">'+avHTML(p.avatar)+p.name+(p.type==="bot"?'<span class="tag">bot</span>':"")+(i===S.button?'<span class="dealerbtn">D</span>':"")+(!p.connected?'<span class="tag">off</span>':"")+'</div>';
+    const pos=POSMAP[i];
+    let nm=(pos?'<span class="postag">'+pos+'</span>':"")+
+      '<div class="name">'+avHTML(p.avatar)+p.name+(p.type==="bot"?'<span class="tag">bot</span>':"")+(i===S.button?'<span class="dealerbtn">D</span>':"")+(!p.connected?'<span class="tag">off</span>':"")+'</div>';
     let stack='<div class="stack"><b>'+fmt(p.chips)+'</b>'+(p.allIn?" · all-in":"")+'</div>';
     let timer=(i===S.acting&&S.deadline)?'<div class="timer" data-deadline="'+S.deadline+'"><span class="tsec"></span><div class="tbar"><i></i></div></div>':"";
     d.innerHTML=nm+stack+timer;
@@ -1273,8 +1424,17 @@ function renderTable(){
          mouseY>=peekRect.top&&mouseY<=peekRect.bottom)d.classList.add("peeking");
       peekSeats.push(d);
     }
+    const la=lastActs[p.name];
+    if(la&&!S.handOver&&i!==S.acting){
+      const lt=document.createElement("div");lt.className="lastact la-"+la.kind;lt.textContent=la.txt;
+      d.appendChild(lt);
+    }
     const hn=document.createElement("div");hn.className="handname";
-    hn.textContent=(p.handName||"")+(p.equity!=null&&!S.handOver?"  "+p.equity+"%":"");
+    let hTxt=p.handName||"";
+    // собствената ръка се смята местно и се вижда през цялото раздаване
+    if(i===mySeat&&myHole&&myHole.length===2&&!p.folded&&!hTxt)hTxt=heroHandTxt(myHole,S.board);
+    if(i===mySeat&&hTxt)hn.classList.add("mine");
+    hn.textContent=hTxt+(p.equity!=null&&!S.handOver?"  "+p.equity+"%":"");
     d.appendChild(hn);
     t.appendChild(d);
     if(p.bet>0){
@@ -1311,6 +1471,20 @@ function renderTable(){
   const betSum=S.seats.reduce((a,p)=>a+(p.bet||0),0);
   if(!S.handOver&&betSum>prevBetSum)Snd.chips(2);
   prevBetSum=S.handOver?0:betSum;
+  // залозите се плъзгат към пота в края на улицата
+  if(S.pot>prevPotVal){
+    S.seats.forEach((q,i)=>{
+      if(!(prevBets[i]>0)||q.bet>0||q.type==="empty")return;
+      const [bx,by]=rot(i);
+      const el=document.createElement("div");el.className="flychips";
+      el.appendChild(chipStackEl(prevBets[i],false));
+      el.style.left=(bx+(50-bx)*0.33)+"%";el.style.top=(by+(42-by)*0.33)+"%";
+      t.appendChild(el);
+      requestAnimationFrame(()=>{el.style.left="50%";el.style.top="42%";el.style.opacity=".15";});
+      setTimeout(()=>el.remove(),1050);
+    });
+  }
+  prevBets=S.seats.map(q=>q.bet||0);prevPotVal=S.pot;
   // раздаване: картите долитат
   if(S.handNo&&S.handNo!==lastAnimHand&&!S.handOver){
     lastAnimHand=S.handNo;
@@ -1328,7 +1502,7 @@ function renderTable(){
         el.style.left="50%";el.style.top="42%";
         t.appendChild(el);
         requestAnimationFrame(()=>{
-          const pos=SEAT_POS[w.seat]||[50,50];
+          const pos=rot(w.seat)||[50,50];
           el.style.left=pos[0]+"%";el.style.top=pos[1]+"%";el.style.opacity=".12";
         });
         setTimeout(()=>el.remove(),1250);
@@ -1440,7 +1614,12 @@ function renderControls(){
   }else if(my){
     const me=S.seats[mySeat];
     const toCall=S.currentBet-me.bet;
-    $("msg").textContent="Твой ред."+(toCall>0?" За плащане: "+bbTxt(Math.min(toCall,me.chips))+" ("+fmt(Math.min(toCall,me.chips))+")":"");
+    const pay=Math.min(toCall,me.chips);
+    const potNow=S.pot+S.seats.reduce((x,q)=>x+(q.bet||0),0);
+    const need=pay>0?Math.round(100*pay/(potNow+pay)):0;
+    $("msg").innerHTML="Твой ред."+(pay>0
+      ? " За плащане: <b>"+bbTxt(pay)+"</b> в пот от <b>"+bbTxt(potNow)+"</b> · нужни ти са <b class=\"odds\">"+need+"%</b>"
+      : "");
     $("btnCall").textContent=toCall<=0?"Check":"Call "+bbTxt(Math.min(toCall,me.chips));
     const minTo=S.currentBet+S.minRaise, maxTo=me.bet+me.chips;
     const canRaise=maxTo>S.currentBet;
@@ -1659,7 +1838,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v56 · 26.07";
+const NV_VER="v57 · 26.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -2102,6 +2281,16 @@ document.querySelectorAll("#postRow .preset").forEach(b=>b.onclick=()=>{
 });
 
 /* ---------- НАСТРОЙКИ ---------- */
+$("btnLeave").onclick=()=>{
+  const b=$("btnLeave");
+  if(b.dataset.armed!=="1"){
+    b.dataset.armed="1";b.textContent="Сигурно ли?";b.classList.add("armed");
+    setTimeout(()=>{if(b.dataset.armed==="1"){b.dataset.armed="";b.textContent="Напусни";b.classList.remove("armed");}},3500);
+    return;
+  }
+  try{socket.emit("leaveTable");}catch(e){}
+  setTimeout(()=>{location.href=location.pathname;},220);
+};
 $("btnSettings").onclick=()=>{
   const s=$("settingsPanel");
   const open=s.style.display!=="block";
