@@ -315,6 +315,21 @@
   #postRow .preset[data-k="a"]{background:linear-gradient(180deg,#d4574a,#a53225);border-color:#e2705f;
     font-size:.92rem;min-width:104px;padding:9px 12px;color:#fff;font-weight:800;box-shadow:0 2px 8px rgba(165,50,37,.4)}
   #postRow .preset[data-k="a"]:hover{filter:brightness(1.1);animation:riskr .85s ease-in-out infinite}
+  /* --- All-in на префлоп реда: една колона, без ред за настройка --- */
+  .stepgrp.allin{justify-content:stretch}
+  .stepgrp.allin .stepbtn{height:100%;font-size:1rem;letter-spacing:.03em;
+    background:linear-gradient(180deg,#d4574a,#a53225);border-color:#e2705f;color:#fff;font-weight:700}
+  .stepgrp.allin .stepbtn:hover{filter:brightness(1.1);animation:riskr .85s ease-in-out infinite}
+  /* --- междинна стъпка „сигурно ли?" --- */
+  .preset.confirm,.stepgrp.allin .stepbtn.confirm{
+    background:linear-gradient(180deg,#fff0c2,#f0cf72)!important;color:#2a1c02!important;
+    border-color:#fff3d0!important;font-weight:700;animation:cfpulse .7s ease-in-out infinite!important;
+    box-shadow:0 0 0 1px #fff3d0,0 0 20px rgba(240,207,114,.6)!important;
+    white-space:normal!important;line-height:1.15;overflow:hidden;font-size:.95rem}
+  .preset.confirm *,.stepgrp.allin .stepbtn.confirm *{color:#2a1c02!important}
+  .cfq{display:block;font-size:.68rem;letter-spacing:.1em;opacity:.78;margin-bottom:1px}
+  @keyframes cfpulse{0%,100%{box-shadow:0 0 0 1px #fff3d0,0 0 10px rgba(240,207,114,.35)}
+    50%{box-shadow:0 0 0 1px #fff3d0,0 0 24px rgba(240,207,114,.8)}}
   /* --- рискови цветове на опциите за залог --- */
   .rowlbl{font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.14em;color:var(--mint);text-transform:uppercase;align-self:center;margin-right:4px;white-space:nowrap}
   .stepbtn b{color:#fff;font-weight:700;font-size:1.05em}
@@ -778,7 +793,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v51</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <span class="ver" id="verTag">v54</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -954,7 +969,7 @@ let SEAT_POS=isMob()?SEAT_POS_M:SEAT_POS_D;
 window.addEventListener("resize",()=>{const n=isMob()?SEAT_POS_M:SEAT_POS_D;if(n!==SEAT_POS){SEAT_POS=n;if(S)render();}});
 const grp=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00A0");
 
-let socket=null,S=null,mySeat=-1,myHole=null,amHost=false,HIST=[],local={bbView:true,fourColor:true};
+let socket=null,S=null,mySeat=-1,myHole=null,amHost=false,HIST=[],lastHandSnd=null,local={bbView:true,fourColor:true};
 let deadlineTimer=null;let lastRV=null;let autoFired=false;let prevCB=0,prevAllIn=0,rimTimer=null;let lastJoin=null;let lastAnimHand=0,flownHand=0,prevBetSum=0,wasMyTurn=false;
 
 function fmt(n){
@@ -1315,6 +1330,10 @@ function renderTable(){
     else if(S.currentBet>prevCB&&prevCB>S.settings.sb*2)rimPulse("gold");
     prevCB=S.currentBet;prevAllIn=allInCnt;
   }else{prevCB=0;prevAllIn=0;}
+  if(!S.handOver&&S.handNo>0&&mySeat>=0){
+    if(lastHandSnd!==null&&S.handNo!==lastHandSnd)Snd.go();
+    lastHandSnd=S.handNo;
+  }else if(lastHandSnd===null&&S.handNo>0)lastHandSnd=S.handNo;
   pushStack();drawGraph();
   // авто-действия при твой ред
   if(!S.handOver&&S.acting===mySeat&&mySeat>=0&&!autoFired){autoFired=tryAuto();}
@@ -1368,6 +1387,7 @@ function renderControls(){
   const my=S.acting===mySeat&&!S.handOver&&mySeat>=0;
   if(my&&!wasMyTurn)Snd.ding();
   wasMyTurn=my;
+  if(!my&&cfBtn)clearConfirm();
   $("handControls").style.display=my?"flex":"none";
   if(autoMsgTimer){clearInterval(autoMsgTimer);autoMsgTimer=null;}
   if(S.handOver){
@@ -1386,6 +1406,7 @@ function renderControls(){
           const sp=cnt.firstElementChild;
           if(!cnt.classList.contains("on"))cnt.classList.add("on");
           if(s!==lastSec){
+            if(s>=1&&s<=5&&mySeat>=0)Snd.tick(s);
             lastSec=s;
             if(sp)sp.textContent=s;
             cnt.classList.add("tick");
@@ -1412,10 +1433,16 @@ function renderControls(){
     const canRaise=maxTo>S.currentBet;
     $("sizer").style.display=canRaise?"flex":"none";
     if(canRaise){
-      const sbv=S.settings.sb;
+      const sbv=S.settings.sb, BBV=sbv*2;
       const sl=$("raiseSlider");
-      sl.min=Math.min(minTo,maxTo);sl.max=maxTo;sl.step=sbv;
-      if(+sl.value<+sl.min||+sl.value>+sl.max)sl.value=Math.min(minTo,maxTo);
+      const lo=Math.min(minTo,maxTo);
+      // step="any" — иначе браузърът пре-закръгля всяка стойност спрямо min
+      // (min + k*step), а ние искаме абсолютни цели блайндове. Закръглянето е наше.
+      sl.min=lo;sl.max=maxTo;sl.step="any";
+      const firstWhole=Math.min(maxTo,Math.max(lo,Math.ceil(lo/BBV)*BBV));
+      if(+sl.value<+sl.min||+sl.value>+sl.max)sl.value=firstWhole;
+      else if(!sliderDrag&&+sl.value%BBV!==0&&+sl.value!==+sl.min&&+sl.value!==+sl.max)
+        sl.value=snapBB(+sl.value);
       const P=S.pot+S.seats.reduce((s,p)=>s+(p.bet||0),0);
       $("sizer")._ctx={minTo,maxTo,P,toCall};
       // редове според етапа: префлоп → стъпки в BB; след флопа → проценти от пота
@@ -1427,6 +1454,40 @@ function renderControls(){
     const act=S.seats[S.acting];
     $("msg").textContent=act?("Ред на "+act.name+"…"):"";
   }
+}
+/* плъзгачът винаги спира на цял блайнд; крайните положения остават точни
+   (минималният легален рейз вляво, all-in вдясно) */
+let sliderDrag=false;
+function snapBB(v){
+  const sl=$("raiseSlider");if(!sl)return v;
+  const mn=+sl.min,mx=+sl.max,B=S?S.settings.sb*2:0;
+  if(!(B>0))return Math.max(mn,Math.min(mx,v));
+  if(v<=mn)return mn;
+  if(v>=mx-B*0.5)return mx;
+  return Math.max(mn,Math.min(mx,Math.round(v/B)*B));
+}
+/* стъпка нагоре/надолу до следващия цял блайнд, а не +1 от текущото */
+function stepBB(v,dir){
+  const sl=$("raiseSlider");if(!sl)return v;
+  const mn=+sl.min,mx=+sl.max,B=S?S.settings.sb*2:0;
+  if(!(B>0))return v;
+  const t=dir>0?Math.floor(v/B)*B+B:Math.ceil(v/B)*B-B;
+  return Math.max(mn,Math.min(mx,t));
+}
+/* All-in иска две щраквания: първото пита, второто изпълнява.
+   Пита се и за префлоп, и за пост-флоп бутона; отказва се сам след 3.5 сек. */
+let cfTimer=null,cfBtn=null;
+function clearConfirm(){
+  if(cfTimer){clearTimeout(cfTimer);cfTimer=null;}
+  if(cfBtn){cfBtn.classList.remove("confirm");if(cfBtn._txt!=null)cfBtn.innerHTML=cfBtn._txt;cfBtn=null;}
+}
+function askConfirm(btn,amount,run){
+  if(cfBtn===btn){const f=run;clearConfirm();f();return;}
+  clearConfirm();
+  cfBtn=btn;btn._txt=btn.innerHTML;
+  btn.classList.add("confirm");
+  btn.innerHTML='<span class="cfq">СИГУРНО?</span>'+bbTxt(amount);
+  cfTimer=setTimeout(clearConfirm,3500);
 }
 function showRaiseVal(){
   const v=+$("raiseSlider").value||0;
@@ -1574,7 +1635,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v51 · 26.07";
+const NV_VER="v54 · 26.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -1613,7 +1674,49 @@ const Snd=(()=>{
       g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.18,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.42);
       o.start(t);o.stop(t+.47);
     });}catch(e){}}
-  return{ding,chips,swish,win,
+  // тик на брояча: колкото по-малко остава, толкова по-високо и по-настойчиво
+  function tick(n){if(muted)return;try{
+    const c=ac(),t=c.currentTime;
+    const step=Math.max(1,Math.min(5,n||5));
+    const f=[880,784,698,622,554][step-1];      // 1 → най-високо
+    const o=c.createOscillator(),g=c.createGain();
+    o.type="triangle";o.frequency.setValueAtTime(f,t);
+    o.connect(g);g.connect(c.destination);
+    const vol=.055+(5-step)*.016;               // расте към края
+    g.gain.setValueAtTime(.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol,t+.008);
+    g.gain.exponentialRampToValueAtTime(.0001,t+.13);
+    o.start(t);o.stop(t+.16);
+    // лек дървен призвук, за да не е гола синусоида
+    const b=c.createBuffer(1,c.sampleRate*0.02,c.sampleRate),d=b.getChannelData(0);
+    for(let k=0;k<d.length;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/d.length,3);
+    const src=c.createBufferSource();src.buffer=b;
+    const bp=c.createBiquadFilter();bp.type="bandpass";bp.frequency.value=f*2.2;bp.Q.value=6;
+    const g2=c.createGain();g2.gain.value=.07;
+    src.connect(bp);bp.connect(g2);g2.connect(c.destination);src.start(t);
+  }catch(e){}}
+  // старт на нова ръка: топъл, по-дълъг акорд с плавно затихване
+  function go(){if(muted)return;try{
+    const c=ac(),t=c.currentTime;
+    [[523.25,0],[659.25,.045],[987.77,.09]].forEach(([fr,dl],i)=>{
+      const o=c.createOscillator(),g=c.createGain();
+      o.type=i===2?"sine":"triangle";
+      o.frequency.setValueAtTime(fr,t+dl);
+      o.connect(g);g.connect(c.destination);
+      g.gain.setValueAtTime(.0001,t+dl);
+      g.gain.exponentialRampToValueAtTime(i===2?.10:.15,t+dl+.03);
+      g.gain.exponentialRampToValueAtTime(.0001,t+dl+1.05);
+      o.start(t+dl);o.stop(t+dl+1.1);
+    });
+    // тихо шумолене на карти отдолу
+    const b=c.createBuffer(1,c.sampleRate*0.35,c.sampleRate),d=b.getChannelData(0);
+    for(let k=0;k<d.length;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/d.length,1.6);
+    const src=c.createBufferSource();src.buffer=b;
+    const hp=c.createBiquadFilter();hp.type="highpass";hp.frequency.value=1600;
+    const g3=c.createGain();g3.gain.value=.09;
+    src.connect(hp);hp.connect(g3);g3.connect(c.destination);src.start(t+.06);
+  }catch(e){}}
+  return{ding,chips,swish,win,tick,go,
     get muted(){return muted;},
     toggle(){muted=!muted;try{localStorage.setItem("nvMute",muted?"1":"0");}catch(e){}return muted;}};
 })();
@@ -1739,13 +1842,19 @@ function openNote(name,x,y){
 }
 
 /* ================= ГРАФИКА НА СТЕКА ================= */
-let stackHist=[];
+let stackHist=[],stackRoom=null,stackStart=null;
 function pushStack(){
   if(!S||mySeat<0)return;
   const me=S.seats[mySeat];if(!me)return;
+  // нова маса или номерът на ръката тръгна отначало → историята се изчиства,
+  // иначе кривата продължава да расте отвъд реално изиграните ръце
   const last=stackHist[stackHist.length-1];
-  if(!last||last.h!==S.handNo){stackHist.push({h:S.handNo,v:me.chips});if(stackHist.length>120)stackHist.shift();}
-  else last.v=me.chips;
+  if(stackRoom!==S.code||(last&&S.handNo<last.h)){stackRoom=S.code;stackHist=[];stackStart=null;}
+  if(stackStart===null)stackStart=(me.st&&me.st._startChips)||me.chips;
+  if(S.handNo<1)return;
+  const l2=stackHist[stackHist.length-1];
+  if(!l2||l2.h!==S.handNo){stackHist.push({h:S.handNo,v:me.chips});if(stackHist.length>400)stackHist.shift();}
+  else l2.v=me.chips;
 }
 function sparkSVG(vals,W,H,col,cls){
   const mn=Math.min(...vals),mx=Math.max(...vals),rg=(mx-mn)||1;
@@ -1763,16 +1872,18 @@ const XSCALE=[10,20,30,40,50,75,100,150,200,300,400,500,750,1000,1500,2000,3000,
 const nStep=r=>{const p=Math.pow(10,Math.floor(Math.log10(r||1)));
   return ([1,2,2.5,5,10].find(m=>m*p>=r)||10)*p;};
 const nTxt=v=>(Math.abs(v)>=100?Math.round(v):(v%1===0?v.toFixed(0):v.toFixed(1)));
-function axisSVG(vb){
+function axisSVG(pts,base0){
   const W=320,H=178,ML=38,MR=10,MT=10,MB=30;
-  const n=vb.length, base=vb[0];
-  const xmax=XSCALE.find(v=>v>=n)||Math.ceil(n/1000)*1000;
+  const n=pts.length, vb=pts.map(p=>p.v);
+  const base=(base0!=null?base0:vb[0]);
+  const hLast=pts[n-1].h;
+  const xmax=XSCALE.find(v=>v>=hLast)||Math.ceil(hLast/1000)*1000;
   let lo=Math.min.apply(null,vb.concat([base])), hi=Math.max.apply(null,vb.concat([base]));
   if(hi-lo<1){hi=base+1;lo=Math.max(0,base-1);}
   const st=nStep((hi-lo)/3.2);
   lo=Math.max(0,Math.floor(lo/st)*st); hi=Math.ceil(hi/st)*st;
   if(hi<=lo)hi=lo+st;
-  const px=i=>ML+(i/Math.max(1,xmax-1))*(W-ML-MR);
+  const px=h=>ML+((h-1)/Math.max(1,xmax-1))*(W-ML-MR);
   const py=v=>MT+(1-(v-lo)/(hi-lo))*(H-MT-MB);
   let g="";
   for(let v=lo;v<=hi+1e-9;v+=st){
@@ -1783,14 +1894,14 @@ function axisSVG(vb){
   const xt=[...new Set([1,.25,.5,.75,1].map((f,i)=>i?Math.round(f*xmax):1))].filter(t=>t>=1&&t<=xmax);
   xt.forEach(t=>{
     if(t>xmax)return;
-    const x=px(Math.max(0,t-1)).toFixed(1);
+    const x=px(t).toFixed(1);
     g+='<line class="gl" x1="'+x+'" y1="'+MT+'" x2="'+x+'" y2="'+(H-MB)+'"/>'+
        '<text x="'+x+'" y="'+(H-MB+12)+'" text-anchor="middle">'+t+'</text>';
   });
   const yb=py(base).toFixed(1);
-  const d=vb.map((v,i)=>(i?"L":"M")+px(i).toFixed(1)+" "+py(v).toFixed(1)).join(" ");
-  const area=d+" L "+px(n-1).toFixed(1)+" "+yb+" L "+px(0).toFixed(1)+" "+yb+" Z";
-  const lx=px(n-1).toFixed(1), ly=py(vb[n-1]).toFixed(1);
+  const d=pts.map((p,i)=>(i?"L":"M")+px(p.h).toFixed(1)+" "+py(p.v).toFixed(1)).join(" ");
+  const area=d+" L "+px(hLast).toFixed(1)+" "+yb+" L "+px(pts[0].h).toFixed(1)+" "+yb+" Z";
+  const lx=px(hLast).toFixed(1), ly=py(vb[n-1]).toFixed(1);
   const col=vb[n-1]>=base?"#42e6a4":"#c96a5e";
   return '<svg class="sgraph-mini" viewBox="0 0 '+W+' '+H+'">'+
     '<defs><clipPath id="clipUp"><rect x="0" y="0" width="'+W+'" height="'+yb+'"/></clipPath>'+
@@ -1818,15 +1929,16 @@ function drawGraph(){
     return;
   }
   const vals=stackHist.map(s=>s.v);
-  const diff=vals[vals.length-1]-vals[0];
+  const diff=vals[vals.length-1]-(stackStart!=null?stackStart:vals[0]);
   const up=diff>=0;
   const col=up?"#42e6a4":"#c96a5e";
   const arrow='<i class="'+(up?"up":"dn")+'">'+(up?"▲":"▼")+'</i>';
   if(el)el.innerHTML=sparkSVG(vals,300,70,col,"sgraph")+
     '<div class="sgraph-lbl">Стек през сесията · '+arrow+'<b>'+bbTxt(diff)+'</b></div>';
   const bb=S.settings.sb*2;
-  if(mel)mel.innerHTML=axisSVG(vals.map(v=>v/bb))+
-    '<div class="mfoot">'+stackHist.length+' ръце · начало '+bbTxt(vals[0])+'</div>';
+  const st0=(stackStart!=null?stackStart:vals[0]);
+  if(mel)mel.innerHTML=axisSVG(stackHist.map(s2=>({h:s2.h,v:s2.v/bb})),st0/bb)+
+    '<div class="mfoot">'+stackHist[stackHist.length-1].h+' ръце · начало '+bbTxt(st0)+'</div>';
   if(md){md.className="mdelta "+(up?"up":"dn");md.innerHTML=arrow+bbTxt(diff);}
 }
 
@@ -1846,16 +1958,16 @@ $("btnNewHand").onclick=()=>socket.emit("newHand");
 $("btnFold").onclick=()=>socket.emit("action",{type:"fold"});
 $("btnCall").onclick=()=>socket.emit("action",{type:"check_call"});
 $("btnRaise").onclick=()=>socket.emit("action",{type:"raise",target:+$("raiseSlider").value});
-$("raiseSlider").oninput=()=>showRaiseVal();
+$("raiseSlider").oninput=()=>{const sl=$("raiseSlider");if(!sliderDrag)sl.value=snapBB(+sl.value);showRaiseVal();};
 /* плъзгачът: влачене = плавно · почукване = точно 1 BB нагоре/надолу */
 (function(){
   const sl=$("raiseSlider");if(!sl)return;
   let drag=false,moved=false,x0=0,v0=0;
   const lim=v=>Math.max(+sl.min,Math.min(+sl.max,v));
   const valFromX=x=>{
-    const r=sl.getBoundingClientRect(),mn=+sl.min,mx=+sl.max,st=+sl.step||1;
+    const r=sl.getBoundingClientRect(),mn=+sl.min,mx=+sl.max;
     let t=(x-r.left-8)/Math.max(1,r.width-16);t=Math.max(0,Math.min(1,t));
-    return lim(mn+Math.round((t*(mx-mn))/st)*st);
+    return snapBB(mn+t*(mx-mn));
   };
   const thumbX=v=>{
     const r=sl.getBoundingClientRect(),mn=+sl.min,mx=+sl.max;
@@ -1865,7 +1977,7 @@ $("raiseSlider").oninput=()=>showRaiseVal();
   sl.addEventListener("pointerdown",e=>{
     e.preventDefault();
     try{sl.setPointerCapture(e.pointerId);}catch(_){}
-    drag=true;moved=false;x0=e.clientX;v0=+sl.value;
+    drag=true;moved=false;x0=e.clientX;v0=+sl.value;sliderDrag=true;
   });
   sl.addEventListener("pointermove",e=>{
     if(!drag)return;
@@ -1874,14 +1986,22 @@ $("raiseSlider").oninput=()=>showRaiseVal();
   const end=e=>{
     if(!drag)return;drag=false;
     try{sl.releasePointerCapture(e.pointerId);}catch(_){}
+    sliderDrag=false;
     if(!moved){
-      const bb=S?S.settings.sb*2:1;
-      sl.value=lim(v0+(e.clientX>=thumbX(v0)?bb:-bb));
+      sl.value=stepBB(v0,e.clientX>=thumbX(v0)?1:-1);
       showRaiseVal();
     }
   };
   sl.addEventListener("pointerup",end);
   sl.addEventListener("pointercancel",end);
+  // стрелките и Home/End също се движат на цели блайндове
+  sl.addEventListener("keydown",e=>{
+    const k=e.key;
+    if(k==="ArrowRight"||k==="ArrowUp"||k==="PageUp"){e.preventDefault();sl.value=stepBB(+sl.value,1);showRaiseVal();}
+    else if(k==="ArrowLeft"||k==="ArrowDown"||k==="PageDown"){e.preventDefault();sl.value=stepBB(+sl.value,-1);showRaiseVal();}
+    else if(k==="Home"){e.preventDefault();sl.value=sl.min;showRaiseVal();}
+    else if(k==="End"){e.preventDefault();sl.value=sl.max;showRaiseVal();}
+  });
 })();
 /* префлоп стъпки — настройваеми от играча, пазят се локално */
 let steps=[2.1,2.5,3.5];
@@ -1929,6 +2049,15 @@ function buildPreRow(){
     g.appendChild(b);g.appendChild(rowb);
     row.appendChild(g);
   });
+  // четвърта колона: All-in — без ред за настройка, с потвърждение
+  const ag=document.createElement("div");ag.className="stepgrp allin";
+  const ab=document.createElement("button");ab.className="preset stepbtn";ab.textContent="All-in";
+  ab.title="Влизаш с целия си стек";
+  ab.onclick=()=>{
+    const ctx=$("sizer")._ctx;if(!ctx||!S)return;
+    askConfirm(ab,ctx.maxTo,()=>socket.emit("action",{type:"raise",target:ctx.maxTo}));
+  };
+  ag.appendChild(ab);row.appendChild(ag);
 }
 buildPreRow();
 document.querySelectorAll("#postRow .preset").forEach(b=>b.onclick=()=>{
@@ -1943,6 +2072,8 @@ document.querySelectorAll("#postRow .preset").forEach(b=>b.onclick=()=>{
     case"a":v=maxTo;break;
   }
   v=Math.max(minTo,Math.min(maxTo,v));
+  if(b.dataset.k==="a"){askConfirm(b,v,()=>socket.emit("action",{type:"raise",target:v}));return;}
+  clearConfirm();
   socket.emit("action",{type:"raise",target:v});
 });
 
