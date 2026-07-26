@@ -9,6 +9,39 @@ const path = require("path");
 const { Server } = require("socket.io");
 
 const app = express();
+/* gzip без външна зависимост: index.html пада от ~152 KB на ~43 KB.
+   Пакетира се веднъж при старта и се сервира от паметта. */
+const zlib=require("zlib");
+const GZ=new Map();
+function gzipStatic(req,res,next){
+  const f=req.path==="/"?"/index.html":req.path;
+  if(!/\.(html|js|css|svg|json)$/.test(f))return next();
+  if(!/\bgzip\b/.test(req.headers["accept-encoding"]||""))return next();
+  const full=path.join(__dirname,"public",f);
+  if(!full.startsWith(path.join(__dirname,"public")))return next();
+  const send=buf=>{
+    res.setHeader("Content-Encoding","gzip");
+    res.setHeader("Vary","Accept-Encoding");
+    res.type(path.extname(f)||"html");
+    res.setHeader("Cache-Control","no-cache");
+    res.end(buf);
+  };
+  const fs=require("fs");
+  fs.stat(full,(se,st)=>{
+    if(se)return next();
+    const key=st.mtimeMs+":"+st.size;
+    const hit=GZ.get(f);
+    if(hit&&hit.key===key)return send(hit.buf);
+    fs.readFile(full,(err,data)=>{
+      if(err)return next();
+      zlib.gzip(data,{level:8},(e,buf)=>{
+        if(e)return next();
+        GZ.set(f,{key,buf});send(buf);
+      });
+    });
+  });
+}
+app.use(gzipStatic);
 app.use(express.static(path.join(__dirname, "public")));
 const server = http.createServer(app);
 const io = new Server(server);
@@ -89,6 +122,8 @@ function shuffleFromSeeds(serverSeedHex,clientSeed,nonce){
   return deck;
 }
 const randHex=n=>crypto.randomBytes(n).toString("hex");
+/* банерът се вмъква като HTML в клиента — имената задължително се екранират */
+const esc=t=>String(t==null?"":t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 /* ============ БОТ-ПОМОЩНИЦИ (пренесени 1:1) ============ */
 function preStr(hole){
@@ -120,6 +155,18 @@ function drawStrength(hole,board){
 const BOT_NAMES=["Борис","Елена","Мартин","Ралица","Стоян","Деси","Калоян","Ивайло"];
 const rooms=new Map(); // code -> room
 
+/* прост token bucket на сокет — 25 събития, пълни се с 12/сек */
+const buckets=new Map();
+function rateOk(socket,cost){
+  cost=cost||1;
+  const now=Date.now();
+  let b=buckets.get(socket.id);
+  if(!b){b={t:now,v:25};buckets.set(socket.id,b);}
+  b.v=Math.min(25,b.v+(now-b.t)*0.012);b.t=now;
+  if(b.v<cost)return false;
+  b.v-=cost;return true;
+}
+
 function makeRoom(code){
   const room={
     code, hostId:null,
@@ -131,6 +178,7 @@ function makeRoom(code){
     fair:null,actionLog:[],handHistory:[],lastWin:"—",dealMap:[],lastReveal:null,
     botTimer:null,humanTimer:null,autoTimer:null,nextHandAt:0,deadline:0,pending:[],
     log(msg,cls){io.to(code).emit("log",{msg,cls});},
+    act(seat,kind,amt){io.to(code).emit("act",{seat,kind,amt:amt||0});},
     rec(txt){room.actionLog.push(txt);}
   };
   rooms.set(code,room);
@@ -232,7 +280,9 @@ function newHand(room){
   room.deck=shuffleFromSeeds(serverSeed,clientSeed,nonce);
   room.deckPos=0;
 
-  const sbI=nextIdx(room,room.button), bbI=nextIdx(room,sbI);
+  // хедс-ъп: бутонът е малкият блайнд и действа ПРЪВ префлоп, последен постфлоп
+  const heads=active(room).length===2;
+  const sbI=heads?room.button:nextIdx(room,room.button), bbI=nextIdx(room,sbI);
   postBlind(room.seats[sbI],SB(room)); postBlind(room.seats[bbI],BB(room));
   room.rec("Дилър: "+room.seats[room.button].name+" · "+room.seats[sbI].name+" SB "+SB(room)+" · "+room.seats[bbI].name+" BB "+BB(room));
   room.rec("— PREFLOP —");
@@ -246,7 +296,7 @@ function newHand(room){
   }
   room.stage="preflop";
   active(room).forEach(p=>p.acted=false);
-  room.acting=nextIdx(room,bbI);
+  room.acting=heads?sbI:nextIdx(room,bbI);
   room.log("— Ръка №"+room.handNo+". Дилър: "+room.seats[room.button].name+" · печат "+room.fair.commit.slice(0,16)+"… —","sys");
   sendHole(room);
   proceed(room);
@@ -266,6 +316,7 @@ function reasonSuffix(p){const r=p.pendingReason;p.pendingReason="";return r?" (
 function proceed(room){
   broadcast(room);
   if(room.handOver)return;
+  if(alive(room).length===0){refundAll(room);return;}
   if(alive(room).length===1){endByFold(room);return;}
   const need=canAct(room).filter(p=>!p.acted||p.bet<room.currentBet);
   if(need.length===0||canAct(room).length===0){endBettingRound(room);return;}
@@ -298,9 +349,26 @@ function clearTimers(room){
   if(room.humanTimer){clearTimeout(room.humanTimer);room.humanTimer=null;}
   room.deadline=0;
 }
+/* пълно изтриване: всички таймери, включително авто-раздаване, рънаут и гратиси */
+function destroyRoom(room){
+  clearTimers(room);
+  if(room.autoTimer){clearTimeout(room.autoTimer);room.autoTimer=null;}
+  if(room.runoutTimer){clearTimeout(room.runoutTimer);room.runoutTimer=null;}
+  room.seats.forEach(p=>{if(p&&p._grace){clearTimeout(p._grace);p._grace=null;}});
+  rooms.delete(room.code);
+}
+function scheduleCleanup(room){
+  if(room.cleanupTimer)clearTimeout(room.cleanupTimer);
+  room.cleanupTimer=setTimeout(()=>{
+    room.cleanupTimer=null;
+    const r=rooms.get(room.code);
+    if(r&&!active(r).some(q=>q.type==="human"&&q.id))destroyRoom(r);
+  },10*60*1000);
+}
 function actFold(room,i){
   clearTimers(room);
   const p=room.seats[i];p.folded=true;p.acted=true;
+  room.act(i,"fold");
   room.log(p.name+": fold");room.rec(p.name+": fold"+reasonSuffix(p));
   room.acting=nextIdx(room,i);proceed(room);
 }
@@ -308,12 +376,13 @@ function actCheckCall(room,i){
   clearTimers(room);
   const p=room.seats[i];
   const toCall=room.currentBet-p.bet;
-  if(toCall<=0){room.log(p.name+": check");room.rec(p.name+": check"+reasonSuffix(p));}
+  if(toCall<=0){room.act(i,"check");room.log(p.name+": check");room.rec(p.name+": check"+reasonSuffix(p));}
   else{
     markVpip(room,p,false);
     const a=Math.min(toCall,p.chips);
     p.chips-=a;p.bet+=a;p.contrib+=a;
     if(p.chips===0)p.allIn=true;
+    room.act(i,p.allIn?"allin":"call",a);
     room.log(p.name+": call "+a+(p.allIn?" (all-in)":""));
     room.rec(p.name+": call "+a+(p.allIn?" · all-in":"")+reasonSuffix(p));
   }
@@ -323,9 +392,13 @@ function actRaiseTo(room,i,target){
   clearTimers(room);
   const p=room.seats[i];
   const maxTo=p.bet+p.chips;
-  target=Math.min(Math.round(target),maxTo);
+  target=Number(target);
+  if(!Number.isFinite(target))return;                 // NaN / undefined
+  target=Math.round(target);
   const minTo=room.currentBet+room.minRaise;
-  if(target<minTo&&target<maxTo)target=minTo;
+  if(target<minTo)target=Math.min(minTo,maxTo);       // мин.рейз, но никога над стека
+  target=Math.max(p.bet,Math.min(target,maxTo));      // и никога под вече заложеното
+  if(target<=p.bet)return;
   markVpip(room,p,true);
   const add=target-p.bet;
   p.chips-=add;p.bet=target;p.contrib+=add;
@@ -333,6 +406,7 @@ function actRaiseTo(room,i,target){
   const raiseSize=target-room.currentBet;
   const fullRaise=raiseSize>=room.minRaise;
   room.currentBet=Math.max(room.currentBet,target);
+  room.act(i,p.allIn?"allin":"raise",target);
   room.log(p.name+": "+(p.allIn?"all-in ":"raise до ")+target);
   room.rec(p.name+": "+(p.allIn?"all-in ":"raise до ")+target+reasonSuffix(p));
   if(fullRaise){
@@ -499,6 +573,7 @@ function revealAllIn(room){
   equityCalc(room);
 }
 function endBettingRound(room){
+  if(room.handOver)return;               // защита срещу втора верига
   active(room).forEach(p=>{room.pot+=p.bet;p.bet=0;p.acted=false;p.canRaiseFlag=true;});
   room.currentBet=0;room.minRaise=BB(room);
   const runout=canAct(room).length<=1&&alive(room).length>=2;
@@ -509,7 +584,14 @@ function endBettingRound(room){
   else{showdown(room);return;}
   room.log("— "+room.stage.toUpperCase()+": "+room.board.map(cardStr).join(" ")+" —","sys");
   room.rec("— "+room.stage.toUpperCase()+": "+room.board.map(cardStr).join(" ")+" —");
-  if(runout){revealAllIn(room);broadcast(room);setTimeout(()=>endBettingRound(room),1100);return;}
+  if(runout){
+    revealAllIn(room);
+    room.acting=-1;                       // никой не е на ход по време на рънаута
+    broadcast(room);
+    if(room.runoutTimer)clearTimeout(room.runoutTimer);
+    room.runoutTimer=setTimeout(()=>{room.runoutTimer=null;if(!room.handOver)endBettingRound(room);},1100);
+    return;
+  }
   room.acting=nextIdx(room,room.button);proceed(room);
 }
 function dealBoard(room,n){
@@ -521,16 +603,30 @@ function dealBoard(room,n){
     room.board.push(room.deck[room.deckPos++]);
   }
 }
+/* всички са напуснали/фолднали — парите се връщат, нищо не изчезва */
+function refundAll(room){
+  active(room).forEach(p=>{room.pot+=p.bet;p.bet=0;});
+  const tot=active(room).reduce((s,p)=>s+p.contrib,0);
+  if(tot>0)active(room).forEach(p=>{p.chips+=Math.round(room.pot*p.contrib/tot);});
+  room.pot=0;
+  room.log("Ръката е прекратена — залозите се връщат.","sys");
+  room.rec("Ръката е прекратена — залозите се връщат.");
+  room.lastWin="—";
+  finishHand(room);
+}
 function endByFold(room){
   const w=alive(room)[0];
   active(room).forEach(p=>{room.pot+=p.bet;p.bet=0;});
-  w.chips+=room.pot;w.st.won++;room.lastWin=w.name;w.winCards=true;
-  room.rec(w.name+" печели "+room.pot+" (останалите fold).");
-  io.to(room.code).emit("banner",{html:w.name+" печели "+room.pot});
-  room.log(w.name+" печели "+room.pot+" (останалите fold).","win");
+  const amt=room.pot;
+  w.chips+=amt;w.st.won++;room.lastWin=w.name;w.winCards=true;
+  room.pot=0;
+  room.rec(w.name+" печели "+amt+" (останалите fold).");
+  io.to(room.code).emit("banner",{html:esc(w.name)+" печели "+amt});
+  room.log(w.name+" печели "+amt+" (останалите fold).","win");
   finishHand(room);
 }
 function showdown(room){
+  if(room.handOver)return;               // потът се плаща само веднъж
   room.stage="showdown";
   const cont=alive(room);
   cont.forEach(p=>{
@@ -543,7 +639,13 @@ function showdown(room){
   for(const L of levels){
     let potAmt=0;
     active(room).forEach(p=>{potAmt+=Math.max(0,Math.min(p.contrib,L)-prev);});
-    const elig=cont.filter(p=>p.contrib>=L);
+    let elig=cont.filter(p=>p.contrib>=L);
+    if(potAmt>0&&elig.length===0){
+      // никой жив няма право на това ниво — връща се на най-големия вложител
+      const back=active(room).filter(p=>p.contrib>=L).sort((a,b)=>b.contrib-a.contrib)[0];
+      if(back){back.chips+=potAmt;gains[back.name]=(gains[back.name]||0)+potAmt;}
+      prev=L;continue;
+    }
     if(potAmt>0&&elig.length>0){
       const bestV=Math.max(...elig.map(p=>p._score));
       const ws=elig.filter(p=>p._score===bestV);
@@ -556,12 +658,13 @@ function showdown(room){
   const winners=cont.filter(p=>p._score===bestV);
   winners.forEach(p=>{p.winCards=true;p.st.won++;p.st.sdW++;});
   cont.filter(p=>p._score<bestV).forEach(p=>p.st.sdL++);
-  const winTxt=winners.map(p=>p.name+" ("+p.handName+")").join(", ");
+  const winTxt=winners.map(p=>esc(p.name)+" ("+esc(p.handName)+")").join(", ");
   room.lastWin=winners.map(p=>p.name).join(", ");
-  io.to(room.code).emit("banner",{html:"Печели: "+winTxt+"<br><span class='bsub'>"+Object.entries(gains).map(([n,g])=>n+" +"+g).join(" · ")+"</span>"});
+  io.to(room.code).emit("banner",{html:"Печели: "+winTxt+"<br><span class='bsub'>"+Object.entries(gains).map(([n,g])=>esc(n)+" +"+g).join(" · ")+"</span>"});
   room.rec("SHOWDOWN: "+cont.map(p=>p.name+" "+p.hole.map(cardStr).join("")+" → "+p.handName).join(" | "));
-  room.rec("Печели: "+winTxt+" · "+Object.entries(gains).map(([n,g])=>n+" +"+g).join(", "));
-  room.log("Печели: "+winTxt,"win");
+  const winPlain=winners.map(p=>p.name+" ("+p.handName+")").join(", ");
+  room.rec("Печели: "+winPlain+" · "+Object.entries(gains).map(([n,g])=>n+" +"+g).join(", "));
+  room.log("Печели: "+winPlain,"win");
   room.pot=0;finishHand(room);
 }
 function scheduleAutoDeal(room){
@@ -605,23 +708,30 @@ io.on("connection",socket=>{
   let myRoom=null,mySeat=-1;
 
   socket.on("create",({name,clientSeed,avatar},cb)=>{
+    cb=typeof cb==="function"?cb:()=>{};
+    if(!rateOk(socket,5))return cb({error:"Твърде много заявки — изчакай малко."});
+    if(myRoom)return cb({error:"Вече си на маса."});
     const code=codeOf();
     const room=makeRoom(code);
     room.hostId=socket.id;
-    joinRoom(room,name,clientSeed,cb,avatar);
+    joinRoom(room,name,clientSeed,cb,avatar,null);
   });
 
-  socket.on("join",({code,name,clientSeed,avatar},cb)=>{
+  socket.on("join",({code,name,clientSeed,avatar,token},cb)=>{
+    cb=typeof cb==="function"?cb:()=>{};
+    if(!rateOk(socket,5))return cb({error:"Твърде много заявки — изчакай малко."});
+    if(myRoom)return cb({error:"Вече си на маса."});
     code=String(code||"").trim().toUpperCase();
     const room=rooms.get(code);
     if(!room)return cb({error:"Няма стая с код "+code+"."});
-    joinRoom(room,name,clientSeed,cb,avatar);
+    joinRoom(room,name,clientSeed,cb,avatar,token);
   });
 
-  function joinRoom(room,name,clientSeed,cb,avatar){
+  function joinRoom(room,name,clientSeed,cb,avatar,token){
     name=String(name||"").trim().slice(0,14)||"Гост";
     // връщане след прекъсване: същото име → същото място и стек
-    const back=active(room).find(q=>q.type==="human"&&!q.id&&q.name===name);
+    // връщане само със собствения токен — иначе всеки може да заеме чуждо място по име
+    const back=token?active(room).find(q=>q.type==="human"&&!q.id&&q.tok&&q.tok===String(token)):null;
     if(back){
       back.id=socket.id;
       if(clientSeed)back.clientSeed=String(clientSeed).slice(0,64);
@@ -630,7 +740,7 @@ io.on("connection",socket=>{
       myRoom=room;mySeat=back.seat;
       socket.join(room.code);
       if(!room.hostId)room.hostId=socket.id;
-      socket.emit("seated",{seat:back.seat,code:room.code,host:room.hostId===socket.id});
+      socket.emit("seated",{seat:back.seat,code:room.code,host:room.hostId===socket.id,token:back.tok});
       room.log(name+" се върна на мястото си.","sys");
       if(!room.handOver&&back.hole&&back.hole.length&&!back.folded)
         io.to(back.id).emit("hole",{seat:back.seat,hole:back.hole});
@@ -643,17 +753,19 @@ io.on("connection",socket=>{
     let base=name,n=2;
     while(active(room).some(p=>p.name===name))name=base+" "+(n++);
     const seatNow=()=>{
+      if(!socket.connected)return false;   // разкачил се е, докато е чакал реда си
       // първо освободи бот-място, ако няма празно
       let idx=room.seats.findIndex(s=>s.type==="empty");
       if(idx<0){idx=room.seats.findIndex(s=>s.type==="bot");if(idx>=0)room.seats[idx]=emptySeat(idx);}
       if(idx<0)return false;
       const s=emptySeat(idx);
       s.type="human";s.id=socket.id;s.name=name;s.clientSeed=String(clientSeed||"").slice(0,64);
+      s.tok=randHex(12);
       s.chips=room.settings.startStack;s.st._startChips=room.settings.startStack;
       s.avatar=String(avatar||"").slice(0,4);
       room.seats[idx]=s;
       mySeat=idx;
-      socket.emit("seated",{seat:idx,code:room.code,host:room.hostId===socket.id});
+      socket.emit("seated",{seat:idx,code:room.code,host:room.hostId===socket.id,token:s.tok});
       room.log(name+" сяда на масата (място "+(idx+1)+").","sys");
       broadcast(room);
       return true;
@@ -683,24 +795,28 @@ io.on("connection",socket=>{
 
   socket.on("action",({type,target})=>{
     if(!myRoom||myRoom.handOver)return;
-    if(myRoom.acting!==mySeat)return;
+    if(!rateOk(socket))return;
+    if(myRoom.stage==="showdown"||myRoom.acting!==mySeat)return;
     const p=myRoom.seats[mySeat];
     if(!p||p.id!==socket.id)return;
+    if(p.folded||p.allIn)return;          // all-in/фолднал не може да действа повече
     if(type==="fold")actFold(myRoom,mySeat);
     else if(type==="check_call")actCheckCall(myRoom,mySeat);
     else if(type==="raise"){
       if(p.canRaiseFlag===false)return;
-      actRaiseTo(myRoom,mySeat,+target||0);
+      actRaiseTo(myRoom,mySeat,target);
     }
   });
 
   socket.on("settings",(s)=>{
-    if(!myRoom||mySeat<0)return;
+    if(!myRoom||mySeat<0||!s||typeof s!=="object")return;
+    if(!rateOk(socket,2))return;
     const r=myRoom, who=r.seats[mySeat];
     if(!who||who.id!==socket.id)return;
+    const isHost=r.hostId===socket.id;
     const by=" · промяна от "+who.name;
     if(s.sb&&[10,25,50].includes(+s.sb)){r.settings.sb=+s.sb;r.log("Блайндове "+r.settings.sb+"/"+r.settings.sb*2+(r.handOver?" приложени":" — от следващата ръка")+by+".","sys");}
-    if(s.startStack&&[2000,5000,10000].includes(+s.startStack)){
+    if(s.startStack&&isHost&&[2000,5000,10000].includes(+s.startStack)){
       r.settings.startStack=+s.startStack;
       if(r.handOver){active(r).forEach(p=>{p.st.net+=p.chips-p.st._startChips;p.chips=r.settings.startStack;p.st._startChips=r.settings.startStack;});r.log("Стек "+r.settings.startStack+" приложен за всички"+by+".","sys");}
       else r.log("Стек "+r.settings.startStack+" — от следващата ръка"+by+".","sys");
@@ -712,7 +828,7 @@ io.on("connection",socket=>{
       if(r.settings.autoDeal&&r.handOver&&r.handNo>0)scheduleAutoDeal(r);
       if(!r.settings.autoDeal&&r.autoTimer){clearTimeout(r.autoTimer);r.autoTimer=null;r.nextHandAt=0;}
     }
-    if(s.fillBots!==undefined){r.settings.fillBots=s.fillBots;r.log((s.fillBots==="full"?"Ботове: пълна маса (8)":s.fillBots?"Ботове: допълват до минимум 3 участника":"Ботове: изключени")+by+".","sys");
+    if(s.fillBots!==undefined&&["full",true,false].includes(s.fillBots)){r.settings.fillBots=s.fillBots;r.log((s.fillBots==="full"?"Ботове: пълна маса (8)":s.fillBots?"Ботове: допълват до минимум 3 участника":"Ботове: изключени")+by+".","sys");
       if(r.handOver&&!s.fillBots)r.seats.forEach((p,i)=>{if(p.type==="bot")r.seats[i]=emptySeat(i);});
       if(r.handOver)fillBots(r);
     }
@@ -771,7 +887,9 @@ io.on("connection",socket=>{
     if(room.handOver)free();
     else{
       p.id=null;
-      if(room.acting===seat)actFold(room,seat); else {p.folded=true;p.acted=true;}
+      // фолдваме през нормалния път, за да не остане залог без наследник
+      if(room.acting===seat)actFold(room,seat);
+      else{p.folded=true;p.acted=true;}
       room.pending.push(free);
     }
     if(room.hostId===socket.id){
@@ -782,9 +900,14 @@ io.on("connection",socket=>{
     socket.leave(room.code);
     myRoom=null;mySeat=-1;
     broadcast(room);
+    if(!active(room).some(q=>q.type==="human"&&q.id)){
+      if(room.autoTimer){clearTimeout(room.autoTimer);room.autoTimer=null;room.nextHandAt=0;}
+      scheduleCleanup(room);
+    }
   });
 
   socket.on("disconnect",()=>{
+    buckets.delete(socket.id);
     if(!myRoom)return;
     const room=myRoom;
     const p=mySeat>=0?room.seats[mySeat]:null;
@@ -810,12 +933,7 @@ io.on("connection",socket=>{
       }
       broadcast(room);
       // празна стая — чистене след 10 мин
-      if(!active(room).some(q=>q.type==="human"&&q.id)){
-        setTimeout(()=>{
-          const r=rooms.get(room.code);
-          if(r&&!active(r).some(q=>q.type==="human"&&q.id)){clearTimers(r);rooms.delete(room.code);}
-        },10*60*1000);
-      }
+      if(!active(room).some(q=>q.type==="human"&&q.id))scheduleCleanup(room);
     }
   });
 });
