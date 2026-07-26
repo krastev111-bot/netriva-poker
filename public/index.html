@@ -35,8 +35,12 @@
     .hdr-right{width:100%;justify-content:space-between;align-items:flex-start}
     .hdr-stats{flex-direction:column;gap:3px}
   }
-  .gear{font-size:1.05rem;padding:6px 12px;background:var(--gold);color:#241a08;border:1px solid var(--gold);font-weight:bold;border-radius:8px;cursor:pointer}
-  .gear.on{background:var(--gold-hi);border-color:var(--gold-hi);box-shadow:0 0 10px rgba(240,217,168,.45)}
+  .gear{font-size:1.05rem;padding:6px 12px;background:linear-gradient(180deg,#eecb6a,#c9a23e);color:#241a08;
+    border:1px solid var(--gold);font-weight:bold;border-radius:8px;cursor:pointer;
+    transition:background .16s,box-shadow .16s,color .16s}
+  .gear:hover{background:linear-gradient(180deg,#fff1c2,#f0cf72);color:#1b1200;border-color:#fff3d0;
+    box-shadow:0 0 0 1px #fff3d0,0 0 20px rgba(240,207,114,.65)}
+  .gear.on{background:linear-gradient(180deg,#fff1c2,#f0cf72);border-color:#fff3d0;box-shadow:0 0 12px rgba(240,217,168,.5)}
   .roomtag{font-family:'Courier New',monospace;font-size:.8rem;color:var(--mint);background:var(--mono-bg);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer;
     transition:transform .15s,border-color .15s,color .15s;display:inline-block}
   .roomtag:hover{transform:scale(1.07);border-color:var(--gold);color:var(--gold-hi)}
@@ -98,20 +102,32 @@
     transition:border-color .2s, box-shadow .2s}
   .seat.acting{border-color:var(--gold);box-shadow:0 0 14px rgba(212,175,106,.5)}
   .seat.folded{opacity:.4}
-  .seat.hero.folded{transition:opacity .15s}
-  .seat.hero.folded:hover{opacity:1;z-index:9}
+  .seat.hero.peekme{transition:opacity .15s;position:absolute}
+  .seat.hero.peekme:hover{opacity:1;z-index:9}
   /* картите се показват НАД гърбовете, без да местят нищо */
-  .seat.hero.folded .peek{position:absolute;left:0;right:0;display:flex;gap:3px;justify-content:center;
+  .seat.hero.peekme .peek{position:absolute;left:0;right:0;display:flex;gap:3px;justify-content:center;
     opacity:0;visibility:hidden;transition:opacity .15s;pointer-events:none;z-index:2}
-  .seat.hero.folded:hover .peek{opacity:1;visibility:visible}
-  .seat.hero.folded:hover .hole{opacity:0}
-  .seat.hero.folded .hole{transition:opacity .15s}
+  .seat.hero.peekme:hover .peek{opacity:1;visibility:visible}
+  .seat.hero.peekme:hover .hole{opacity:0}
+  .seat.hero.peekme .hole{transition:opacity .15s}
   .peek .card{box-shadow:0 4px 10px rgba(0,0,0,.6)}
   .peeklbl{position:absolute;left:0;right:0;bottom:-15px;font-size:.55rem;color:#8fae9e;
     letter-spacing:.08em;text-transform:uppercase;text-align:center;white-space:nowrap;
     opacity:0;transition:opacity .15s;pointer-events:none}
-  .seat.hero.folded:hover .peeklbl{opacity:1}
-  .seat.hero.folded{position:absolute}
+  .seat.hero.peekme:hover .peeklbl{opacity:1}
+  /* --- „сенчести" карти на борда: какво щеше да дойде --- */
+  .ghost{position:relative;opacity:.30;transition:opacity .22s}
+  .board:hover .ghost{opacity:.92}
+  .ghost .gl{position:absolute;left:0;right:0;bottom:-14px;text-align:center;font-size:.5rem;
+    letter-spacing:.1em;text-transform:uppercase;color:#8fae9e;white-space:nowrap;
+    opacity:0;transition:opacity .2s;pointer-events:none}
+  .board:hover .ghost .gl{opacity:.9}
+  .ghost .gface{position:absolute;inset:0;opacity:0;transition:opacity .18s}
+  .ghost:hover .gface{opacity:1}
+  .ghost:hover .gback{opacity:0}
+  .ghost .gback{transition:opacity .18s}
+  .ghosthint{font-family:'Courier New',monospace;font-size:.54rem;letter-spacing:.12em;
+    text-transform:uppercase;color:#7d998b;text-align:center;margin-top:19px;opacity:.75}
   .seat.gone{opacity:.25;border-style:dashed;border-color:var(--line)}
   .seat .name{font-size:1.06rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .seat .stack{font-size:.8rem;color:var(--chip)}
@@ -288,7 +304,7 @@
 
 
   /* --- пост-флоп бутони: бял болд текст, All-in плътно червен --- */
-  #postRow .preset{color:#fff;font-weight:700;letter-spacing:.02em}
+  #postRow .preset{color:#fff;font-weight:700;letter-spacing:.02em;flex:1 1 0;min-width:0;padding:9px 4px}
   #postRow .preset[data-k="a"]{background:linear-gradient(180deg,#d4574a,#a53225);border-color:#e2705f;
     font-size:.92rem;min-width:104px;padding:9px 12px;color:#fff;font-weight:800;box-shadow:0 2px 8px rgba(165,50,37,.4)}
   #postRow .preset[data-k="a"]:hover{filter:brightness(1.1);animation:riskr .85s ease-in-out infinite}
@@ -324,7 +340,8 @@
   .dockbtn.main{min-width:184px;color:#241a08;font-weight:bold;
     background:linear-gradient(180deg,var(--gold-hi),var(--gold));
     box-shadow:0 2px 9px rgba(212,175,55,.34)}
-  .dockbtn.main:hover{filter:brightness(1.07)}
+  .dockbtn.main:hover{background:linear-gradient(180deg,#fff1c2,#f0cf72);color:#1b1200;
+    box-shadow:0 0 0 1px #fff3d0,0 0 20px rgba(240,207,114,.65)}
   .dockbtn.main:active{transform:translateY(1px)}
   .dock.hot .dockbtn.main{box-shadow:0 0 0 1px #fff3d0,0 0 20px rgba(212,175,55,.55)}
   /* тънка линия, която се източва по долния ръб на дока */
@@ -373,8 +390,8 @@
   .sgraph-mini .gl{stroke:rgba(255,255,255,.10);stroke-width:1}
   .sgraph-mini .glb{stroke:rgba(212,175,106,.45);stroke-width:1;stroke-dasharray:4 4}
   .sgraph-mini .ax{stroke:rgba(255,255,255,.24);stroke-width:1.2}
-  .sgraph-mini text{fill:#8fae9e;font-family:'Courier New',monospace;font-size:11px}
-  .sgraph-mini text.axt{fill:#7d998b;font-size:10px;letter-spacing:.08em}
+  .sgraph-mini text{fill:#8fae9e;font-family:'Courier New',monospace;font-size:9px}
+  .sgraph-mini text.axt{fill:#7d998b;font-size:8px;letter-spacing:.08em}
   .mini .mfoot{font-size:.55rem;color:#7d998b;letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
   .mini .mempty{font-size:.68rem;color:#7d998b;padding:6px 0 2px}
   .sgraph-lbl b{color:#fff;font-weight:700;font-size:1.28em;letter-spacing:.03em}
@@ -719,7 +736,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v48</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <span class="ver" id="verTag">v49</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -812,7 +829,6 @@
       <div class="sizer" id="sizer">
         <div class="presets" id="preRow"></div>
         <div class="presets" id="postRow">
-          <span class="rowlbl">Post-flop</span>
           <button class="preset r-low" data-k="min">Min</button>
           <button class="preset r-low" data-k="33">33%</button>
           <button class="preset r-mid" data-k="50">50%</button>
@@ -896,7 +912,7 @@ let SEAT_POS=isMob()?SEAT_POS_M:SEAT_POS_D;
 window.addEventListener("resize",()=>{const n=isMob()?SEAT_POS_M:SEAT_POS_D;if(n!==SEAT_POS){SEAT_POS=n;if(S)render();}});
 const grp=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00A0");
 
-let socket=null,S=null,mySeat=-1,myHole=null,amHost=false,local={bbView:true,fourColor:true};
+let socket=null,S=null,mySeat=-1,myHole=null,amHost=false,HIST=[],local={bbView:true,fourColor:true};
 let deadlineTimer=null;let lastRV=null;let autoFired=false;let prevCB=0,prevAllIn=0,rimTimer=null;let lastJoin=null;let lastAnimHand=0,flownHand=0,prevBetSum=0,wasMyTurn=false;
 
 function fmt(n){
@@ -915,6 +931,42 @@ function cardEl(c,extra){
       '<span class="cnr br"><b class="r">'+R+'</b><i class="s">'+S+'</i></span>';
   }else d.innerHTML='<span class="pip">•</span>';
   return d;
+}
+/* какво щеше да дойде, ако ръката не беше свършила по-рано */
+const RIDX={};RANKS.forEach((r,i)=>RIDX[r]=i);
+const SIDX={};SUITS.forEach((x,i)=>SIDX[x]=i);
+function parseCard(str){
+  if(!str||str.length<2)return null;
+  const su=str.slice(-1), rk=str.slice(0,-1);
+  if(!(su in SIDX)||!(rk in RIDX))return null;
+  return {r:RIDX[rk],s:SIDX[su]};
+}
+function ghostBoard(b){
+  const wr=b.parentNode;
+  if(wr){const o=wr.querySelector(".ghosthint");if(o)o.remove();}
+  if(!S||!S.handOver||S.board.length>=5)return;
+  const h=HIST&&HIST[0];
+  if(!h||h.no!==S.handNo||!h.deck||!h.deck.length||typeof h.used!=="number")return;
+  const rest=h.deck.slice(h.used);
+  let k=0;const out=[];
+  const take=(lbl,n)=>{k++;for(let i=0;i<n;i++){const c=parseCard(rest[k++]);if(c)out.push({c,lbl});}};
+  if(S.board.length<3)take("flop",3);
+  if(S.board.length<4)take("turn",1);
+  if(S.board.length<5)take("river",1);
+  if(!out.length)return;
+  out.forEach(g=>{
+    const w=document.createElement("div");w.className="ghost";
+    const back=cardEl(null);back.classList.add("gback");
+    const face=cardEl(g.c);face.classList.add("gface");
+    w.appendChild(back);w.appendChild(face);
+    const l=document.createElement("span");l.className="gl";l.textContent=g.lbl;
+    w.appendChild(l);
+    w.title="Картата, която щеше да дойде — посочи я, за да я обърнеш";
+    b.appendChild(w);
+  });
+  const hint=document.createElement("div");hint.className="ghosthint";
+  hint.textContent="какво щеше да дойде · посочи карта";
+  b.insertAdjacentElement("afterend",hint);
 }
 function log(msg,cls){
   const d=document.createElement("div");
@@ -950,7 +1002,7 @@ function connect(){
     const b=$("winBanner");b.innerHTML=d.html;b.style.display="block";
     setTimeout(()=>{b.style.display="none";},5200);
   });
-  socket.on("history",renderHist);
+  socket.on("history",l=>{HIST=Array.isArray(l)?l:[];renderHist(HIST);if(S)renderTable();});
   socket.on("disconnect",()=>{$("msg").textContent="Връзката прекъсна — опитвам да се върна автоматично…";});
 }
 connect();
@@ -1021,6 +1073,26 @@ function updateFairFlow(){
   else { st[0].classList.add("now"); }
 }
 
+/* историята свършва точно там, където свършва блокът с действията вляво */
+function syncHist(){
+  const hb=$("histEl"),ac=document.querySelector(".actions");
+  if(!hb||!ac)return;
+  if(window.innerWidth<1100){hb.style.maxHeight="";return;}
+  if(document.activeElement&&hb.contains(document.activeElement))return;
+  const a=ac.getBoundingClientRect();if(a.height<10)return;
+  const r=hb.getBoundingClientRect();
+  let next=r.height+(a.bottom-r.bottom)-4;
+  next=Math.min(next,hb.scrollHeight+2,window.innerHeight-r.top-14);
+  next=Math.max(280,Math.min(900,Math.round(next)));
+  if(Math.abs(next-r.height)>2)hb.style.maxHeight=next+"px";
+}
+function syncHistSoon(){
+  try{
+    requestAnimationFrame(()=>{syncHist();
+      requestAnimationFrame(()=>{syncHist();setTimeout(syncHist,130);});});
+  }catch(_){}
+}
+window.addEventListener("resize",syncHistSoon);
 function render(){
   if(!S)return;
   updateRoomTag();
@@ -1058,7 +1130,7 @@ function renderTable(){
     if(p.type==="empty")return;
     const [x,y]=rot(i);
     const d=document.createElement("div");
-    d.className="seat"+(i===mySeat?" hero":"")+(p.folded&&!S.handOver?" folded":"")+(i===S.acting?" acting":"")+(!p.connected?" gone":"")+(S.handOver&&p.winCards?" wonseat":"")+(S.handOver&&p.showCards&&!p.winCards?" lostseat":"");
+    d.className="seat"+(i===mySeat?" hero":"")+(p.folded&&!S.handOver?" folded":"")+((i===mySeat&&p.folded&&myHole&&myHole.length)?" peekme":"")+(i===S.acting?" acting":"")+(!p.connected?" gone":"")+(S.handOver&&p.winCards?" wonseat":"")+(S.handOver&&p.showCards&&!p.winCards?" lostseat":"");
     d.style.left=x+"%";d.style.top=y+"%";
     let nm='<div class="name">'+avHTML(p.avatar)+p.name+(p.type==="bot"?'<span class="tag">bot</span>':"")+(i===S.button?'<span class="dealerbtn">D</span>':"")+(!p.connected?'<span class="tag">off</span>':"")+'</div>';
     let stack='<div class="stack"><b>'+fmt(p.chips)+'</b>'+(p.allIn?" · all-in":"")+'</div>';
@@ -1082,7 +1154,7 @@ function renderTable(){
       else if(!p.folded&&S.stage!=="idle"&&!S.handOver){hl.appendChild(cardEl(null));hl.appendChild(cardEl(null));}
     }
     d.appendChild(hl);
-    if(i===mySeat&&myHole&&myHole.length&&p.folded&&!S.handOver){
+    if(i===mySeat&&myHole&&myHole.length&&p.folded){
       const pk=document.createElement("div");pk.className="peek";
       myHole.forEach(c=>pk.appendChild(cardEl(c)));
       hl.style.position="relative";
@@ -1105,6 +1177,7 @@ function renderTable(){
   });
   const b=$("boardEl");b.innerHTML="";
   S.board.forEach(c=>b.appendChild(cardEl(c)));
+  ghostBoard(b);
   $("stageLine").textContent=S.handOver?(S.handNo?"ръка №"+S.handNo+" · край":"очаква ръка"):S.stage;
   $("potLine").style.display=S.pot>0||!S.handOver?"block":"none";
   const potTotal=S.pot+S.seats.reduce((s,p)=>s+(p.bet||0),0);
@@ -1173,6 +1246,7 @@ function renderTable(){
     bs.style.display=(S.handOver&&me&&myHole&&myHole.length&&!me.showCards&&!me.folded)?"inline-block":"none";
   }
   startCountdown();
+  syncHistSoon();
 }
 function rimPulse(kind){
   const o=document.querySelector(".oval");if(!o)return;
@@ -1409,7 +1483,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v48 · 26.07";
+const NV_VER="v49 · 26.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -1599,7 +1673,7 @@ const nStep=r=>{const p=Math.pow(10,Math.floor(Math.log10(r||1)));
   return ([1,2,2.5,5,10].find(m=>m*p>=r)||10)*p;};
 const nTxt=v=>(Math.abs(v)>=100?Math.round(v):(v%1===0?v.toFixed(0):v.toFixed(1)));
 function axisSVG(vb){
-  const W=320,H=300,ML=44,MR=12,MT=14,MB=26;
+  const W=320,H=168,ML=38,MR=10,MT=10,MB=20;
   const n=vb.length, base=vb[0];
   const xmax=XSCALE.find(v=>v>=n)||Math.ceil(n/1000)*1000;
   let lo=Math.min.apply(null,vb.concat([base])), hi=Math.max.apply(null,vb.concat([base]));
@@ -1613,14 +1687,14 @@ function axisSVG(vb){
   for(let v=lo;v<=hi+1e-9;v+=st){
     const y=py(v).toFixed(1);
     g+='<line class="gl" x1="'+ML+'" y1="'+y+'" x2="'+(W-MR)+'" y2="'+y+'"/>'+
-       '<text x="'+(ML-6)+'" y="'+(+y+4)+'" text-anchor="end">'+nTxt(v)+'</text>';
+       '<text x="'+(ML-5)+'" y="'+(+y+3.4)+'" text-anchor="end">'+nTxt(v)+'</text>';
   }
   const xt=[...new Set([1,.25,.5,.75,1].map((f,i)=>i?Math.round(f*xmax):1))].filter(t=>t>=1&&t<=xmax);
   xt.forEach(t=>{
     if(t>xmax)return;
     const x=px(Math.max(0,t-1)).toFixed(1);
     g+='<line class="gl" x1="'+x+'" y1="'+MT+'" x2="'+x+'" y2="'+(H-MB)+'"/>'+
-       '<text x="'+x+'" y="'+(H-MB+15)+'" text-anchor="middle">'+t+'</text>';
+       '<text x="'+x+'" y="'+(H-MB+13)+'" text-anchor="middle">'+t+'</text>';
   });
   const yb=py(base).toFixed(1);
   const d=vb.map((v,i)=>(i?"L":"M")+px(i).toFixed(1)+" "+py(v).toFixed(1)).join(" ");
@@ -1638,8 +1712,8 @@ function axisSVG(vb){
     '<line class="ax" x1="'+ML+'" y1="'+(H-MB)+'" x2="'+(W-MR)+'" y2="'+(H-MB)+'"/>'+
     '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>'+
     '<circle cx="'+lx+'" cy="'+ly+'" r="3.4" fill="'+col+'"/>'+
-    '<text class="axt" x="6" y="'+(MT-4)+'">BB</text>'+
-    '<text class="axt" x="'+(W-MR)+'" y="'+(H-4)+'" text-anchor="end">РЪЦЕ</text>'+
+    '<text class="axt" x="4" y="'+(MT-3)+'">BB</text>'+
+    '<text class="axt" x="'+(W-MR)+'" y="'+(MT-3)+'" text-anchor="end">РЪЦЕ</text>'+
     '</svg>';
 }
 function drawGraph(){
