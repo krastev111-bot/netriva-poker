@@ -260,20 +260,65 @@
 
   /* --- бутон „Нова ръка" с вграден обратен брояч --- */
   .nhwrap{position:relative;display:inline-flex;align-items:center}
-  #btnNewHand{position:relative;overflow:hidden;min-width:190px;z-index:1}
-  .nhfill{position:absolute;left:0;top:0;bottom:0;width:0%;z-index:0;
-    background:linear-gradient(90deg,rgba(66,230,164,.55),rgba(212,175,55,.75));
-    transition:width .95s linear,filter .3s;pointer-events:none}
-  .nhtxt{position:relative;z-index:1}
-  .nhcount{position:absolute;right:-15px;top:50%;transform:translate(0,-50%);
-    width:34px;height:34px;border-radius:50%;display:none;align-items:center;justify-content:center;
-    font-family:'Courier New',monospace;font-size:1.1rem;font-weight:700;color:#0b2018;
-    background:radial-gradient(circle at 35% 30%,#ffe9a8,#d4af37 70%);
-    border:2px solid #fff3cf;box-shadow:0 3px 10px rgba(0,0,0,.5);z-index:3}
-  .nhcount.on{display:flex;animation:nhtick .95s ease-out}
-  @keyframes nhtick{0%{transform:translate(0,-50%) scale(1.35)}45%{transform:translate(0,-50%) scale(1)}100%{transform:translate(0,-50%) scale(1)}}
-  .nhwrap.hot #btnNewHand{box-shadow:0 0 18px 3px rgba(212,175,55,.55)}
-  @media(max-width:760px){.nhcount{right:-8px;width:30px;height:30px;font-size:.95rem}#btnNewHand{min-width:160px}}
+  #btnNewHand{position:relative;overflow:hidden;min-width:200px;display:inline-flex;align-items:center;
+    justify-content:center;gap:11px;padding:11px 22px}
+  /* тънка линия, която се източва по долния ръб */
+  .nhfill{position:absolute;left:50%;bottom:0;height:2px;width:0%;transform:translateX(-50%);
+    background:linear-gradient(90deg,transparent,var(--gold-hi),transparent);
+    transition:width .95s linear,opacity .3s;opacity:0;pointer-events:none}
+  .nhwrap.run .nhfill{opacity:1}
+  .nhtxt{position:relative;z-index:1;letter-spacing:.02em}
+  /* пръстен с числото — вътре в бутона, вляво от текста */
+  .nhcount{position:relative;width:26px;height:26px;border-radius:50%;display:none;
+    align-items:center;justify-content:center;flex:0 0 auto;
+    font-family:'Courier New',monospace;font-size:.88rem;font-weight:700;color:#3a2c05;
+    background:
+      radial-gradient(circle,#fff7e0 0 60%,transparent 61%),
+      conic-gradient(var(--gold-hi) calc(var(--p,0)*1%), rgba(255,255,255,.22) 0);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+  .nhcount.on{display:flex}
+  .nhcount span{display:block;line-height:1;transition:transform .18s ease-out}
+  .nhcount.tick span{transform:scale(1.28)}
+  .nhwrap.hot #btnNewHand{box-shadow:0 0 0 1px var(--gold-hi),0 0 16px rgba(212,175,55,.35)}
+
+  .fairfold>summary{cursor:pointer;list-style:none;font-family:'Courier New',monospace;font-size:.66rem;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--mint);display:flex;align-items:center;gap:7px;user-select:none}
+  .fairfold>summary::-webkit-details-marker{display:none}
+  .fairfold>summary::before{content:"\25B8";transition:transform .2s;color:var(--gold)}
+  .fairfold[open]>summary::before{transform:rotate(90deg)}
+  .fairfold .okmark{color:#42e6a4;margin-left:auto;font-size:.8rem}
+  .fairfold .fair{margin-top:8px;border:none;padding:0;background:none}
+
+  /* --- авто-действия --- */
+  .autorow{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:7px}
+  .autorow label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+    font-size:.72rem;color:#9db3a6;padding:4px 10px;border:1px solid var(--line);border-radius:20px;
+    transition:all .15s;user-select:none}
+  .autorow label:hover{border-color:var(--gold);color:var(--gold-hi)}
+  .autorow input{accent-color:var(--gold);width:14px;height:14px;cursor:pointer}
+  .autorow label:has(input:checked){border-color:var(--gold-hi);background:rgba(212,175,55,.14);color:var(--gold-hi)}
+  /* --- бележки за играчите --- */
+  .noteflag{position:absolute;left:3px;top:3px;width:9px;height:9px;border-radius:2px;z-index:3;
+    box-shadow:0 1px 3px rgba(0,0,0,.6);cursor:pointer}
+  .seat{position:absolute}
+  .notepop{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--gold);border-radius:10px;
+    padding:11px;width:250px;box-shadow:0 10px 34px rgba(0,0,0,.7);display:none}
+  .notepop.open{display:block}
+  .notepop h4{font-size:.78rem;color:var(--gold-hi);margin-bottom:7px;font-weight:normal}
+  .notepop textarea{width:100%;height:66px;background:rgba(0,0,0,.3);border:1px solid var(--line);
+    border-radius:6px;color:#e9e4d8;padding:6px;font-family:Georgia,serif;font-size:.75rem;resize:none}
+  .ncolors{display:flex;gap:5px;margin:8px 0}
+  .ncol{width:22px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;transition:transform .12s}
+  .ncol:hover{transform:scale(1.15)}
+  .ncol.sel{border-color:#fff;box-shadow:0 0 8px rgba(255,255,255,.5)}
+  .npbtns{display:flex;gap:6px;justify-content:flex-end;margin-top:6px}
+  .npbtns button{font-size:.68rem;padding:5px 10px}
+  /* --- графика на стека --- */
+  .sgraph{width:100%;height:70px;margin-top:8px;display:block}
+  .sgraph-lbl{font-size:.58rem;color:#8fae9e;letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
+  /* --- подсказка за клавишите --- */
+  .keyhint{font-size:.58rem;color:#7d998b;letter-spacing:.06em;margin-top:6px;text-align:center}
+  .keyhint b{color:var(--gold);font-family:'Courier New',monospace}
   /* --- обратна връзка и празнични пулсове --- */
   .roomtag.copied{color:#42e6a4 !important;border-color:#42e6a4 !important;text-shadow:0 0 8px rgba(66,230,164,.5)}
   .oval.pulse-gold{animation:rimgold 1.15s ease-in-out 2}
@@ -407,10 +452,10 @@
   .histbox .act{font-family:'Courier New',monospace;font-size:.66rem;color:#b9c9bf;padding-left:8px;line-height:1.6}
 
 
-  .histbox details>summary{transition:background .15s,color .15s,padding-left .15s;border-radius:5px;padding:2px 4px}
+  .histbox details>summary{transition:background .15s,color .15s,padding-left .15s;border-radius:5px;padding:3px 4px;font-size:.8rem}
   .histbox details>summary:hover{background:rgba(212,175,55,.16);color:var(--gold-hi);padding-left:8px}
   .histbox details[open]>summary{background:rgba(212,175,55,.10)}
-  .histbox .hno{color:#fff;font-weight:700;letter-spacing:.02em}
+  .histbox .hno{color:#fff;font-weight:700;font-size:1.22em;letter-spacing:.02em}
   .histbox .act b{color:var(--chip);font-weight:600}
   .histbox .act .aw{font-weight:700}
   .aw.a-fold{color:#c96a5e}
@@ -587,7 +632,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v43</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
+      <span class="ver" id="verTag">v46</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -641,24 +686,7 @@
     <div class="note" style="margin-top:8px">Блайндове и стек се прилагат с ✔ Приложи — веднага между ръцете, или от следващата ръка, ако тече игра.</div>
   </div>
 
-  <div class="fair">
-    <div class="fair-top">
-      <span class="lbl">SHA-256 печат</span>
-      <span class="hashline" id="commitLine">— очаква ръка —</span>
-      <span class="vbadge wait" id="vbadge">ЗАПЕЧАТАНО</span>
-    </div>
-    <details id="fairDetails">
-      <summary>Пълни данни (seeds / nonce) — разкриват се след края на ръката</summary>
-      <div class="detail-grid">
-        <div><span class="lbl">Server seed</span><input id="revServer" readonly value="—"></div>
-        <div><span class="lbl">Client seed (комбиниран от всички играчи)</span><textarea id="revClient" readonly rows="2">—</textarea></div>
-        <div><span class="lbl">Nonce</span><input id="revNonce" readonly value="—"></div>
-        <button class="applybtn" id="btnVerify" disabled>🔎 Провери: SHA-256(server seed) = печатът?</button>
-        <div class="note" id="verifyOut"></div>
-      </div>
-      <div class="note" style="margin-top:6px">Server seed-ът живее на сървъра. Печатът се публикува <i>преди</i> раздаването; seed-ът се разкрива <i>след</i> ръката — двата ключа + nonce определят реда на 52-те карти чрез HMAC.</div>
-    </details>
-  </div>
+  
 
   <div class="layout">
   <div class="decorL"></div>
@@ -680,12 +708,18 @@
   <div class="actions">
     <div class="msg" id="msg">Свързване…</div>
     <div class="btnrow" id="hostRow" style="display:none">
+      <button class="applybtn" id="btnShow" style="display:none;margin-right:8px">🃏 Покажи картите</button>
       <div class="nhwrap">
-        <button class="primary" id="btnNewHand"><span class="nhfill" id="nhFill"></span><span class="nhtxt">Нова ръка</span></button>
-        <span class="nhcount" id="nhCount"></span>
+        <button class="primary" id="btnNewHand"><span class="nhcount" id="nhCount"><span></span></span><span class="nhtxt">Нова ръка</span><span class="nhfill" id="nhFill"></span></button>
+        
       </div>
     </div>
-    <div class="btnrow" id="handControls" style="display:none">
+    <div class="autorow" id="autoRow" style="display:none">
+        <label><input type="checkbox" id="acFold"><span>Fold на всичко</span></label>
+        <label><input type="checkbox" id="acCheckFold"><span>Check / Fold</span></label>
+        <label><input type="checkbox" id="acCall"><span>Call на всичко</span></label>
+      </div>
+      <div class="btnrow" id="handControls" style="display:none">
       <button class="danger" id="btnFold">Fold</button>
       <button class="primary" id="btnCall">Check</button>
       <div class="sizer" id="sizer">
@@ -699,6 +733,7 @@
           <button class="preset r-high" data-k="100">100%</button>
           <button class="preset r-high" data-k="a">All-in</button>
         </div>
+        <div class="keyhint">Клавиши: <b>F</b> fold · <b>C</b> check/call · <b>R</b> raise · <b>N</b> нова ръка</div>
         <div class="fine">
           <input type="range" id="raiseSlider">
           <div class="raiseval" id="raiseShow">—</div>
@@ -716,19 +751,38 @@
       <table class="stats" id="statsTbl"><thead><tr>
         <th>Играч</th><th>Стек</th><th>Ръце</th><th>VPIP %</th><th>PFR %</th><th>Win</th><th>SD W/L</th>
       </tr></thead><tbody></tbody></table>
+      <div id="sGraph"></div>
       <div class="note" style="margin-top:6px">VPIP = % ръце с доброволно вложени пари префлоп · PFR = % ръце с рейз префлоп.</div>
     </div>
   </div><!-- /mainCol -->
   <div class="sidebar">
-    <div class="panel" style="margin-bottom:8px"><h3>Честна игра — на живо</h3>
+    <details class="panel fairfold" style="margin-bottom:8px"><summary>🔒 Честна игра · провери сам <b class="okmark">✓</b></summary>
       <div class="fflow">
         <div class="fstep" id="fs1"><div class="fdot"></div><div class="ft"><b>1 · Печат преди раздаване</b><span>Сървърът публикува SHA-256 отпечатък на тайния си seed — тестето е „заключено", преди да видиш и една карта.</span></div></div>
         <div class="fstep" id="fs2"><div class="fdot"></div><div class="ft"><b>2 · Играе се ръката</b><span>Никой — включително сървърът — не може да промени реда на картите, без печатът да спре да съвпада.</span></div></div>
         <div class="fstep" id="fs3"><div class="fdot"></div><div class="ft"><b>3 · Разкриване след ръката</b><span>Server seed-ът се показва. Заедно с client seed-овете на играчите и nonce той определя разбъркването чрез HMAC-SHA256.</span></div></div>
         <div class="fstep" id="fs4"><div class="fdot"></div><div class="ft"><b>4 · Провери сам</b><span>SHA-256(разкрития seed) трябва да е равен на печата от стъпка 1 — едно натискане, без доверие на честна дума.</span></div></div>
       </div>
-      <button class="applybtn" id="btnGoVerify" style="width:100%">🔎 Провери с реалните данни</button>
+      <div class="fair">
+    <div class="fair-top">
+      <span class="lbl">SHA-256 печат</span>
+      <span class="hashline" id="commitLine">— очаква ръка —</span>
+      <span class="vbadge wait" id="vbadge">ЗАПЕЧАТАНО</span>
     </div>
+    <details id="fairDetails">
+      <summary>Пълни данни (seeds / nonce) — разкриват се след края на ръката</summary>
+      <div class="detail-grid">
+        <div><span class="lbl">Server seed</span><input id="revServer" readonly value="—"></div>
+        <div><span class="lbl">Client seed (комбиниран от всички играчи)</span><textarea id="revClient" readonly rows="2">—</textarea></div>
+        <div><span class="lbl">Nonce</span><input id="revNonce" readonly value="—"></div>
+        <button class="applybtn" id="btnVerify" disabled>🔎 Провери: SHA-256(server seed) = печатът?</button>
+        <div class="note" id="verifyOut"></div>
+      </div>
+      <div class="note" style="margin-top:6px">Server seed-ът живее на сървъра. Печатът се публикува <i>преди</i> раздаването; seed-ът се разкрива <i>след</i> ръката — двата ключа + nonce определят реда на 52-те карти чрез HMAC.</div>
+    </details>
+  </div>
+          <button class="applybtn" id="btnGoVerify" style="width:100%;margin-top:8px">🔎 Отвори пълните данни</button>
+    </details>
     <div class="panel"><h3>История на ръцете (клик за детайли — с рационал на ботовете)</h3>
       <div class="histbox" id="histEl">Още няма изиграни ръце.</div>
     </div>
@@ -752,7 +806,7 @@ window.addEventListener("resize",()=>{const n=isMob()?SEAT_POS_M:SEAT_POS_D;if(n
 const grp=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00A0");
 
 let socket=null,S=null,mySeat=-1,myHole=null,amHost=false,local={bbView:true,fourColor:true};
-let deadlineTimer=null;let lastRV=null;let prevCB=0,prevAllIn=0,rimTimer=null;let lastJoin=null;let lastAnimHand=0,flownHand=0,prevBetSum=0,wasMyTurn=false;
+let deadlineTimer=null;let lastRV=null;let autoFired=false;let prevCB=0,prevAllIn=0,rimTimer=null;let lastJoin=null;let lastAnimHand=0,flownHand=0,prevBetSum=0,wasMyTurn=false;
 
 function fmt(n){
   if(!S)return grp(n);
@@ -929,6 +983,17 @@ function renderTable(){
     let stack='<div class="stack"><b>'+fmt(p.chips)+'</b>'+(p.allIn?" · all-in":"")+'</div>';
     let timer=(i===S.acting&&S.deadline)?'<div class="timer" data-deadline="'+S.deadline+'"><span class="tsec"></span><div class="tbar"><i></i></div></div>':"";
     d.innerHTML=nm+stack+timer;
+    if(p.type!=="empty"&&p.name){
+      const nt=notes[p.name];
+      if(nt&&(nt.c||nt.t)){
+        const nf=document.createElement("div");nf.className="noteflag";
+        nf.style.background=nt.c||"#8a8a8a";
+        nf.title=nt.t||"бележка";
+        nf.onclick=ev=>{ev.stopPropagation();openNote(p.name,ev.clientX+8,ev.clientY+8);};
+        d.appendChild(nf);
+      }
+      d.oncontextmenu=ev=>{ev.preventDefault();openNote(p.name,ev.clientX,ev.clientY);};
+    }
     const hl=document.createElement("div");hl.className="hole";
     const showable=p.hole||((i===mySeat)&&myHole&&!S.handOver&&!p.folded?myHole:null);
     if(!S.handOver||p.hole){
@@ -1005,6 +1070,20 @@ function renderTable(){
     else if(S.currentBet>prevCB&&prevCB>S.settings.sb*2)rimPulse("gold");
     prevCB=S.currentBet;prevAllIn=allInCnt;
   }else{prevCB=0;prevAllIn=0;}
+  pushStack();drawGraph();
+  // авто-действия при твой ред
+  if(!S.handOver&&S.acting===mySeat&&mySeat>=0&&!autoFired){autoFired=tryAuto();}
+  if(S.acting!==mySeat)autoFired=false;
+  // ред с авто-действия се вижда докато тече ръка и си на масата
+  const ar=$("autoRow");
+  if(ar)ar.style.display=(mySeat>=0&&!S.handOver&&S.acting!==mySeat&&!S.seats[mySeat].folded)?"flex":"none";
+  if(S.handOver)clearAuto();
+  // бутон „Покажи картите"
+  const bs=$("btnShow");
+  if(bs){
+    const me=mySeat>=0?S.seats[mySeat]:null;
+    bs.style.display=(S.handOver&&me&&myHole&&myHole.length&&!me.showCards&&!me.folded)?"inline-block":"none";
+  }
   startCountdown();
 }
 function rimPulse(kind){
@@ -1043,23 +1122,30 @@ function renderControls(){
     const fill=$("nhFill"),cnt=$("nhCount"),wrap=document.querySelector(".nhwrap");
     const TOT=5000; let lastSec=-1;
     const upd=()=>{
-      if(!S.handOver){if(fill)fill.style.width="0%";if(cnt)cnt.classList.remove("on");if(wrap)wrap.classList.remove("hot");return;}
+      if(!S.handOver){if(fill)fill.style.width="0%";if(cnt)cnt.classList.remove("on");if(wrap)wrap.classList.remove("hot","run");return;}
       if(S.nextHandAt&&S.nextHandAt>Date.now()){
         const rem=S.nextHandAt-Date.now();
         const s=Math.ceil(rem/1000);
         $("msg").textContent="Нова ръка след…";
-        if(fill)fill.style.width=Math.max(0,Math.min(100,100*(1-rem/TOT)))+"%";
+        const pct=Math.max(0,Math.min(100,100*rem/TOT));
+        if(fill)fill.style.width=pct+"%";
         if(cnt){
-          cnt.textContent=s;
+          cnt.style.setProperty("--p",pct.toFixed(1));
+          const sp=cnt.firstElementChild;
           if(!cnt.classList.contains("on"))cnt.classList.add("on");
-          if(s!==lastSec){lastSec=s;cnt.style.animation="none";void cnt.offsetWidth;cnt.style.animation="";}
+          if(s!==lastSec){
+            lastSec=s;
+            if(sp)sp.textContent=s;
+            cnt.classList.add("tick");
+            setTimeout(()=>cnt.classList.remove("tick"),190);
+          }
         }
-        if(wrap)wrap.classList.toggle("hot",rem<2000);
+        if(wrap){wrap.classList.add("run");wrap.classList.toggle("hot",rem<2000);}
       }else{
         $("msg").textContent=mySeat>=0?"Натисни бутона, за да раздадеш — всеки на масата може.":"Сядаш от следващата ръка.";
         if(fill)fill.style.width="0%";
         if(cnt)cnt.classList.remove("on");
-        if(wrap)wrap.classList.remove("hot");
+        if(wrap)wrap.classList.remove("hot","run");
         lastSec=-1;
       }
     };
@@ -1236,7 +1322,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v43 · 26.07";
+const NV_VER="v46 · 26.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -1342,6 +1428,113 @@ const EMOTES=["👍","👏","😂","😮","😢","😡","🔥","🎉"];
     b._t=setTimeout(()=>{b.textContent=b._orig;b.classList.remove("applied");b._t=null;},1400);
   });
 });
+
+/* ================= АВТО-ДЕЙСТВИЯ ================= */
+const AC={fold:false,checkFold:false,call:false};
+function clearAuto(){
+  AC.fold=AC.checkFold=AC.call=false;
+  ["acFold","acCheckFold","acCall"].forEach(id=>{const e=$(id);if(e)e.checked=false;});
+}
+["acFold","acCheckFold","acCall"].forEach(id=>{
+  const e=$(id);if(!e)return;
+  e.onchange=()=>{
+    if(e.checked)["acFold","acCheckFold","acCall"].forEach(o=>{if(o!==id){const x=$(o);if(x)x.checked=false;}});
+    AC.fold=$("acFold").checked;AC.checkFold=$("acCheckFold").checked;AC.call=$("acCall").checked;
+  };
+});
+function tryAuto(){
+  if(!S||S.handOver||S.acting!==mySeat||mySeat<0)return false;
+  const me=S.seats[mySeat];if(!me)return false;
+  const toCall=S.currentBet-me.bet;
+  let act=null;
+  if(AC.fold)act=toCall>0?"fold":"check_call";
+  else if(AC.checkFold)act=toCall>0?"fold":"check_call";
+  else if(AC.call)act="check_call";
+  if(!act)return false;
+  setTimeout(()=>{
+    if(S&&!S.handOver&&S.acting===mySeat)socket.emit("action",{type:act});
+    if(AC.fold||AC.checkFold)clearAuto();
+  },260);
+  return true;
+}
+
+/* ================= БЕЛЕЖКИ ЗА ИГРАЧИТЕ ================= */
+const NCOLORS=["#c0483c","#e0a33e","#d6d33e","#3f9e5c","#3a7ec0","#8b5fc0","#8a8a8a"];
+let notes={};
+try{notes=JSON.parse(localStorage.getItem("nvNotes")||"{}");}catch(e){notes={};}
+function saveNotes(){try{localStorage.setItem("nvNotes",JSON.stringify(notes));}catch(e){}}
+let npTarget=null,npColor=null;
+function buildNP(){
+  const box=$("npColors");if(!box||box._built)return;
+  box._built=true;
+  NCOLORS.forEach(c=>{
+    const d=document.createElement("div");d.className="ncol";d.style.background=c;d.dataset.c=c;
+    d.onclick=()=>{npColor=(npColor===c?null:c);box.querySelectorAll(".ncol").forEach(x=>x.classList.toggle("sel",x.dataset.c===npColor));};
+    box.appendChild(d);
+  });
+  $("npSave").onclick=()=>{
+    const t=$("npText").value.trim();
+    if(!npTarget)return;
+    if(!t&&!npColor)delete notes[npTarget]; else notes[npTarget]={t,c:npColor};
+    saveNotes();$("notePop").classList.remove("open");render();
+  };
+  $("npDel").onclick=()=>{if(npTarget){delete notes[npTarget];saveNotes();}$("notePop").classList.remove("open");render();};
+  document.addEventListener("click",ev=>{
+    const p=$("notePop");
+    if(p&&p.classList.contains("open")&&!p.contains(ev.target)&&!ev.target.closest(".seat"))p.classList.remove("open");
+  });
+}
+function openNote(name,x,y){
+  buildNP();
+  npTarget=name;
+  const n=notes[name]||{t:"",c:null};
+  npColor=n.c||null;
+  $("npName").textContent="Бележка за "+name;
+  $("npText").value=n.t||"";
+  $("npColors").querySelectorAll(".ncol").forEach(d=>d.classList.toggle("sel",d.dataset.c===npColor));
+  const p=$("notePop");
+  p.style.left=Math.min(window.innerWidth-262,Math.max(6,x))+"px";
+  p.style.top=Math.min(window.innerHeight-210,Math.max(6,y))+"px";
+  p.classList.add("open");
+  setTimeout(()=>$("npText").focus(),40);
+}
+
+/* ================= ГРАФИКА НА СТЕКА ================= */
+let stackHist=[];
+function pushStack(){
+  if(!S||mySeat<0)return;
+  const me=S.seats[mySeat];if(!me)return;
+  const last=stackHist[stackHist.length-1];
+  if(!last||last.h!==S.handNo){stackHist.push({h:S.handNo,v:me.chips});if(stackHist.length>120)stackHist.shift();}
+  else last.v=me.chips;
+}
+function drawGraph(){
+  const el=$("sGraph");if(!el)return;
+  if(stackHist.length<2){el.innerHTML="";return;}
+  const W=300,H=70,vals=stackHist.map(s=>s.v);
+  const mn=Math.min(...vals),mx=Math.max(...vals),rg=(mx-mn)||1;
+  const pts=stackHist.map((s,i)=>[(i/(stackHist.length-1))*W,H-4-((s.v-mn)/rg)*(H-10)]);
+  const d=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+  const up=vals[vals.length-1]>=vals[0];
+  const col=up?"#42e6a4":"#c96a5e";
+  el.innerHTML='<svg class="sgraph" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+    '<path d="'+d+' L '+W+' '+H+' L 0 '+H+' Z" fill="'+col+'" opacity=".13"/>'+
+    '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round"/>'+
+    '</svg><div class="sgraph-lbl">Стек през сесията · '+(up?"▲":"▼")+" "+bbTxt(vals[vals.length-1]-vals[0])+'</div>';
+}
+
+/* ================= КЛАВИШНИ КОМБИНАЦИИ ================= */
+document.addEventListener("keydown",e=>{
+  const t=e.target.tagName;
+  if(t==="INPUT"||t==="TEXTAREA"||e.ctrlKey||e.metaKey||e.altKey)return;
+  const k=e.key.toLowerCase();
+  const my=S&&!S.handOver&&S.acting===mySeat&&mySeat>=0;
+  if(k==="f"&&my){e.preventDefault();socket.emit("action",{type:"fold"});}
+  else if((k==="c"||k===" ")&&my){e.preventDefault();socket.emit("action",{type:"check_call"});}
+  else if(k==="r"&&my){e.preventDefault();const b=$("btnRaise");if(b&&$("sizer").style.display!=="none")b.click();}
+  else if(k==="n"&&S&&S.handOver&&mySeat>=0){e.preventDefault();socket.emit("newHand");}
+});
+
 $("btnNewHand").onclick=()=>socket.emit("newHand");
 $("btnFold").onclick=()=>socket.emit("action",{type:"fold"});
 $("btnCall").onclick=()=>socket.emit("action",{type:"check_call"});
@@ -1409,7 +1602,8 @@ $("btnSettings").onclick=()=>{
   $("btnSettings").classList.toggle("on",open);
 };
 $("setBB").onchange=e=>{local.bbView=e.target.checked;render();};
-$("btnGoVerify").onclick=()=>{
+if($("btnShow"))$("btnShow").onclick=()=>{socket.emit("showCards");$("btnShow").style.display="none";};
+if($("btnGoVerify"))$("btnGoVerify").onclick=()=>{
   const d=$("fairDetails");if(!d)return;
   if(d.open){d.open=false;return;}
   d.open=true;
@@ -1443,5 +1637,11 @@ $("btnVerify").onclick=async()=>{
 };
 })();
 </script>
+<div class="notepop" id="notePop">
+  <h4 id="npName">Бележка</h4>
+  <div class="ncolors" id="npColors"></div>
+  <textarea id="npText" placeholder="напр. тайт, блъфира на ривъра, плаща широко…"></textarea>
+  <div class="npbtns"><button class="applybtn" id="npSave">✓ Запиши</button><button id="npDel">Изтрий</button></div>
+</div>
 </body>
 </html>
