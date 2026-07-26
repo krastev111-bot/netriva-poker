@@ -302,19 +302,19 @@
 
   /* --- раздаване и полет на пота --- */
   @keyframes dealin{from{opacity:0;transform:translateY(-55px) scale(.55) rotate(-9deg)}to{opacity:1;transform:none}}
-  /* --- раздаване: гърбове, които се разпръскват от центъра на масата --- */
-  .dealcard{position:absolute;z-index:7;pointer-events:none;width:34px;height:48px;border-radius:5px;
-    transform:translate(-50%,-50%);
+  /* --- раздаване: по един пас от две карти към всеки играч, като полета на жетоните --- */
+  .dealpair{position:absolute;z-index:7;pointer-events:none;transform:translate(-50%,-50%);
+    opacity:0;transition:left .265s cubic-bezier(.28,.72,.32,1),top .265s cubic-bezier(.28,.72,.32,1),
+      opacity .1s linear,transform .265s cubic-bezier(.28,.72,.32,1)}
+  .dealpair i{position:absolute;display:block;width:26px;height:37px;border-radius:4px;
+    left:0;top:0;transform-origin:50% 50%;
     background:
-      repeating-linear-gradient(45deg,rgba(255,255,255,.07) 0 4px,transparent 4px 8px),
+      repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0 3px,transparent 3px 6px),
       linear-gradient(160deg,#8d2530,#5e161f);
-    border:1.5px solid #d9b877;box-shadow:0 5px 14px rgba(0,0,0,.55)}
-  @keyframes dealfly{
-    0%{opacity:0;transform:translate(-50%,-50%) scale(.35) rotate(0deg)}
-    12%{opacity:1}
-    100%{opacity:1;transform:translate(calc(-50% + var(--tx,0px)),calc(-50% + var(--ty,0px)))
-      scale(1) rotate(var(--rr,0deg))}}
-  @media(prefers-reduced-motion:reduce){.dealcard{display:none}}
+    border:1.2px solid #d9b877;box-shadow:0 4px 11px rgba(0,0,0,.55)}
+  .dealpair i:nth-child(1){transform:translate(-16px,-19px) rotate(-7deg)}
+  .dealpair i:nth-child(2){transform:translate(-10px,-19px) rotate(6deg)}
+  @media(prefers-reduced-motion:reduce){.dealpair{display:none}}
   /* --- обръщане на картите на борда: гърбът се вижда за миг, после се завърта --- */
   /* прозрачността се движи на ВЪНШНИЯ слой — ако е на въртящия се,
      браузърът изравнява 3D контекста и гърбът не покрива лицето */
@@ -868,7 +868,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v60</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <span class="ver" id="verTag">v61</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -1577,9 +1577,8 @@ function renderTable(){
   if(dealSeq.on){
     t.querySelectorAll(".seat").forEach(se=>{
       const si=+se.dataset.seat;
-      se.querySelectorAll(".hole>.card").forEach((c,ci)=>{
-        if(!dealSeq.landed.has(si+"-"+ci))c.style.visibility="hidden";
-      });
+      if(dealSeq.landed.has(si))return;
+      se.querySelectorAll(".hole>.card").forEach(c=>c.style.visibility="hidden");
     });
   }
   // раздаване: картите се разпръскват от средата на масата
@@ -1673,49 +1672,52 @@ function drawBoard(){
   boardShown=S.board.length;
   ghostBoard(b);
 }
-/* тестето се разпръсква от центъра: по една карта на играч, две обиколки —
-   летящите гърбове са отделен слой, за да преживеят пречертаването на масата */
+/* раздаване: по един пас от ДВЕ карти към всеки играч, един след друг —
+   както летят жетоните. Летящият слой е извън .seat, за да преживее пречертаването. */
 const dealSeq={on:false,landed:new Set(),timers:[]};
 function stopDeal(t){
   dealSeq.on=false;dealSeq.landed.clear();
   dealSeq.timers.forEach(clearTimeout);dealSeq.timers=[];
-  if(t)t.querySelectorAll(".dealcard").forEach(e=>e.remove());
+  if(t)t.querySelectorAll(".dealpair").forEach(e=>e.remove());
   document.querySelectorAll(".seat .hole>.card").forEach(c=>c.style.visibility="");
 }
 function startDeal(t){
   stopDeal(t);
-  if(!S||!S.board)return;
-  const seats=[];let idx=S.button;
+  if(!S)return;
   const n=S.seats.filter(p=>p.type!=="empty").length;
   if(n<2)return;
+  const seats=[];let idx=S.button;
   for(let i=0;i<n;i++){do{idx=(idx+1)%8;}while(S.seats[idx].type==="empty");seats.push(idx);}
   const rot=i=>SEAT_POS[mySeat>=0?((i-mySeat+8)%8):i];
   dealSeq.on=true;
-  const STEP=52, FLY=430;
-  let step=0;
-  for(let round=0;round<2;round++){
-    seats.forEach(si=>{
-      const [x,y]=rot(si);
-      const el=document.createElement("div");
-      el.className="dealcard";
-      el.style.left="50%";el.style.top="42%";
-      el.style.setProperty("--tx",(x-50)+"%");
-      el.style.setProperty("--ty",(y-42)+"%");
-      el.style.setProperty("--rr",(Math.random()*26-13).toFixed(1)+"deg");
-      el.style.animation="dealfly "+(FLY/1000)+"s cubic-bezier(.22,.75,.3,1) "+(step*STEP/1000).toFixed(3)+"s backwards";
-      t.appendChild(el);
-      const d=step*STEP;
-      Snd.card(d/1000,0.75);
-      dealSeq.timers.push(setTimeout(()=>{
-        el.remove();
-        dealSeq.landed.add(si+"-"+round);
-        const se=t.querySelector('.seat[data-seat="'+si+'"]');
-        if(se){const c=se.querySelectorAll(".hole>.card")[round];if(c)c.style.visibility="";}
-      },d+FLY-40));
-      step++;
-    });
-  }
-  dealSeq.timers.push(setTimeout(()=>stopDeal(t),step*STEP+FLY+120));
+  const STEP=125, FLY=265;   // повече въздух между пасовете — най-много 2-3 наведнъж
+  seats.forEach((si,step)=>{
+    const [x,y]=rot(si);
+    const el=document.createElement("div");
+    el.className="dealpair";
+    el.innerHTML="<i></i><i></i>";
+    el.style.left="50%";el.style.top="42%";
+    el.style.transform="translate(-50%,-50%) scale(.55)";
+    t.appendChild(el);
+    const d=step*STEP;
+    dealSeq.timers.push(setTimeout(()=>{
+      el.style.opacity="1";
+      requestAnimationFrame(()=>{
+        el.style.left=x+"%";el.style.top=y+"%";
+        el.style.transform="translate(-50%,-50%) scale(1)";
+      });
+      Snd.card(0,0.8);
+    },d));
+    dealSeq.timers.push(setTimeout(()=>{
+      el.style.opacity="0";
+      dealSeq.landed.add(si);
+      const se=t.querySelector('.seat[data-seat="'+si+'"]');
+      if(se)se.querySelectorAll(".hole>.card").forEach(c=>c.style.visibility="");
+    },d+FLY-30));
+    dealSeq.timers.push(setTimeout(()=>el.remove(),d+FLY+180));
+  });
+  // предпазен клапан: каквото и да стане, нищо не остава скрито
+  dealSeq.timers.push(setTimeout(()=>stopDeal(t),seats.length*STEP+FLY+400));
 }
 function rimPulse(kind){
   const o=document.querySelector(".oval");if(!o)return;
@@ -2009,7 +2011,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v60 · 26.07";
+const NV_VER="v61 · 26.07";
 const Snd=(()=>{
   let ctx=null,muted=(LS.get("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
