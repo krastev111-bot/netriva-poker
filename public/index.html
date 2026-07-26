@@ -90,15 +90,20 @@
     transition:border-color .2s, box-shadow .2s}
   .seat.acting{border-color:var(--gold);box-shadow:0 0 14px rgba(212,175,106,.5)}
   .seat.folded{opacity:.4}
-  .seat.hero.folded{transition:opacity .18s}
+  .seat.hero.folded{transition:opacity .15s}
   .seat.hero.folded:hover{opacity:1;z-index:9}
-  .seat.hero.folded .peek{display:none}
-  .seat.hero.folded:hover .peek{display:flex;gap:3px;justify-content:center;margin-top:3px;
-    animation:peekin .22s ease-out}
-  @keyframes peekin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-  .seat.hero.folded:hover .hole{display:none}
-  .peek .card{opacity:.92;filter:saturate(.9)}
-  .peeklbl{font-size:.55rem;color:#8fae9e;letter-spacing:.08em;text-transform:uppercase}
+  /* картите се показват НАД гърбовете, без да местят нищо */
+  .seat.hero.folded .peek{position:absolute;left:0;right:0;display:flex;gap:3px;justify-content:center;
+    opacity:0;visibility:hidden;transition:opacity .15s;pointer-events:none;z-index:2}
+  .seat.hero.folded:hover .peek{opacity:1;visibility:visible}
+  .seat.hero.folded:hover .hole{opacity:0}
+  .seat.hero.folded .hole{transition:opacity .15s}
+  .peek .card{box-shadow:0 4px 10px rgba(0,0,0,.6)}
+  .peeklbl{position:absolute;left:0;right:0;bottom:-15px;font-size:.55rem;color:#8fae9e;
+    letter-spacing:.08em;text-transform:uppercase;text-align:center;white-space:nowrap;
+    opacity:0;transition:opacity .15s;pointer-events:none}
+  .seat.hero.folded:hover .peeklbl{opacity:1}
+  .seat.hero.folded{position:absolute}
   .seat.gone{opacity:.25;border-style:dashed;border-color:var(--line)}
   .seat .name{font-size:1.06rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .seat .stack{font-size:.8rem;color:var(--chip)}
@@ -252,6 +257,23 @@
   @keyframes riskg{0%,100%{box-shadow:0 0 0 0 rgba(66,230,164,0)}50%{box-shadow:0 0 13px 3px rgba(66,230,164,.55)}}
   @keyframes risky{0%,100%{box-shadow:0 0 0 0 rgba(230,200,80,0)}50%{box-shadow:0 0 13px 3px rgba(230,200,80,.55)}}
   @keyframes riskr{0%,100%{box-shadow:0 0 0 0 rgba(230,80,60,0)}50%{box-shadow:0 0 14px 4px rgba(230,80,60,.6)}}
+
+  /* --- бутон „Нова ръка" с вграден обратен брояч --- */
+  .nhwrap{position:relative;display:inline-flex;align-items:center}
+  #btnNewHand{position:relative;overflow:hidden;min-width:190px;z-index:1}
+  .nhfill{position:absolute;left:0;top:0;bottom:0;width:0%;z-index:0;
+    background:linear-gradient(90deg,rgba(66,230,164,.55),rgba(212,175,55,.75));
+    transition:width .95s linear,filter .3s;pointer-events:none}
+  .nhtxt{position:relative;z-index:1}
+  .nhcount{position:absolute;right:-15px;top:50%;transform:translate(0,-50%);
+    width:34px;height:34px;border-radius:50%;display:none;align-items:center;justify-content:center;
+    font-family:'Courier New',monospace;font-size:1.1rem;font-weight:700;color:#0b2018;
+    background:radial-gradient(circle at 35% 30%,#ffe9a8,#d4af37 70%);
+    border:2px solid #fff3cf;box-shadow:0 3px 10px rgba(0,0,0,.5);z-index:3}
+  .nhcount.on{display:flex;animation:nhtick .95s ease-out}
+  @keyframes nhtick{0%{transform:translate(0,-50%) scale(1.35)}45%{transform:translate(0,-50%) scale(1)}100%{transform:translate(0,-50%) scale(1)}}
+  .nhwrap.hot #btnNewHand{box-shadow:0 0 18px 3px rgba(212,175,55,.55)}
+  @media(max-width:760px){.nhcount{right:-8px;width:30px;height:30px;font-size:.95rem}#btnNewHand{min-width:160px}}
   /* --- обратна връзка и празнични пулсове --- */
   .roomtag.copied{color:#42e6a4 !important;border-color:#42e6a4 !important;text-shadow:0 0 8px rgba(66,230,164,.5)}
   .oval.pulse-gold{animation:rimgold 1.15s ease-in-out 2}
@@ -384,6 +406,11 @@
   .histbox summary{cursor:pointer;color:var(--chip)}
   .histbox .act{font-family:'Courier New',monospace;font-size:.66rem;color:#b9c9bf;padding-left:8px;line-height:1.6}
 
+
+  .histbox details>summary{transition:background .15s,color .15s,padding-left .15s;border-radius:5px;padding:2px 4px}
+  .histbox details>summary:hover{background:rgba(212,175,55,.16);color:var(--gold-hi);padding-left:8px}
+  .histbox details[open]>summary{background:rgba(212,175,55,.10)}
+  .histbox .hno{color:#fff;font-weight:700;letter-spacing:.02em}
   .histbox .act b{color:var(--chip);font-weight:600}
   .histbox .act .aw{font-weight:700}
   .aw.a-fold{color:#c96a5e}
@@ -560,7 +587,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v41</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
+      <span class="ver" id="verTag">v43</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -569,13 +596,13 @@
     <h2>Настройки</h2>
     <div class="set-grid">
       <div class="set-item"><span>Показвай сумите в BB (само за теб)</span>
-        <label class="switch"><input type="checkbox" id="setBB"><span></span></label></div>
+        <label class="switch"><input type="checkbox" id="setBB" checked><span></span></label></div>
       <div class="set-item"><span>Твоят аватар (сменя се по всяко време)</span>
         <span class="avrow" id="avRow2"></span></div>
       <div class="set-item"><span>Автоматична нова ръка (общо за масата)</span>
         <label class="switch"><input type="checkbox" id="setAuto" checked><span></span></label></div>
       <div class="set-item"><span>Четирицветно тесте (само за теб)</span>
-        <label class="switch"><input type="checkbox" id="setFour"><span></span></label></div>
+        <label class="switch"><input type="checkbox" id="setFour" checked><span></span></label></div>
       <div id="hostSettings">
         <div class="set-item" style="margin-top:6px"><span class="lbl">Настройки на масата — общи, всеки играч може да ги променя (вижда се в дневника кой какво е сменил)</span></div>
         <div class="set-item"><span>Блайндове</span>
@@ -653,7 +680,10 @@
   <div class="actions">
     <div class="msg" id="msg">Свързване…</div>
     <div class="btnrow" id="hostRow" style="display:none">
-      <button class="primary" id="btnNewHand">Нова ръка</button>
+      <div class="nhwrap">
+        <button class="primary" id="btnNewHand"><span class="nhfill" id="nhFill"></span><span class="nhtxt">Нова ръка</span></button>
+        <span class="nhcount" id="nhCount"></span>
+      </div>
     </div>
     <div class="btnrow" id="handControls" style="display:none">
       <button class="danger" id="btnFold">Fold</button>
@@ -721,7 +751,7 @@ let SEAT_POS=isMob()?SEAT_POS_M:SEAT_POS_D;
 window.addEventListener("resize",()=>{const n=isMob()?SEAT_POS_M:SEAT_POS_D;if(n!==SEAT_POS){SEAT_POS=n;if(S)render();}});
 const grp=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00A0");
 
-let socket=null,S=null,mySeat=-1,myHole=null,amHost=false,local={bbView:false,fourColor:false};
+let socket=null,S=null,mySeat=-1,myHole=null,amHost=false,local={bbView:true,fourColor:true};
 let deadlineTimer=null;let lastRV=null;let prevCB=0,prevAllIn=0,rimTimer=null;let lastJoin=null;let lastAnimHand=0,flownHand=0,prevBetSum=0,wasMyTurn=false;
 
 function fmt(n){
@@ -909,8 +939,9 @@ function renderTable(){
     if(i===mySeat&&myHole&&myHole.length&&p.folded&&!S.handOver){
       const pk=document.createElement("div");pk.className="peek";
       myHole.forEach(c=>pk.appendChild(cardEl(c)));
-      d.appendChild(pk);
-      const lb=document.createElement("div");lb.className="peeklbl";lb.textContent="фолднати";
+      hl.style.position="relative";
+      hl.appendChild(pk);
+      const lb=document.createElement("div");lb.className="peeklbl";lb.textContent="твоите фолднати карти";
       d.appendChild(lb);
     }
     const hn=document.createElement("div");hn.className="handname";
@@ -1009,17 +1040,31 @@ function renderControls(){
   const ef=$("emoFab");if(ef)ef.style.display=mySeat>=0?"flex":"none";
   if(autoMsgTimer){clearInterval(autoMsgTimer);autoMsgTimer=null;}
   if(S.handOver){
+    const fill=$("nhFill"),cnt=$("nhCount"),wrap=document.querySelector(".nhwrap");
+    const TOT=5000; let lastSec=-1;
     const upd=()=>{
-      if(!S.handOver)return;
+      if(!S.handOver){if(fill)fill.style.width="0%";if(cnt)cnt.classList.remove("on");if(wrap)wrap.classList.remove("hot");return;}
       if(S.nextHandAt&&S.nextHandAt>Date.now()){
-        const s=Math.ceil((S.nextHandAt-Date.now())/1000);
-        $("msg").textContent="Нова ръка след "+s+" с… (или натисни „Нова ръка“)";
+        const rem=S.nextHandAt-Date.now();
+        const s=Math.ceil(rem/1000);
+        $("msg").textContent="Нова ръка след…";
+        if(fill)fill.style.width=Math.max(0,Math.min(100,100*(1-rem/TOT)))+"%";
+        if(cnt){
+          cnt.textContent=s;
+          if(!cnt.classList.contains("on"))cnt.classList.add("on");
+          if(s!==lastSec){lastSec=s;cnt.style.animation="none";void cnt.offsetWidth;cnt.style.animation="";}
+        }
+        if(wrap)wrap.classList.toggle("hot",rem<2000);
       }else{
-        $("msg").textContent=mySeat>=0?"Натисни „Нова ръка“, за да раздадеш — всеки на масата може.":"Сядаш от следващата ръка.";
+        $("msg").textContent=mySeat>=0?"Натисни бутона, за да раздадеш — всеки на масата може.":"Сядаш от следващата ръка.";
+        if(fill)fill.style.width="0%";
+        if(cnt)cnt.classList.remove("on");
+        if(wrap)wrap.classList.remove("hot");
+        lastSec=-1;
       }
     };
     upd();
-    if(S.nextHandAt)autoMsgTimer=setInterval(upd,500);
+    if(S.nextHandAt)autoMsgTimer=setInterval(upd,120);
   }else if(my){
     const me=S.seats[mySeat];
     const toCall=S.currentBet-me.bet;
@@ -1112,7 +1157,7 @@ function renderHist(list){
   list.forEach(h=>{
     const d=document.createElement("details");
     const s=document.createElement("summary");
-    s.textContent="Ръка №"+h.no+" · печели: "+h.win;
+    s.innerHTML="Ръка №<b class=\"hno\">"+h.no+"</b> · печели: "+h.win;
     d.appendChild(s);
     const seeds=document.createElement("div");seeds.className="seeds";
     seeds.textContent="commit "+h.commit.slice(0,20)+"… · server "+h.server.slice(0,20)+"… · nonce "+h.nonce;
@@ -1191,7 +1236,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v41 · 25.07";
+const NV_VER="v43 · 26.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -1371,6 +1416,7 @@ $("btnGoVerify").onclick=()=>{
   const f=document.querySelector(".fair");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});
 };
 $("setFour").onchange=e=>{local.fourColor=e.target.checked;document.body.classList.toggle("fourcolor",local.fourColor);};
+document.body.classList.toggle("fourcolor",local.fourColor);
 $("setAuto").onchange=e=>socket.emit("settings",{autoDeal:e.target.checked});
 $("btnApplyBlinds").onclick=()=>socket.emit("settings",{sb:+document.querySelector('input[name="blindopt"]:checked').value});
 $("btnApplyStack").onclick=()=>socket.emit("settings",{startStack:+document.querySelector('input[name="stackopt"]:checked').value});
