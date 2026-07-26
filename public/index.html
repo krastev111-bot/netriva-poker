@@ -316,8 +316,8 @@
     font-size:.92rem;min-width:104px;padding:9px 12px;color:#fff;font-weight:800;box-shadow:0 2px 8px rgba(165,50,37,.4)}
   #postRow .preset[data-k="a"]:hover{filter:brightness(1.1);animation:riskr .85s ease-in-out infinite}
   /* --- All-in на префлоп реда: една колона, без ред за настройка --- */
-  .stepgrp.allin{justify-content:stretch}
-  .stepgrp.allin .stepbtn{height:100%;font-size:1rem;letter-spacing:.03em;
+  .stepgrp.allin{flex:0 0 96px;max-width:96px;justify-content:flex-start}
+  .stepgrp.allin .stepbtn{font-size:.92rem;letter-spacing:.02em;padding:9px 4px;
     background:linear-gradient(180deg,#d4574a,#a53225);border-color:#e2705f;color:#fff;font-weight:700}
   .stepgrp.allin .stepbtn:hover{filter:brightness(1.1);animation:riskr .85s ease-in-out infinite}
   /* --- междинна стъпка „сигурно ли?" --- */
@@ -576,6 +576,18 @@
   .histbox details>summary{transition:background .15s,color .15s,padding-left .15s;border-radius:5px;padding:3px 4px;font-size:.8rem}
   .histbox details>summary:hover{background:rgba(212,175,55,.16);color:var(--gold-hi);padding-left:8px}
   .histbox .act.stg{font-size:.74rem}
+  /* --- картите в историята: бели рангове на черно, боите пазят цвета си --- */
+  .histbox .cbox,.hsum .cbox{display:inline-block;background:#000;border:1px solid #2b3a33;
+    border-radius:4px;padding:1px 7px;margin:0 2px;font-family:'Courier New',monospace;
+    font-size:1.04em;letter-spacing:.03em;color:#fff;vertical-align:baseline;
+    box-shadow:inset 0 0 10px rgba(66,230,164,.09)}
+  .cbox b{color:#fff;font-weight:700}
+  .cbox i{font-style:normal;margin:0 5px 0 1px;color:#fff}
+  .cbox i:last-child{margin-right:0}
+  .cbox i.k-h,.cbox i.k-d{color:#ff6a6a}
+  .cbox i.k-s,.cbox i.k-c{color:#fff}
+  body.fourcolor .cbox i.k-d{color:#5aa9ff}
+  body.fourcolor .cbox i.k-c{color:#4fdd88}
   .histbox .seeds{font-size:.66rem}
   .hsum table{font-size:.72rem}
   .hsum th{font-size:.6rem}
@@ -670,7 +682,8 @@
     .rowlbl{display:none}
     #postRow .preset{flex:1 1 28%;min-width:0;font-size:.8rem;padding:10px 4px}
     #postRow .preset[data-k="a"]{flex:1 1 28%;min-width:0;font-size:.82rem;padding:10px 4px}
-    .stepgrp{flex:1 1 30%;min-width:0;max-width:none}
+    .stepgrp{flex:1 1 0;min-width:0;max-width:none}
+    .stepgrp.allin{flex:1 1 0;max-width:none}
     .stepgrp .stepbtn{flex:0 0 auto;width:100%;font-size:.86rem;padding:11px 2px}
     .stepbtn b{font-size:1.1em}
     .steprow button{font-size:.9rem;padding:9px 1px}
@@ -793,7 +806,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v54</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <span class="ver" id="verTag">v56</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -1549,6 +1562,17 @@ function snapText(h,res){
   s+="—\nПечат: "+(h.commit||"").slice(0,24)+"…\nServer seed: "+(h.server||"").slice(0,24)+"…\nNonce: "+h.nonce+"\n";
   return s;
 }
+const escHTML=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const SUITK={"\u2660":"k-s","\u2665":"k-h","\u2666":"k-d","\u2663":"k-c"};
+/* всяка поредица от карти става черна кутийка: бял ранг + цветна боя */
+function cardsHTML(txt){
+  return escHTML(txt).replace(/((?:(?:10|[2-9JQKA])[\u2660\u2665\u2666\u2663] ?)+)/g,m=>{
+    const trail=/ $/.test(m)?" ":"";
+    const inner=m.trim().replace(/(10|[2-9JQKA])([\u2660\u2665\u2666\u2663])/g,
+      (_,r,su)=>'<b>'+r+'</b><i class="'+SUITK[su]+'">'+su+'</i>');
+    return '<code class="cbox">'+inner+'</code>'+trail;
+  });
+}
 function renderHist(list){
   const el=$("histEl");
   if(!list||!list.length){el.textContent="Още няма изиграни ръце.";return;}
@@ -1564,8 +1588,8 @@ function renderHist(list){
     h.actions.forEach(a=>{
       const r=document.createElement("div");r.className="act";
       const t=a.trim();
-      if(/^—.*—$/.test(t)){ r.classList.add("stg"); r.textContent=t.replace(/^—\s*|\s*—$/g,""); }
-      else if(/^(SHOWDOWN|Печели|ALL-IN)/.test(t)){ r.classList.add("a-show"); r.textContent=t; }
+      if(/^—.*—$/.test(t)){ r.classList.add("stg"); r.innerHTML=cardsHTML(t.replace(/^—\s*|\s*—$/g,"")); }
+      else if(/^(SHOWDOWN|Печели|ALL-IN)/.test(t)){ r.classList.add("a-show"); r.innerHTML=cardsHTML(t); }
       else if(/^Дилър/.test(t)){ r.classList.add("a-deal"); r.textContent=t; }
       else{
         const m=t.match(/^(.{1,20}?):\s*(all-in|fold|check|call|raise)(\s[^(]*)?(\(.*\))?$/i);
@@ -1577,7 +1601,7 @@ function renderHist(list){
           w.textContent=(m[2]+(m[3]||"")).trim();
           r.appendChild(w);
           if(m[4]){const why=document.createElement("i");why.className="a-why";why.textContent=" "+m[4];r.appendChild(why);}
-        }else r.textContent=t;
+        }else r.innerHTML=cardsHTML(t);
       }
       d.appendChild(r);
     });
@@ -1587,13 +1611,13 @@ function renderHist(list){
       const box=document.createElement("div");box.className="hsum";
       let html='<table><thead><tr><th>Играч</th><th>Карти</th><th>Резултат</th></tr></thead><tbody>';
       res.rows.forEach(r=>{
-        html+='<tr class="'+(r.win?"w":(r.lost?"l":""))+'"><td>'+r.name+'</td><td class="bd">'+(r.cards||"—")+'</td><td>'+r.txt+'</td></tr>';
+        html+='<tr class="'+(r.win?"w":(r.lost?"l":""))+'"><td>'+escHTML(r.name)+'</td><td class="bd">'+(r.cards?cardsHTML(r.cards):"—")+'</td><td>'+cardsHTML(r.txt)+'</td></tr>';
       });
       html+='</tbody></table>';
       box.innerHTML=html;
       d.appendChild(box);
       if(res.board){
-        const bd=document.createElement("div");bd.className="dvleg";bd.innerHTML="<b>Борд:</b> "+res.board;d.appendChild(bd);
+        const bd=document.createElement("div");bd.className="dvleg";bd.innerHTML="<b>Борд:</b> "+cardsHTML(res.board);d.appendChild(bd);
       }
       const sb=document.createElement("button");sb.className="applybtn snapbtn";sb.textContent="📋 Копирай резюмето на ръката";
       sb.onclick=ev=>{
@@ -1635,7 +1659,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v54 · 26.07";
+const NV_VER="v56 · 26.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
