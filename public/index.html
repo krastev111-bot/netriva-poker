@@ -107,13 +107,13 @@
   .seat.acting{border-color:var(--gold);box-shadow:0 0 14px rgba(212,175,106,.5)}
   .seat.folded{opacity:.4}
   .seat.hero.peekme{transition:opacity .15s;position:absolute}
-  .seat.hero.peekme:hover{opacity:1;z-index:9}
+  .seat.hero.peekme.peeking{opacity:1;z-index:9}
   /* картите се показват НАД гърбовете, без да местят нищо */
   .seat.hero.peekme .peek{position:absolute;left:0;right:0;display:flex;gap:3px;justify-content:center;
     opacity:0;visibility:hidden;transition:opacity .15s;pointer-events:none;z-index:2}
-  .seat.hero.peekme:hover .peek{opacity:1;visibility:visible}
+  .seat.hero.peekme.peeking .peek{opacity:1;visibility:visible}
   /* гасим САМО гърбовете, не и контейнера — иначе .peek вътре също изчезва */
-  .seat.hero.peekme:hover .hole>.card{opacity:0}
+  .seat.hero.peekme.peeking .hole>.card{opacity:0}
   .seat.hero.peekme .hole>.card{transition:opacity .15s}
   /* мястото на картите се запазва, за да не подскача нищо след фолд */
   .seat.hero.peekme .hole{position:relative;min-height:79px;align-items:flex-start}
@@ -121,18 +121,18 @@
   .peeklbl{position:absolute;left:0;right:0;bottom:-15px;font-size:.55rem;color:#8fae9e;
     letter-spacing:.08em;text-transform:uppercase;text-align:center;white-space:nowrap;
     opacity:0;transition:opacity .15s;pointer-events:none}
-  .seat.hero.peekme:hover .peeklbl{opacity:1}
+  .seat.hero.peekme.peeking .peeklbl{opacity:1}
   /* --- „сенчести" карти на борда: какво щеше да дойде --- */
-  .ghost{position:relative;opacity:.30;transition:opacity .22s}
-  .board:hover .ghost{opacity:.92}
-  .ghost .gl{position:absolute;left:0;right:0;bottom:-14px;text-align:center;font-size:.5rem;
+  .gcard{position:relative;opacity:.30;transition:opacity .22s}
+  .board:hover .gcard{opacity:.92}
+  .gcard .gl{position:absolute;left:0;right:0;bottom:-14px;text-align:center;font-size:.5rem;
     letter-spacing:.1em;text-transform:uppercase;color:#8fae9e;white-space:nowrap;
     opacity:0;transition:opacity .2s;pointer-events:none}
-  .board:hover .ghost .gl{opacity:.9}
-  .ghost .gface{position:absolute;inset:0;opacity:0;transition:opacity .18s}
-  .ghost:hover .gface{opacity:1}
-  .ghost:hover .gback{opacity:0}
-  .ghost .gback{transition:opacity .18s}
+  .board:hover .gcard .gl{opacity:.9}
+  .gcard .gface{position:absolute;inset:0;opacity:0;transition:opacity .18s}
+  .gcard:hover .gface{opacity:1}
+  .gcard:hover .gback{opacity:0}
+  .gcard .gback{transition:opacity .18s}
   .ghosthint{font-family:'Courier New',monospace;font-size:.54rem;letter-spacing:.12em;
     text-transform:uppercase;color:#7d998b;text-align:center;margin-top:19px;opacity:.75}
   .seat.gone{opacity:.25;border-style:dashed;border-color:var(--line)}
@@ -338,11 +338,21 @@
     display:inline-flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap;
     font-family:Georgia,serif;font-size:.9rem;letter-spacing:.02em;cursor:pointer;
     padding:10px 20px;transition:background .18s,color .18s,transform .12s,filter .18s}
-  .dockbtn.ghost{color:#b8d0c2}
-  .dockbtn.ghost:hover{background:rgba(212,175,106,.16);color:var(--gold-hi)}
+  /* „Покажи картите" диша бавно в графитено — подсеща, че е активно, без да се натрапва */
+  .dockbtn.ghost{color:#c2d8ca;background:rgba(150,175,160,.06);
+    box-shadow:inset 0 0 0 1px rgba(170,200,185,.10);
+    animation:ghostbreath 3.8s ease-in-out infinite}
+  @keyframes ghostbreath{
+    0%,100%{background:rgba(150,175,160,.06);color:#bad0c2;
+      box-shadow:inset 0 0 0 1px rgba(170,200,185,.10)}
+    50%{background:rgba(186,212,196,.20);color:#f4fdf7;
+      box-shadow:inset 0 0 0 1px rgba(205,230,215,.34),0 0 14px rgba(165,200,182,.20)}}
+  .dockbtn.ghost:hover{animation:none;background:rgba(212,175,106,.18);color:var(--gold-hi);
+    box-shadow:inset 0 0 0 1px rgba(212,175,106,.45)}
+  @media(prefers-reduced-motion:reduce){.dockbtn.ghost{animation:none;color:#d2e4d8}}
   .dockbtn.ghost .dki{display:inline-flex;align-items:center;width:19px;height:19px;flex:0 0 auto}
   .dockbtn.ghost .dki svg{width:19px;height:19px;display:block}
-  .dockbtn.ghost .dki rect{fill:rgba(240,217,168,.14);stroke:currentColor;stroke-width:1.3;opacity:.9}
+  .dockbtn.ghost .dki rect{fill:rgba(240,217,168,.12);stroke:currentColor;stroke-width:1.35;opacity:.95}
   .dockbtn.ghost .dki .pip{fill:currentColor;stroke:none;opacity:.85}
   .dockbtn.main{min-width:184px;color:#241a08;font-weight:bold;
     background:linear-gradient(180deg,var(--gold-hi),var(--gold));
@@ -768,7 +778,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v50</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <span class="ver" id="verTag">v51</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -987,7 +997,7 @@ function ghostBoard(b){
   if(S.board.length<5)take("river",1);
   if(!out.length)return;
   out.forEach(g=>{
-    const w=document.createElement("div");w.className="ghost";
+    const w=document.createElement("div");w.className="gcard";
     const back=cardEl(null);back.classList.add("gback");
     const face=cardEl(g.c);face.classList.add("gface");
     w.appendChild(back);w.appendChild(face);
@@ -1182,10 +1192,14 @@ function render(){
   renderControls();
   renderStats();
 }
+let mouseX=-1,mouseY=-1,peekRect=null;
+document.addEventListener("mousemove",e=>{mouseX=e.clientX;mouseY=e.clientY;},{passive:true});
+document.addEventListener("mouseleave",()=>{mouseX=-1;mouseY=-1;});
 function renderTable(){
   const t=$("tableEl");
   [...t.querySelectorAll(".seat,.betchip")].forEach(e=>e.remove());
   const rot=i=>SEAT_POS[mySeat>=0?((i-mySeat+8)%8):i];
+  const peekSeats=[];
   S.seats.forEach((p,i)=>{
     if(p.type==="empty")return;
     const [x,y]=rot(i);
@@ -1221,6 +1235,15 @@ function renderTable(){
       hl.appendChild(pk);
       const lb=document.createElement("div");lb.className="peeklbl";lb.textContent="твоите фолднати карти";
       d.appendChild(lb);
+      // мястото се пресъздава при всяко обновяване — затова състоянието е клас,
+      // сложен още при създаването, а не :hover, който мига за кадър
+      d.addEventListener("mouseenter",()=>d.classList.add("peeking"));
+      d.addEventListener("mouseleave",()=>d.classList.remove("peeking"));
+      // класът се слага ОЩЕ ПРЕДИ вмъкването, по запомнените координати от предишното
+      // рисуване — така новият елемент се появява направо видим, без преход и мигане
+      if(peekRect&&mouseX>=peekRect.left&&mouseX<=peekRect.right&&
+         mouseY>=peekRect.top&&mouseY<=peekRect.bottom)d.classList.add("peeking");
+      peekSeats.push(d);
     }
     const hn=document.createElement("div");hn.className="handname";
     hn.textContent=(p.handName||"")+(p.equity!=null&&!S.handOver?"  "+p.equity+"%":"");
@@ -1234,6 +1257,14 @@ function renderTable(){
       bc.style.left=(x+(50-x)*0.33)+"%";bc.style.top=(y+(42-y)*0.33)+"%";
       t.appendChild(bc);
     }
+  });
+  // коригираме по действителното положение и го запомняме за следващото рисуване
+  if(!peekSeats.length)peekRect=null;
+  peekSeats.forEach(d=>{
+    const r=d.getBoundingClientRect();
+    peekRect={left:r.left,right:r.right,top:r.top,bottom:r.bottom};
+    d.classList.toggle("peeking",
+      mouseX>=r.left&&mouseX<=r.right&&mouseY>=r.top&&mouseY<=r.bottom);
   });
   const b=$("boardEl");b.innerHTML="";
   S.board.forEach(c=>b.appendChild(cardEl(c)));
@@ -1543,7 +1574,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v50 · 26.07";
+const NV_VER="v51 · 26.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
