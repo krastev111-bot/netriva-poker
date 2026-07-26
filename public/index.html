@@ -46,7 +46,15 @@
   /* fair strip */
   .fair{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 11px;margin-bottom:8px}
   .fair-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .hashline{font-family:'Courier New',monospace;font-size:.65rem;color:var(--mono-ink);background:var(--mono-bg);padding:3px 8px;border-radius:5px;border:1px solid var(--line);word-break:break-all;flex:1;min-width:180px}
+  .hashline{font-family:'Courier New','Consolas',monospace;font-size:.7rem;line-height:1.5;color:#fff;
+    background:#000;padding:6px 9px;border-radius:5px;border:1px solid #2b3a33;word-break:break-all;flex:1;min-width:180px;
+    box-shadow:inset 0 0 12px rgba(66,230,164,.10)}
+  .sealpanel{margin-bottom:8px}
+  .sealpanel .fair{background:none;border:none;padding:0;margin:0}
+  .sealpanel .fair-top{gap:8px;row-gap:6px}
+  .sealpanel .fair-top .lbl{flex:1 1 auto}
+  .sealpanel .hashline{order:3;flex:1 0 100%;min-width:0}
+  .sealpanel #fairDetails{display:none}
   .vbadge{font-family:'Courier New',monospace;font-size:.7rem;padding:3px 10px;border-radius:5px;white-space:nowrap}
   .vbadge.ok{background:rgba(46,204,113,.14);color:var(--ok);border:1px solid rgba(46,204,113,.4)}
   .vbadge.wait{background:rgba(212,175,106,.1);color:var(--gold);border:1px solid rgba(212,175,106,.35)}
@@ -196,6 +204,20 @@
   .stepgrp .stepbtn{font-size:.82rem;padding:7px 12px;border-color:var(--gold);color:var(--gold-hi);font-weight:600}
   .updown{display:flex;flex-direction:column;gap:1px}
   .updown button{font-size:.55rem;line-height:1;padding:3px 5px;border-radius:4px}
+  /* --- пре-флоп стъпки: голям бутон + широк ред „− ✎ +" --- */
+  .stepgrp{flex-direction:column;gap:3px;flex:1 1 0;min-width:0;max-width:180px}
+  .stepgrp .stepbtn{width:100%;font-size:.95rem;padding:9px 6px;white-space:nowrap}
+  .stepgrp .stepbtn b{font-size:1.18em}
+  .stepedit{width:100%;font-family:'Courier New',monospace;font-size:1rem;font-weight:700;text-align:center;
+    padding:9px 4px;border-radius:8px;background:#000;color:#fff;border:1px solid var(--gold-hi)}
+  .steprow{display:flex;gap:3px;width:100%}
+  .steprow button{flex:1 1 0;min-width:0;font-family:Georgia,serif;font-size:.92rem;font-weight:700;
+    line-height:1;padding:7px 2px;border-radius:7px;border:1px solid var(--line);color:#bcd3c6;
+    background:rgba(0,0,0,.26);transition:all .14s}
+  .steprow button:hover{border-color:var(--gold);color:var(--gold-hi);background:rgba(212,175,55,.14)}
+  .steprow .sedit{flex:0 0 30%;display:inline-flex;align-items:center;justify-content:center;padding:6px 2px}
+  .steprow .sedit svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.5;
+    stroke-linecap:round;stroke-linejoin:round}
   .raisegrp{display:flex;align-items:stretch;gap:2px}
   .raiseval{min-width:128px;text-align:center;font-family:'Courier New',monospace;font-size:1.28rem;
     color:#fff;font-weight:700;letter-spacing:.03em;
@@ -234,8 +256,33 @@
   .flychips{position:absolute;transform:translate(-50%,-50%);z-index:8;pointer-events:none;
     transition:left .95s cubic-bezier(.3,.7,.35,1),top .95s cubic-bezier(.3,.7,.35,1),opacity .95s}
   .ver{font-family:'Courier New',monospace;font-size:.6rem;color:#7d998b;border:1px solid var(--line);border-radius:5px;padding:2px 6px;white-space:nowrap}
-  #sndBtn{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.95rem;cursor:pointer;line-height:1}
-  #sndBtn:hover{border-color:var(--gold)}
+  #sndBtn{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;
+    line-height:0;display:inline-flex;align-items:center;transition:border-color .15s,background .15s}
+  #sndBtn:hover{border-color:var(--gold);background:rgba(212,175,55,.10)}
+  #sndBtn svg{width:22px;height:20px;display:block}
+  #sndBtn .spk{fill:var(--gold-hi);stroke:var(--gold-hi);stroke-width:1.2;stroke-linejoin:round}
+  #sndBtn .w1,#sndBtn .w2{fill:none;stroke:var(--gold-hi);stroke-width:1.9;stroke-linecap:round;transform-origin:14px 12px}
+  #sndBtn .mute{display:none;stroke:#c96a5e;stroke-width:2;stroke-linecap:round;fill:none}
+  #sndBtn:hover .w1{animation:sndw 1.15s ease-in-out infinite}
+  #sndBtn:hover .w2{animation:sndw 1.15s ease-in-out .18s infinite}
+  @keyframes sndw{0%,100%{opacity:.35;transform:scaleX(.72)}50%{opacity:1;transform:scaleX(1.06)}}
+  #sndBtn.off .w1,#sndBtn.off .w2{display:none}
+  #sndBtn.off .mute{display:block}
+  #sndBtn.off .spk{fill:#8fae9e;stroke:#8fae9e}
+
+  /* --- Fold / Call в същия док като „Покажи картите / Нова ръка" --- */
+  .dock.actdock{width:100%;max-width:560px;margin:0 auto 2px}
+  .dock.actdock .dockbtn{flex:1 1 50%;min-width:0;font-size:1rem;font-weight:bold;padding:12px 16px;letter-spacing:.03em}
+  .dockbtn.foldb{color:#f0a89e;background:linear-gradient(180deg,rgba(170,52,40,.34),rgba(120,32,24,.42));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+  .dockbtn.foldb:hover{background:linear-gradient(180deg,#c95446,#9c2c20);color:#fff;
+    box-shadow:0 0 0 1px #e2705f,0 0 16px rgba(220,80,64,.5)}
+  .dockbtn.callb{color:#241a05;background:linear-gradient(180deg,#eecb6a,#c9a23e);
+    box-shadow:0 2px 8px rgba(201,162,62,.3)}
+  .dockbtn.callb:hover{background:linear-gradient(180deg,#fff1c2,#f0cf72);color:#1b1200;
+    box-shadow:0 0 0 1px #fff3d0,0 0 20px rgba(240,207,114,.65)}
+  .dockbtn:active{transform:translateY(1px)}
+  #preRow,#postRow{max-width:560px;margin:0 auto;width:100%;justify-content:center}
 
   #potLine b{color:#fff;font-weight:700;font-size:1.28em;letter-spacing:.03em}
 
@@ -306,13 +353,13 @@
   .fairfold .okmark{color:#42e6a4;margin-left:auto;font-size:.8rem}
   .fairfold .fair{margin-top:8px;border:none;padding:0;background:none}
   /* --- пулсиращ щит вместо катинар --- */
-  .shieldico{display:inline-flex;align-items:center;flex:0 0 auto;width:16px;height:16px}
-  .shieldico svg{width:16px;height:16px;overflow:visible;display:block}
-  .shieldico .sh{fill:rgba(66,230,164,.15);stroke:#42e6a4;stroke-width:1.7;
-    stroke-linejoin:round;animation:shpulse 2.2s ease-in-out infinite}
-  .shieldico .chk{fill:none;stroke:#8affd2;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
-  @keyframes shpulse{0%,100%{filter:drop-shadow(0 0 0 rgba(66,230,164,0))}
-    50%{filter:drop-shadow(0 0 6px rgba(66,230,164,.95))}}
+  .shieldico{display:inline-flex;align-items:center;flex:0 0 auto;width:23px;height:23px}
+  .shieldico svg{width:23px;height:23px;overflow:visible;display:block;
+    animation:shpulse 5.2s ease-in-out infinite}
+  .shieldico .sh{fill:rgba(66,230,164,.15);stroke:#42e6a4;stroke-width:1.7;stroke-linejoin:round}
+  .shieldico .chk{fill:none;stroke:#8affd2;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes shpulse{0%,100%{filter:drop-shadow(0 0 0 rgba(66,230,164,0));opacity:.82}
+    50%{filter:drop-shadow(0 0 9px rgba(66,230,164,.95));opacity:1}}
   /* --- мини-график на стека в дясната колона --- */
   .mini{margin-bottom:8px}
   .mini .mtop{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 0 5px}
@@ -322,7 +369,12 @@
   .mini .mdelta i{font-style:normal;font-size:.86em;margin-right:4px}
   .mini .mdelta.up i{color:#42e6a4}
   .mini .mdelta.dn i{color:#c96a5e}
-  .sgraph-mini{width:100%;height:48px;display:block}
+  .sgraph-mini{width:100%;height:auto;display:block}
+  .sgraph-mini .gl{stroke:rgba(255,255,255,.10);stroke-width:1}
+  .sgraph-mini .glb{stroke:rgba(212,175,106,.45);stroke-width:1;stroke-dasharray:4 4}
+  .sgraph-mini .ax{stroke:rgba(255,255,255,.24);stroke-width:1.2}
+  .sgraph-mini text{fill:#8fae9e;font-family:'Courier New',monospace;font-size:11px}
+  .sgraph-mini text.axt{fill:#7d998b;font-size:10px;letter-spacing:.08em}
   .mini .mfoot{font-size:.55rem;color:#7d998b;letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
   .mini .mempty{font-size:.68rem;color:#7d998b;padding:6px 0 2px}
   .sgraph-lbl b{color:#fff;font-weight:700;font-size:1.28em;letter-spacing:.03em}
@@ -333,11 +385,11 @@
   /* --- авто-действия --- */
   .autorow.dim{opacity:.4;pointer-events:none}
   .autorow{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:7px}
-  .autorow label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;
-    font-size:.72rem;color:#9db3a6;padding:4px 10px;border:1px solid var(--line);border-radius:20px;
+  .autorow label{display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+    font-size:.9rem;color:#a9c0b2;padding:7px 15px;border:1px solid var(--line);border-radius:22px;
     transition:all .15s;user-select:none}
   .autorow label:hover{border-color:var(--gold);color:var(--gold-hi)}
-  .autorow input{accent-color:var(--gold);width:14px;height:14px;cursor:pointer}
+  .autorow input{accent-color:var(--gold);width:17px;height:17px;cursor:pointer}
   .autorow label:has(input:checked){border-color:var(--gold-hi);background:rgba(212,175,55,.14);color:var(--gold-hi)}
   /* --- бележки за играчите --- */
   .noteflag{position:absolute;left:3px;top:3px;width:9px;height:9px;border-radius:2px;z-index:3;
@@ -359,8 +411,6 @@
   .sgraph{width:100%;height:70px;margin-top:8px;display:block}
   .sgraph-lbl{font-size:.58rem;color:#8fae9e;letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
   /* --- подсказка за клавишите --- */
-  .keyhint{font-size:.58rem;color:#7d998b;letter-spacing:.06em;margin-top:6px;text-align:center}
-  .keyhint b{color:var(--gold);font-family:'Courier New',monospace}
   /* --- обратна връзка и празнични пулсове --- */
   .roomtag.copied{color:#42e6a4 !important;border-color:#42e6a4 !important;text-shadow:0 0 8px rgba(66,230,164,.5)}
   .oval.pulse-gold{animation:rimgold 1.15s ease-in-out 2}
@@ -373,37 +423,11 @@
   @keyframes lostpulse{0%,100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}50%{box-shadow:0 0 16px 5px rgba(0,0,0,.8)}}
   .winbanner{animation:wbpulse 1.15s ease-in-out infinite;border:1px solid rgba(66,230,164,.55) !important}
   @keyframes wbpulse{0%,100%{box-shadow:0 0 0 0 rgba(66,230,164,0)}50%{box-shadow:0 0 26px 7px rgba(66,230,164,.55)}}
-  /* --- казино цветове на действията --- */
-  #btnFold{border-color:#c0483c;color:#f0a89e;background:rgba(150,40,30,.16)}
-  #btnFold:hover{background:rgba(190,55,42,.32);color:#ffd7d0}
-  #btnCall{background:linear-gradient(180deg,#eecb6a,#c9a23e);color:#241a05;border-color:#eecb6a;font-weight:700}
-  #btnCall:hover{filter:brightness(1.08)}
+  /* --- казино цветове на действията: вж. .dockbtn.foldb / .callb --- */
   #btnRaise{background:linear-gradient(180deg,#d4574a,#a53225);color:#fff;border-color:#e2705f;font-weight:800;
     min-width:104px;font-size:.92rem;box-shadow:0 2px 8px rgba(165,50,37,.4)}
   #btnRaise:hover{filter:brightness(1.1)}
   /* --- реакции --- */
-  .emobar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px}
-  .emobar button{font-size:1.05rem;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:rgba(0,0,0,.28);cursor:pointer;line-height:1;transition:transform .12s}
-  .emobar button:hover{transform:scale(1.18);border-color:var(--gold)}
-  .reactfx{position:absolute;transform:translate(-50%,-50%);font-size:2.1rem;z-index:12;pointer-events:none;
-    animation:flyin 2.6s ease-out forwards;text-shadow:0 3px 8px rgba(0,0,0,.6)}
-  @keyframes flyin{
-    0%{opacity:0;transform:translate(-50%,-50%) scale(.45)}
-    14%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}
-    72%{opacity:1;transform:translate(calc(-50% + var(--tx,0px)),calc(-50% + var(--ty,0px))) scale(1.05)}
-    100%{opacity:0;transform:translate(calc(-50% + var(--tx,0px)),calc(-50% + var(--ty,0px))) scale(1.25)}}
-  /* --- бутон Emotional Reaction до играча --- */
-  .emofab{position:absolute;left:61.5%;top:90%;z-index:11;width:42px;height:42px;border-radius:50%;
-    border:2px solid var(--gold);background:radial-gradient(circle at 35% 30%, #1d4534, #0c241a);
-    font-size:1.25rem;cursor:pointer;display:none;align-items:center;justify-content:center;
-    box-shadow:0 4px 14px rgba(0,0,0,.55);transition:transform .15s}
-  .emofab:hover{transform:scale(1.12)}
-  .emopop{position:absolute;left:61.5%;top:84%;transform:translate(-8%,-100%);z-index:11;display:none;
-    background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:7px 9px;
-    box-shadow:0 8px 26px rgba(0,0,0,.6);gap:6px}
-  .emopop.open{display:flex}
-  .emopop button{font-size:1.2rem;padding:5px 7px;border-radius:8px;border:1px solid var(--line);background:rgba(0,0,0,.28);cursor:pointer;line-height:1;transition:transform .12s}
-  .emopop button:hover{transform:scale(1.2);border-color:var(--gold)}
 
   /* --- резюме на ръката --- */
   .hsum{margin:6px 0 2px;border:1px solid rgba(212,175,55,.35);border-radius:8px;overflow:hidden}
@@ -452,14 +476,15 @@
   @media(max-width:900px){body::after{display:none}}
   /* --- оформление: маса вляво, странична колона вдясно --- */
   .layout{display:grid;grid-template-columns:1fr;gap:8px}
+  @media(min-width:901px){ .table{left:46px;right:46px} }
   @media(min-width:1100px){
-    .wrap{max-width:1420px}
-    .layout{grid-template-columns:minmax(0,1fr) 350px;align-items:start}
+    .wrap{max-width:1560px}
+    .layout{grid-template-columns:minmax(0,1fr) 412px;align-items:start}
     .sidebar{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow-y:auto}
   }
   @media(min-width:1340px){
-    .wrap{max-width:1500px}
-    .layout{grid-template-columns:80px minmax(0,1fr) 350px}
+    .wrap{max-width:1680px}
+    .layout{grid-template-columns:56px minmax(0,1fr) 436px}
     .decorL{display:block}
   }
   /* --- сгъваем дневник --- */
@@ -488,14 +513,18 @@
   .panel h3{font-family:'Courier New',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);margin-bottom:6px}
   .logbox{font-size:.74rem;line-height:1.6;max-height:230px;overflow-y:auto}
   .logbox .sys{color:#8fae9e}.logbox .win{color:var(--gold-hi)}.logbox .fair-l{color:var(--mint)}
-  .histbox{font-size:.72rem;max-height:300px;overflow-y:auto}
+  .histbox{font-size:.82rem;max-height:440px;overflow-y:auto}
   .histbox details{border-bottom:1px solid var(--line);padding:4px 0}
   .histbox summary{cursor:pointer;color:var(--chip)}
-  .histbox .act{font-family:'Courier New',monospace;font-size:.66rem;color:#b9c9bf;padding-left:8px;line-height:1.6}
+  .histbox .act{font-family:'Courier New',monospace;font-size:.78rem;color:#c6d6cc;padding-left:8px;line-height:1.75}
 
 
   .histbox details>summary{transition:background .15s,color .15s,padding-left .15s;border-radius:5px;padding:3px 4px;font-size:.8rem}
   .histbox details>summary:hover{background:rgba(212,175,55,.16);color:var(--gold-hi);padding-left:8px}
+  .histbox .act.stg{font-size:.74rem}
+  .histbox .seeds{font-size:.66rem}
+  .hsum table{font-size:.72rem}
+  .hsum th{font-size:.6rem}
   .histbox details[open]>summary{background:rgba(212,175,55,.10)}
   .histbox .hno{color:#fff;font-weight:700;font-size:1.22em;letter-spacing:.02em}
   .histbox .act b{color:var(--chip);font-weight:600}
@@ -503,7 +532,7 @@
   .aw.a-fold{color:#c96a5e}
   .aw.a-call{color:#7fd4a8}
   .aw.a-raise{color:var(--gold-hi)}
-  .a-why{color:#87a094;font-style:italic;font-size:.63rem}
+  .a-why{color:#fff;font-style:italic;font-size:.75rem;opacity:.92}
   .act.stg{color:#ffd76a;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
     background:linear-gradient(90deg,rgba(212,175,55,.16),transparent 80%);
     border-left:3px solid #ffd76a;border-radius:3px;
@@ -586,20 +615,20 @@
     .rowlbl{display:none}
     #postRow .preset{flex:1 1 28%;min-width:0;font-size:.8rem;padding:10px 4px}
     #postRow .preset[data-k="a"]{flex:1 1 28%;min-width:0;font-size:.82rem;padding:10px 4px}
-    .stepgrp{flex:1 1 30%;min-width:0}
-    .stepgrp .stepbtn{flex:1;width:100%;font-size:.8rem;padding:10px 4px}
-    .stepbtn b{font-size:1em}
-    .updown button{padding:5px 6px;font-size:.6rem}
+    .stepgrp{flex:1 1 30%;min-width:0;max-width:none}
+    .stepgrp .stepbtn{flex:0 0 auto;width:100%;font-size:.86rem;padding:11px 2px}
+    .stepbtn b{font-size:1.1em}
+    .steprow button{font-size:.9rem;padding:9px 1px}
+    .steprow .sedit{font-size:.8rem}
+    .dock.actdock .dockbtn{font-size:.95rem;padding:13px 8px}
+    .autorow{gap:8px}
+    .autorow label{font-size:.82rem;padding:6px 11px}
     .fine{gap:6px;flex-wrap:wrap;justify-content:center}
     input[type=range]{width:100%;order:1;height:26px}
     .raiseval{order:2;min-width:96px;font-size:1.05rem;padding:5px 8px}
     .raiseval small{font-size:.66rem}
     .raisegrp{order:3}
     #btnRaise{min-width:88px;padding:12px 10px}
-    /* реакции */
-    .emofab{width:36px;height:36px;font-size:1rem;left:auto;right:2%;top:auto;bottom:2%;z-index:13}
-    .emopop{right:1%;left:auto;bottom:34px;top:auto;transform:none;padding:6px;max-width:92vw;flex-wrap:wrap;justify-content:center}
-    .emopop button{font-size:1.15rem;padding:7px 9px}
     /* панели */
     .panel{padding:8px 9px;border-radius:9px}
     .panel h3,.logfold summary{font-size:.58rem}
@@ -690,7 +719,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v46</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл">🔊</button>
+      <span class="ver" id="verTag">v48</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -750,8 +779,6 @@
   <div class="decorL"></div>
   <div class="mainCol">
   <div class="tablewrap">
-    <button class="emofab" id="emoFab" title="Реакция">😊</button>
-    <div class="emopop" id="emoPop"></div>
     <div class="table" id="tableEl">
       <div class="oval"></div>
       <div class="center">
@@ -778,8 +805,10 @@
         <label><input type="checkbox" id="acCall"><span>Call на всичко</span></label>
       </div>
       <div class="btnrow" id="handControls" style="display:none">
-      <button class="danger" id="btnFold">Fold</button>
-      <button class="primary" id="btnCall">Check</button>
+      <div class="dock actdock" id="actDock">
+        <button class="dockbtn foldb" id="btnFold">Fold</button>
+        <button class="dockbtn callb" id="btnCall">Check</button>
+      </div>
       <div class="sizer" id="sizer">
         <div class="presets" id="preRow"></div>
         <div class="presets" id="postRow">
@@ -791,13 +820,11 @@
           <button class="preset r-high" data-k="100">100%</button>
           <button class="preset r-high" data-k="a">All-in</button>
         </div>
-        <div class="keyhint">Клавиши: <b>F</b> fold · <b>C</b> check/call · <b>R</b> raise · <b>N</b> нова ръка</div>
         <div class="fine">
           <input type="range" id="raiseSlider">
           <div class="raiseval" id="raiseShow">—</div>
           <div class="raisegrp">
             <button id="btnRaise" class="primary">Raise</button>
-            <div class="updown"><button id="rUp">▲</button><button id="rDn">▼</button></div>
           </div>
         </div>
       </div>
@@ -814,14 +841,15 @@
     </div>
   </div><!-- /mainCol -->
   <div class="sidebar">
-    <details class="panel fairfold" style="margin-bottom:8px"><summary><span class="shieldico"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="sh" d="M12 2.3l7.4 2.8v6.1c0 4.7-3.1 8.7-7.4 10.5-4.3-1.8-7.4-5.8-7.4-10.5V5.1L12 2.3z"/><path class="chk" d="M8.4 11.9l2.6 2.6 4.7-5"/></svg></span> Честна игра · провери сам <b class="okmark">✓</b></summary>
+    <details class="panel fairfold" id="fairFold" style="margin-bottom:8px"><summary><span class="shieldico"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="sh" d="M12 2.3l7.4 2.8v6.1c0 4.7-3.1 8.7-7.4 10.5-4.3-1.8-7.4-5.8-7.4-10.5V5.1L12 2.3z"/><path class="chk" d="M8.4 11.9l2.6 2.6 4.7-5"/></svg></span> Честна игра · провери сам <b class="okmark">✓</b></summary>
       <div class="fflow">
         <div class="fstep" id="fs1"><div class="fdot"></div><div class="ft"><b>1 · Печат преди раздаване</b><span>Сървърът публикува SHA-256 отпечатък на тайния си seed — тестето е „заключено", преди да видиш и една карта.</span></div></div>
         <div class="fstep" id="fs2"><div class="fdot"></div><div class="ft"><b>2 · Играе се ръката</b><span>Никой — включително сървърът — не може да промени реда на картите, без печатът да спре да съвпада.</span></div></div>
         <div class="fstep" id="fs3"><div class="fdot"></div><div class="ft"><b>3 · Разкриване след ръката</b><span>Server seed-ът се показва. Заедно с client seed-овете на играчите и nonce той определя разбъркването чрез HMAC-SHA256.</span></div></div>
         <div class="fstep" id="fs4"><div class="fdot"></div><div class="ft"><b>4 · Провери сам</b><span>SHA-256(разкрития seed) трябва да е равен на печата от стъпка 1 — едно натискане, без доверие на честна дума.</span></div></div>
       </div>
-      <div class="fair">
+      <div id="sealIn"></div>
+      <div class="fair" id="sealBox">
     <div class="fair-top">
       <span class="lbl">SHA-256 печат</span>
       <span class="hashline" id="commitLine">— очаква ръка —</span>
@@ -841,6 +869,7 @@
   </div>
           <button class="applybtn" id="btnGoVerify" style="width:100%;margin-top:8px">🔎 Отвори пълните данни</button>
     </details>
+    <div class="panel sealpanel" id="sealOut"></div>
     <div class="panel mini" id="miniStack"><h3>Твоят стек · тази сесия</h3>
       <div class="mtop"><span class="mval" id="mStackVal">—</span><span class="mdelta" id="mStackDelta"></span></div>
       <div id="sGraphMini"><div class="mempty">Графиката се появява след втората ръка.</div></div>
@@ -922,17 +951,6 @@ function connect(){
     setTimeout(()=>{b.style.display="none";},5200);
   });
   socket.on("history",renderHist);
-  socket.on("react",({seat,emoji})=>{
-    const t=$("tableEl");if(!t)return;
-    const [x,y]=SEAT_POS[seat]||[50,50];
-    const fx=document.createElement("div");fx.className="reactfx";fx.textContent=emoji;
-    fx.style.left=x+"%";fx.style.top=y+"%";
-    const rc=t.getBoundingClientRect();
-    fx.style.setProperty("--tx",((50-x)*0.42*rc.width/100)+"px");
-    fx.style.setProperty("--ty",((42-y)*0.42*rc.height/100)+"px");
-    t.appendChild(fx);
-    setTimeout(()=>fx.remove(),2700);
-  });
   socket.on("disconnect",()=>{$("msg").textContent="Връзката прекъсна — опитвам да се върна автоматично…";});
 }
 connect();
@@ -1186,7 +1204,6 @@ function renderControls(){
   if(my&&!wasMyTurn)Snd.ding();
   wasMyTurn=my;
   $("handControls").style.display=my?"flex":"none";
-  const ef=$("emoFab");if(ef)ef.style.display=mySeat>=0?"flex":"none";
   if(autoMsgTimer){clearInterval(autoMsgTimer);autoMsgTimer=null;}
   if(S.handOver){
     const fill=$("nhFill"),cnt=$("nhCount"),wrap=$("handDock");
@@ -1392,7 +1409,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v47 · 26.07";
+const NV_VER="v48 · 26.07";
 const Snd=(()=>{
   let ctx=null,muted=(localStorage.getItem("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -1436,8 +1453,8 @@ const Snd=(()=>{
     toggle(){muted=!muted;try{localStorage.setItem("nvMute",muted?"1":"0");}catch(e){}return muted;}};
 })();
 $("verTag").textContent=NV_VER;
-$("sndBtn").textContent=Snd.muted?"🔇":"🔊";
-$("sndBtn").onclick=()=>{$("sndBtn").textContent=Snd.toggle()?"🔇":"🔊";};
+$("sndBtn").classList.toggle("off",Snd.muted);
+$("sndBtn").onclick=()=>{$("sndBtn").classList.toggle("off",Snd.toggle());};
 /* --- wake lock: телефонът не заспива по време на игра --- */
 let wakeLock=null;
 async function keepAwake(){
@@ -1473,20 +1490,6 @@ function buildAvRow(rowId){
   });
 }
 buildAvRow("avRow");buildAvRow("avRow2");
-/* --- реакции --- */
-const EMOTES=["👍","👏","😂","😮","😢","😡","🔥","🎉"];
-(function buildEmo(){
-  const pop=$("emoPop"),fab=$("emoFab");if(!pop||!fab)return;
-  EMOTES.forEach(e=>{
-    const b=document.createElement("button");b.type="button";b.textContent=e;
-    b.onclick=()=>{socket.emit("react",e);pop.classList.remove("open");};
-    pop.appendChild(b);
-  });
-  fab.onclick=()=>pop.classList.toggle("open");
-  document.addEventListener("click",ev=>{
-    if(!pop.contains(ev.target)&&ev.target!==fab)pop.classList.remove("open");
-  });
-})();
 
 /* --- визуално потвърждение на Приложи --- */
 ["btnApplyBlinds","btnApplyStack","btnApplySpeed","btnApplyBots","btnApplySeed"].forEach(id=>{
@@ -1590,11 +1593,60 @@ function sparkSVG(vals,W,H,col,cls){
     '<circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="2.6" fill="'+col+'"/>'+
     '</svg>';
 }
+/* мащабът по хоризонтала расте на стъпки, за да се вижда цялата сесия */
+const XSCALE=[10,20,30,40,50,75,100,150,200,300,400,500,750,1000,1500,2000,3000,5000];
+const nStep=r=>{const p=Math.pow(10,Math.floor(Math.log10(r||1)));
+  return ([1,2,2.5,5,10].find(m=>m*p>=r)||10)*p;};
+const nTxt=v=>(Math.abs(v)>=100?Math.round(v):(v%1===0?v.toFixed(0):v.toFixed(1)));
+function axisSVG(vb){
+  const W=320,H=300,ML=44,MR=12,MT=14,MB=26;
+  const n=vb.length, base=vb[0];
+  const xmax=XSCALE.find(v=>v>=n)||Math.ceil(n/1000)*1000;
+  let lo=Math.min.apply(null,vb.concat([base])), hi=Math.max.apply(null,vb.concat([base]));
+  if(hi-lo<1){hi=base+1;lo=Math.max(0,base-1);}
+  const st=nStep((hi-lo)/3.2);
+  lo=Math.max(0,Math.floor(lo/st)*st); hi=Math.ceil(hi/st)*st;
+  if(hi<=lo)hi=lo+st;
+  const px=i=>ML+(i/Math.max(1,xmax-1))*(W-ML-MR);
+  const py=v=>MT+(1-(v-lo)/(hi-lo))*(H-MT-MB);
+  let g="";
+  for(let v=lo;v<=hi+1e-9;v+=st){
+    const y=py(v).toFixed(1);
+    g+='<line class="gl" x1="'+ML+'" y1="'+y+'" x2="'+(W-MR)+'" y2="'+y+'"/>'+
+       '<text x="'+(ML-6)+'" y="'+(+y+4)+'" text-anchor="end">'+nTxt(v)+'</text>';
+  }
+  const xt=[...new Set([1,.25,.5,.75,1].map((f,i)=>i?Math.round(f*xmax):1))].filter(t=>t>=1&&t<=xmax);
+  xt.forEach(t=>{
+    if(t>xmax)return;
+    const x=px(Math.max(0,t-1)).toFixed(1);
+    g+='<line class="gl" x1="'+x+'" y1="'+MT+'" x2="'+x+'" y2="'+(H-MB)+'"/>'+
+       '<text x="'+x+'" y="'+(H-MB+15)+'" text-anchor="middle">'+t+'</text>';
+  });
+  const yb=py(base).toFixed(1);
+  const d=vb.map((v,i)=>(i?"L":"M")+px(i).toFixed(1)+" "+py(v).toFixed(1)).join(" ");
+  const area=d+" L "+px(n-1).toFixed(1)+" "+yb+" L "+px(0).toFixed(1)+" "+yb+" Z";
+  const lx=px(n-1).toFixed(1), ly=py(vb[n-1]).toFixed(1);
+  const col=vb[n-1]>=base?"#42e6a4":"#c96a5e";
+  return '<svg class="sgraph-mini" viewBox="0 0 '+W+' '+H+'">'+
+    '<defs><clipPath id="clipUp"><rect x="0" y="0" width="'+W+'" height="'+yb+'"/></clipPath>'+
+    '<clipPath id="clipDn"><rect x="0" y="'+yb+'" width="'+W+'" height="'+H+'"/></clipPath></defs>'+
+    g+
+    '<path d="'+area+'" fill="#42e6a4" opacity=".22" clip-path="url(#clipUp)"/>'+
+    '<path d="'+area+'" fill="#c96a5e" opacity=".22" clip-path="url(#clipDn)"/>'+
+    '<line class="glb" x1="'+ML+'" y1="'+yb+'" x2="'+(W-MR)+'" y2="'+yb+'"/>'+
+    '<line class="ax" x1="'+ML+'" y1="'+MT+'" x2="'+ML+'" y2="'+(H-MB)+'"/>'+
+    '<line class="ax" x1="'+ML+'" y1="'+(H-MB)+'" x2="'+(W-MR)+'" y2="'+(H-MB)+'"/>'+
+    '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>'+
+    '<circle cx="'+lx+'" cy="'+ly+'" r="3.4" fill="'+col+'"/>'+
+    '<text class="axt" x="6" y="'+(MT-4)+'">BB</text>'+
+    '<text class="axt" x="'+(W-MR)+'" y="'+(H-4)+'" text-anchor="end">РЪЦЕ</text>'+
+    '</svg>';
+}
 function drawGraph(){
   const el=$("sGraph"),mel=$("sGraphMini"),mv=$("mStackVal"),md=$("mStackDelta");
   // текущият стек се показва винаги, дори преди да има крива
   if(mv&&S&&mySeat>=0&&S.seats[mySeat])mv.textContent=fmt(S.seats[mySeat].chips);
-  if(stackHist.length<2){
+  if(!S||stackHist.length<2){
     if(el)el.innerHTML="";
     if(mel)mel.innerHTML='<div class="mempty">Графиката се появява след втората ръка.</div>';
     if(md)md.textContent="";
@@ -1607,7 +1659,8 @@ function drawGraph(){
   const arrow='<i class="'+(up?"up":"dn")+'">'+(up?"▲":"▼")+'</i>';
   if(el)el.innerHTML=sparkSVG(vals,300,70,col,"sgraph")+
     '<div class="sgraph-lbl">Стек през сесията · '+arrow+'<b>'+bbTxt(diff)+'</b></div>';
-  if(mel)mel.innerHTML=sparkSVG(vals,300,48,col,"sgraph-mini")+
+  const bb=S.settings.sb*2;
+  if(mel)mel.innerHTML=axisSVG(vals.map(v=>v/bb))+
     '<div class="mfoot">'+stackHist.length+' ръце · начало '+bbTxt(vals[0])+'</div>';
   if(md){md.className="mdelta "+(up?"up":"dn");md.innerHTML=arrow+bbTxt(diff);}
 }
@@ -1629,41 +1682,86 @@ $("btnFold").onclick=()=>socket.emit("action",{type:"fold"});
 $("btnCall").onclick=()=>socket.emit("action",{type:"check_call"});
 $("btnRaise").onclick=()=>socket.emit("action",{type:"raise",target:+$("raiseSlider").value});
 $("raiseSlider").oninput=()=>showRaiseVal();
-/* разцепен Raise: стрелките местят с 0.5 BB */
-const nudge=dir=>{
-  const ctx=$("sizer")._ctx;if(!ctx)return;
-  const sbv=S.settings.sb, sl=$("raiseSlider");
-  let v=(+sl.value||ctx.minTo)+dir*sbv;
-  v=Math.max(+sl.min,Math.min(+sl.max,v));
-  sl.value=v;showRaiseVal();
-};
-$("rUp").onclick=()=>nudge(1);
-$("rDn").onclick=()=>nudge(-1);
+/* плъзгачът: влачене = плавно · почукване = точно 1 BB нагоре/надолу */
+(function(){
+  const sl=$("raiseSlider");if(!sl)return;
+  let drag=false,moved=false,x0=0,v0=0;
+  const lim=v=>Math.max(+sl.min,Math.min(+sl.max,v));
+  const valFromX=x=>{
+    const r=sl.getBoundingClientRect(),mn=+sl.min,mx=+sl.max,st=+sl.step||1;
+    let t=(x-r.left-8)/Math.max(1,r.width-16);t=Math.max(0,Math.min(1,t));
+    return lim(mn+Math.round((t*(mx-mn))/st)*st);
+  };
+  const thumbX=v=>{
+    const r=sl.getBoundingClientRect(),mn=+sl.min,mx=+sl.max;
+    const t=mx>mn?(v-mn)/(mx-mn):0;
+    return r.left+8+t*(r.width-16);
+  };
+  sl.addEventListener("pointerdown",e=>{
+    e.preventDefault();
+    try{sl.setPointerCapture(e.pointerId);}catch(_){}
+    drag=true;moved=false;x0=e.clientX;v0=+sl.value;
+  });
+  sl.addEventListener("pointermove",e=>{
+    if(!drag)return;
+    if(moved||Math.abs(e.clientX-x0)>4){moved=true;sl.value=valFromX(e.clientX);showRaiseVal();}
+  });
+  const end=e=>{
+    if(!drag)return;drag=false;
+    try{sl.releasePointerCapture(e.pointerId);}catch(_){}
+    if(!moved){
+      const bb=S?S.settings.sb*2:1;
+      sl.value=lim(v0+(e.clientX>=thumbX(v0)?bb:-bb));
+      showRaiseVal();
+    }
+  };
+  sl.addEventListener("pointerup",end);
+  sl.addEventListener("pointercancel",end);
+})();
 /* префлоп стъпки — настройваеми от играча, пазят се локално */
 let steps=[2.1,2.5,3.5];
 try{const s=JSON.parse(localStorage.getItem("nvSteps"));if(Array.isArray(s)&&s.length===3)steps=s.map(Number);}catch(e){}
 function saveSteps(){try{localStorage.setItem("nvSteps",JSON.stringify(steps));}catch(e){}}
+const stTxt=v=>(v%1===0?v.toFixed(0):v.toFixed(1));
 function buildPreRow(){
   const row=$("preRow");row.innerHTML="";
-  const lb=document.createElement("span");lb.className="rowlbl";lb.textContent="Pre-flop";row.appendChild(lb);
   const RISK=["r-low","r-mid","r-high"];
   steps.forEach((st,idx)=>{
     const g=document.createElement("div");g.className="stepgrp";
     const b=document.createElement("button");b.className="preset stepbtn "+(RISK[idx]||"r-high");
-    b.innerHTML="<b>"+(st%1===0?st.toFixed(0):st.toFixed(1))+"</b> BB";
+    b.innerHTML="<b>"+stTxt(st)+"</b> BB";
+    b.title="Рейз до "+stTxt(st)+" BB";
     b.onclick=()=>{
       const ctx=$("sizer")._ctx;if(!ctx||!S)return;
       const bb=S.settings.sb*2;
-      const t=Math.max(ctx.minTo,Math.min(ctx.maxTo,Math.round(st*bb)));
+      const t=Math.max(ctx.minTo,Math.min(ctx.maxTo,Math.round(steps[idx]*bb)));
       socket.emit("action",{type:"raise",target:t});
     };
-    const ud=document.createElement("div");ud.className="updown";
-    const up=document.createElement("button");up.textContent="▲";
-    const dn=document.createElement("button");dn.textContent="▼";
-    up.onclick=()=>{steps[idx]=+(steps[idx]+0.1).toFixed(1);saveSteps();buildPreRow();};
-    dn.onclick=()=>{steps[idx]=Math.max(2,+(steps[idx]-0.1).toFixed(1));saveSteps();buildPreRow();};
-    ud.appendChild(up);ud.appendChild(dn);
-    g.appendChild(b);g.appendChild(ud);
+    const setv=v=>{steps[idx]=Math.max(2,Math.min(500,+(+v).toFixed(1)));saveSteps();buildPreRow();};
+    const rowb=document.createElement("div");rowb.className="steprow";
+    const dn=document.createElement("button");dn.textContent="−";dn.title="−1 BB";
+    const ed=document.createElement("button");ed.className="sedit";ed.title="Въведи стойност на ръка";
+    ed.innerHTML='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11.1 1.9l3 3-7.6 7.6-3.6.6.6-3.6z"/><path d="M2 14.6h12"/></svg>';
+    const up=document.createElement("button");up.textContent="+";up.title="+1 BB";
+    dn.onclick=()=>setv(steps[idx]-1);
+    up.onclick=()=>setv(steps[idx]+1);
+    ed.onclick=()=>{
+      const inp=document.createElement("input");
+      inp.type="number";inp.step="0.1";inp.min="2";inp.max="500";
+      inp.className="stepedit";inp.value=stTxt(steps[idx]);
+      let fin=false;
+      const done=ok=>{
+        if(fin)return; fin=true;
+        const v=parseFloat(inp.value);
+        if(inp.parentNode)inp.replaceWith(b);
+        if(ok&&!isNaN(v))setv(v);
+      };
+      inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();done(true);}else if(e.key==="Escape"){e.preventDefault();done(false);}};
+      inp.onblur=()=>done(true);
+      b.replaceWith(inp);inp.focus();inp.select();
+    };
+    rowb.appendChild(dn);rowb.appendChild(ed);rowb.appendChild(up);
+    g.appendChild(b);g.appendChild(rowb);
     row.appendChild(g);
   });
 }
@@ -1709,6 +1807,18 @@ $("btnApplyBots").onclick=()=>{
   socket.emit("settings",{fillBots:v==="off"?false:(v==="full"?"full":true)});
 };
 $("btnApplySeed").onclick=()=>socket.emit("seed",$("mySeed").value);
+
+/* ---------- ПЕЧАТЪТ: вън при затворен панел, вътре при отворен ---------- */
+(function(){
+  const fold=$("fairFold"),box=$("sealBox"),out=$("sealOut"),inn=$("sealIn");
+  if(!fold||!box||!out||!inn)return;
+  const place=()=>{
+    if(fold.open){inn.appendChild(box);out.style.display="none";}
+    else{out.appendChild(box);out.style.display="block";}
+  };
+  fold.addEventListener("toggle",place);
+  place();
+})();
 
 /* ---------- ПРОВЕРКА НА ПЕЧАТА ---------- */
 $("btnVerify").onclick=async()=>{
