@@ -207,23 +207,47 @@ function emptySeat(i){
   return {seat:i,type:"empty",id:null,name:"",clientSeed:"",chips:0,
     hole:[],folded:true,allIn:false,bet:0,contrib:0,acted:false,
     showCards:false,winCards:false,handName:"",canRaiseFlag:true,equity:null,
-    st:{hands:0,vpip:0,pfr:0,won:0,sdW:0,sdL:0,net:0,_vp:false,_pf:false,_startChips:0},
-    pendingReason:""};
+    st:{hands:0,vpip:0,pfr:0,won:0,sdW:0,sdL:0,net:0,_vp:false,_pf:false,_startChips:0,
+        busts:0,entries:1,_entryChips:0,bigPot:0},
+    out:false,done:false,pendingReason:""};
 }
 const SB=r=>r.settings.sb, BB=r=>r.settings.sb*2;
-const active=r=>r.seats.filter(p=>p.type!=="empty");
+/* seated = всички на масата (вкл. отпадналите, които чакат решение)
+   active = тези, които участват в текущата ръка */
+const seated=r=>r.seats.filter(p=>p.type!=="empty");
+const active=r=>seated(r).filter(p=>!p.out);
 const alive=r=>active(r).filter(p=>!p.folded);
+/* стълбица на повторното влизане: 100% → 75% → 60% → 50%, после край на сесията */
+const REBUY_PCT=[1,0.75,0.60,0.50];
+const MAX_ENTRIES=REBUY_PCT.length;
+const MIN_BUYIN_BB=10;   // под това влизането е безсмислено — предлага се нова маса
+/* Влизаш с най-малкото от: стъпалото по стълбицата и средния стек на оцелелите.
+   Така никога не се появяваш над полето, което е оцеляло без теб. */
+function buyinFor(room,p){
+  const bb=BB(room), step=Math.min(p.st.busts,MAX_ENTRIES-1);
+  const ladder=Math.round(room.settings.startStack*REBUY_PCT[step]/bb)*bb;
+  const live=active(room).map(q=>q.chips).filter(c=>c>0).sort((x,y)=>x-y);
+  if(!live.length)return ladder;
+  /* медиана, не средно: един гигант не бива да те качва над оцелелите,
+     нито един микро-стек да ти сваля влизането, когато полето е дълбоко */
+  const m=live.length%2?live[(live.length-1)/2]:(live[live.length/2-1]+live[live.length/2])/2;
+  const med=Math.round(m/bb)*bb;
+  return Math.max(0,Math.min(ladder,med));
+}
+const canRebuy=(room,p)=>!p.done&&p.st.busts<MAX_ENTRIES&&buyinFor(room,p)>=MIN_BUYIN_BB*BB(room);
 const canAct=r=>alive(r).filter(p=>!p.allIn);
-const nextIdx=(r,i)=>{let j=i;do{j=(j+1)%8;}while(r.seats[j].type==="empty");return j;};
+/* въртенето на бутона/блайндовете прескача празните места И отпадналите */
+const nextIdx=(r,i)=>{let j=i,n=0;do{j=(j+1)%8;n++;}while((r.seats[j].type==="empty"||r.seats[j].out)&&n<=8);return j;};
 
 function fillBots(room){
   if(!room.settings.fillBots)return;
-  const used=new Set(active(room).map(p=>p.name));
-  const humans=active(room).filter(p=>p.type==="human").length;
+  if(room.started)return;   // турнирът е започнал — фалиралите не се заменят
+  const used=new Set(seated(room).map(p=>p.name));
+  const humans=seated(room).filter(p=>p.type==="human").length;
   let want=Math.max(0, (humans>=2?0:2) ); // поне 2 бота ако има само 1 човек
   // цел: масата да има минимум 3 участника; ботове допълват до 8 само ако е включено "пълна маса"
-  let need=Math.max(3-active(room).length, want - active(room).filter(p=>p.type==="bot").length);
-  if(room.settings.fillBots==="full") need=8-active(room).length;
+  let need=Math.max(3-seated(room).length, want - seated(room).filter(p=>p.type==="bot").length);
+  if(room.settings.fillBots==="full") need=8-seated(room).length;
   for(let i=0;i<8&&need>0;i++){
     if(room.seats[i].type==="empty"){
       const name=BOT_NAMES.find(n=>!used.has(n))||("Бот "+(i+1));
@@ -231,7 +255,7 @@ function fillBots(room){
       const s=emptySeat(i);
       s.type="bot"; s.name=name; s.chips=room.settings.startStack;
       s.prof={agg:+(0.35+Math.random()*0.55).toFixed(2),loose:+(0.35+Math.random()*0.45).toFixed(2),bluff:+(0.05+Math.random()*0.08).toFixed(3)};
-      s.st._startChips=room.settings.startStack;
+      s.st._startChips=room.settings.startStack;s.st._entryChips=room.settings.startStack;
       room.seats[i]=s; need--;
     }
   }
@@ -251,13 +275,18 @@ function publicState(room){
     board:room.board, pot:room.pot, currentBet:room.currentBet, minRaise:room.minRaise,
     acting:room.acting, button:room.button, deadline:room.deadline, turnMs:45000, nextHandAt:room.nextHandAt||0,
     settings:room.settings, hostId:room.hostId,
+    over:!!room.over, winner:room.winner||"", started:!!room.started,
+    entriesMax:MAX_ENTRIES, fieldLeft:active(room).length,
     commit:room.fair?room.fair.commit:null,
     reveal:(room.fair&&room.handOver)?{server:room.fair.serverSeed,client:room.fair.clientSeed,nonce:room.fair.nonce}:null,
     lastReveal:room.lastReveal||null,
     seats:room.seats.map(p=>({
       seat:p.seat,type:p.type,name:p.name,avatar:p.avatar||"",chips:p.chips,bet:p.bet,
+      out:!!p.out,done:!!p.done,busts:p.st.busts,
+      nextBuyin:p.out&&!p.done?buyinFor(room,p):0,place:p.place||0,
       folded:p.folded,allIn:p.allIn,handName:p.showCards?p.handName:"",
       equity:p.equity,winCards:p.winCards,connected:p.type!=="human"||!!p.id,
+      net:p.st.net+(p.out?0:(p.chips-p.st._entryChips)),bigPot:p.st.bigPot,entries:p.st.busts+1,
       hole:p.showCards?p.hole:null,
       st:p.st
     }))
@@ -280,13 +309,12 @@ function newHand(room){
   room.pending.forEach(fn=>fn()); room.pending=[];
   fillBots(room);
   if(active(room).length<2){room.log("Нужни са поне 2 участника.","sys");return;}
-  const start=room.settings.startStack;
   active(room).forEach(p=>{
-    if(p.chips<=0){p.st.net+=p.chips-p.st._startChips;p.st._startChips=start;p.chips=start;room.log(p.name+": rebuy "+A(start),"sys");}
     Object.assign(p,{hole:[],folded:false,allIn:false,bet:0,contrib:0,acted:false,
       showCards:false,winCards:false,handName:"",canRaiseFlag:true,equity:null,pendingReason:"",_shown:false});
     p.st.hands++;p.st._vp=false;p.st._pf=false;
   });
+  room.started=true;
   room.board=[];room.pot=0;room.handOver=false;room.actionLog=[];
   room.handNo++;
   room.button=nextIdx(room,room.button);
@@ -661,7 +689,7 @@ function endByFold(room){
   const w=alive(room)[0];
   active(room).forEach(p=>{room.pot+=p.bet;p.bet=0;});
   const amt=room.pot;
-  w.chips+=amt;w.st.won++;room.lastWin=w.name;w.winCards=true;
+  w.chips+=amt;w.st.won++;w.st.bigPot=Math.max(w.st.bigPot,amt);room.lastWin=w.name;w.winCards=true;
   room.pot=0;
   room.rec(w.name+" печели "+A(amt)+" (останалите fold).");
   io.to(room.code).emit("banner",{html:esc(w.name)+" печели "+A(amt)});
@@ -701,6 +729,7 @@ function showdown(room){
   const winners=cont.filter(p=>p._score===bestV);
   winners.forEach(p=>{p.winCards=true;p.st.won++;p.st.sdW++;});
   cont.filter(p=>p._score<bestV).forEach(p=>p.st.sdL++);
+  Object.entries(gains).forEach(([n,g])=>{const q=seated(room).find(x=>x.name===n);if(q)q.st.bigPot=Math.max(q.st.bigPot,g);});
   const winTxt=winners.map(p=>esc(p.name)+" ("+esc(p.handName)+")").join(", ");
   room.lastWin=winners.map(p=>p.name).join(", ");
   io.to(room.code).emit("banner",{html:"Печели: "+winTxt+"<br><span class='bsub'>"+Object.entries(gains).map(([n,g])=>esc(n)+" +"+A(g)).join(" · ")+"</span>"});
@@ -711,6 +740,7 @@ function showdown(room){
   room.pot=0;finishHand(room);
 }
 function scheduleAutoDeal(room){
+  if(room.over)return;
   if(room.autoTimer){clearTimeout(room.autoTimer);room.autoTimer=null;}
   room.nextHandAt=0;
   const humansOn=()=>active(room).some(p=>p.type==="human"&&p.id);
@@ -724,6 +754,43 @@ function scheduleAutoDeal(room){
     newHand(room);
   },DELAY);
 }
+/* След всяка ръка: сваляме наказанието на съвзелите се, отбелязваме отпадналите,
+   разсаждаме ботовете, които са надули стека си над тавана. */
+function settleSeats(room){
+  room.seats.forEach((p,i)=>{
+    if(p.type==="empty"||p.out)return;
+    // наказанието се сваля при удвояване на стека, с който си влязъл
+    if(p.st.busts>0&&p.st._entryChips>0&&p.chips>=2*p.st._entryChips){
+      p.st.busts=0;
+      room.log(p.name+": наказанието е свалено — стекът е удвоен.","sys");
+    }
+    if(p.chips>0)return;
+    // фалит
+    p.out=true; p.folded=true; p.allIn=false;
+    p.st.net+=-p.st._entryChips;
+    p.st.busts++;
+    p.place=aliveCount(room)+1;
+    if(p.type==="bot"){
+      room.log(p.name+" отпада — "+p.place+"-то място.","sys");
+      room.seats[i]=emptySeat(i);
+      return;
+    }
+    if(!canRebuy(room,p)){
+      p.done=true;
+      room.log(p.name+": сесията свърши · "+p.st.busts+" от "+MAX_ENTRIES+" влизания · "+p.place+"-то място.","sys");
+    } else {
+      room.log(p.name+" отпадна. Следващо влизане: "+A(buyinFor(room,p))+" ("+p.place+"-то място, ако спреш дотук)","sys");
+    }
+  });
+  // турнирът свършва, когато остане един
+  const left=active(room);
+  if(!room.over&&room.started&&left.length===1){
+    room.over=true; room.winner=left[0].name; left[0].place=1;
+    room.log("★ "+left[0].name+" печели турнира със "+A(left[0].chips)+" ★","win");
+    io.to(room.code).emit("banner",{html:"★ "+esc(left[0].name)+" печели турнира ★"});
+  }
+}
+const aliveCount=r=>active(r).length;
 function finishHand(room){
   room.handOver=true;room.acting=-1;room.deadline=0;
   // история + разкриване на seed-а (проверимо от клиента)
@@ -736,6 +803,7 @@ function finishHand(room){
   });
   if(room.handHistory.length>40)room.handHistory.length=40;
   io.to(room.code).emit("history",room.handHistory.slice(0,40));
+  settleSeats(room);
   scheduleAutoDeal(room);
   broadcast(room);
 }
@@ -805,6 +873,7 @@ io.on("connection",socket=>{
       s.type="human";s.id=socket.id;s.name=name;s.clientSeed=String(clientSeed||"").slice(0,64);
       s.tok=randHex(12);
       s.chips=room.settings.startStack;s.st._startChips=room.settings.startStack;
+      s.st._entryChips=room.settings.startStack;
       s.avatar=String(avatar||"").slice(0,4);
       room.seats[idx]=s;
       mySeat=idx;
@@ -913,6 +982,22 @@ io.on("connection",socket=>{
     if(!myRoom||mySeat<0)return;
     const p=myRoom.seats[mySeat];
     if(p&&p.id===socket.id){p.clientSeed=String(seedStr||"").slice(0,64);socket.emit("log",{msg:"Твоят client seed е записан — влиза от следващата ръка.",cls:"sys"});}
+  });
+
+  socket.on("rebuy",()=>{
+    if(!myRoom||mySeat<0)return;
+    if(!rateOk(socket,3))return;
+    const room=myRoom,p=room.seats[mySeat];
+    if(!p||p.id!==socket.id||p.type!=="human")return;
+    if(!p.out||p.done)return;
+    if(!canRebuy(room,p))return;
+    const amt=buyinFor(room,p);
+    p.chips=amt; p.st._startChips=amt; p.st._entryChips=amt;
+    p.st.entries=p.st.busts+1;
+    p.out=false; p.folded=true; p.bet=0; p.contrib=0; p.hole=[];
+    room.log(p.name+" влиза отново с "+A(amt)+(p.st.busts?" ("+(p.st.busts+1)+"-то влизане)":""),"sys");
+    broadcast(room);
+    if(room.handOver&&room.settings.autoDeal)scheduleAutoDeal(room);
   });
 
   socket.on("leaveTable",()=>{
