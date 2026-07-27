@@ -400,6 +400,16 @@
 
   /* лента действия */
   .actions{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+  /* по-тесен от масата, за да не покрива стъблото на палмата отляво */
+  @media(min-width:1100px){.actions{max-width:900px;margin-left:auto;margin-right:auto}}
+  @media(min-width:1340px){.actions{max-width:860px}}
+  /* Двата реда с размери живеят в една и съща клетка: височината на панела е
+     винаги колкото по-високия от тях, затова Fold и Call не мърдат между улиците.
+     Панел, който скача, значи бутон на различно място всеки път — а грешно
+     натискане в покера струва пари. */
+  .rowstack{display:grid;width:100%}
+  .rowstack>*{grid-area:1/1}
+  .rowstack>.hid{visibility:hidden;pointer-events:none}
   .actions .msg{font-size:.84rem;color:#cfe0d6;margin-bottom:8px;min-height:16px;text-align:center}
   .btnrow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center}
   button{font-family:Georgia,serif;font-size:.88rem;padding:10px 18px;border-radius:8px;
@@ -775,6 +785,83 @@
     background-position:right 10px bottom 220px, right -20px bottom -30px;
     background-size:230px 170px, 220px 280px}
   @media(max-width:900px){body::before{display:none}}
+  /* ═══════════ ВОДОПАД ВДЯСНО ═══════════
+     Започва под дясното място и пада до долния край на екрана.
+     Държан е много блед — декор, не атракция; не бива да дърпа окото от масата. */
+  /* left/width/top се задават от placeWaterfall() — водопадът пада точно под
+     мястото на десния играч, в свободното поле, без да лежи върху панела */
+  .wfall{position:fixed;left:0;top:60vh;bottom:0;width:132px;z-index:0;pointer-events:none;
+    overflow:hidden;opacity:0;transition:opacity 1.2s ease}
+  .wfall.on{opacity:1}
+  @media(max-width:700px){.wfall{display:none}}
+  /* тялото на водата: широка блед-синя завеса */
+  .wfall .body{position:absolute;inset:0;
+    background:linear-gradient(to bottom,rgba(150,225,255,0) 0%,rgba(150,225,255,.10) 12%,
+      rgba(170,235,255,.13) 55%,rgba(190,245,255,.10) 88%,rgba(190,245,255,0) 100%);
+    -webkit-mask:linear-gradient(to right,transparent,#000 22%,#000 78%,transparent);
+            mask:linear-gradient(to right,transparent,#000 22%,#000 78%,transparent)}
+  /* струите: тънки светли ивици, всяка със своя скорост */
+  .wfall i{position:absolute;top:-40%;width:2px;height:36%;border-radius:2px;
+    background:linear-gradient(to bottom,rgba(220,250,255,0),rgba(225,250,255,.55),rgba(220,250,255,0));
+    animation:wfDrop linear infinite}
+  @keyframes wfDrop{0%{transform:translateY(-40%)}100%{transform:translateY(420%)}}
+  /* мъгла в подножието */
+  .wfall .mist{position:absolute;left:-14px;right:-14px;bottom:-26px;height:96px;border-radius:50%;
+    background:radial-gradient(ellipse at 50% 60%,rgba(215,248,255,.20),rgba(215,248,255,0) 70%);
+    filter:blur(7px);animation:wfMist 5.2s ease-in-out infinite}
+  @keyframes wfMist{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.10)}}
+  /* пръски: дребни точки, които отскачат от подножието */
+  .wfall b{position:absolute;bottom:8px;width:3px;height:3px;border-radius:50%;
+    background:rgba(225,250,255,.75);animation:wfSpray linear infinite}
+  @keyframes wfSpray{0%{opacity:0;transform:translate(0,0) scale(.6)}
+    18%{opacity:.9}100%{opacity:0;transform:translate(var(--dx),-42px) scale(.3)}}
+
+  /* ═══════ ПАПАГАЛ И МАЙМУНА ОКОЛО ЛЯВАТА ПАЛМА (при all-in) ═══════ */
+  .jungleL{position:fixed;left:0;top:0;bottom:0;width:430px;z-index:0;pointer-events:none;overflow:hidden;
+    /* десният ръб избледнява, за да не се реже папагалът рязко */
+    -webkit-mask:linear-gradient(to right,#000 0,#000 62%,rgba(0,0,0,.55) 82%,transparent 100%);
+            mask:linear-gradient(to right,#000 0,#000 62%,rgba(0,0,0,.55) 82%,transparent 100%)}
+  @media(max-width:700px){.jungleL{display:none}}
+
+  /* папагалът прелита покрай короната */
+  .parrot{position:absolute;left:-90px;top:40vh;width:64px;height:44px;opacity:0}
+  .parrot.fly{animation:prFly 3.4s cubic-bezier(.36,.1,.62,.94) forwards}
+  @keyframes prFly{
+    0%  {opacity:0;transform:translate(0,0) scale(.72)}
+    8%  {opacity:.9}
+    30% {transform:translate(120px,-34px) scale(.9)}
+    55% {transform:translate(215px,4px) scale(1)}
+    72% {opacity:.85;transform:translate(290px,-22px) scale(.95)}
+    88% {opacity:.4;transform:translate(350px,-44px) scale(.85)}
+    100%{opacity:0;transform:translate(400px,-66px) scale(.72)}}
+  .parrot .wing{transform-origin:52% 46%;animation:prFlap .26s ease-in-out infinite alternate}
+  .parrot .wing2{transform-origin:52% 46%;animation:prFlap .26s .13s ease-in-out infinite alternate}
+  @keyframes prFlap{from{transform:rotate(-24deg) scaleY(.85)}to{transform:rotate(16deg) scaleY(1.1)}}
+
+  /* маймуната надзърта иззад короната */
+  .monkey{position:absolute;left:52px;top:44vh;width:58px;height:62px;opacity:0;
+    transform:translateY(26px) scale(.9)}
+  .monkey.peek{animation:mkPeek 4.2s ease-in-out forwards}
+  @keyframes mkPeek{
+    0%  {opacity:0;transform:translateY(26px) scale(.9)}
+    12% {opacity:1;transform:translateY(0) scale(1)}
+    26% {transform:translateY(-2px) rotate(-7deg)}
+    42% {transform:translateY(-2px) rotate(8deg)}
+    58% {transform:translateY(-3px) rotate(-4deg)}
+    82% {opacity:1;transform:translateY(0) rotate(0)}
+    100%{opacity:0;transform:translateY(28px) scale(.9)}}
+  .monkey .lids{animation:mkBlink 4.2s steps(1,end) forwards}
+  @keyframes mkBlink{0%,28%{opacity:0}30%,32%{opacity:1}34%,62%{opacity:0}64%,66%{opacity:1}68%,100%{opacity:0}}
+  /* зениците се стрелкат наляво и надясно — очакване на изненада */
+  .monkey .pupils{animation:mkLook 4.2s ease-in-out forwards}
+  @keyframes mkLook{
+    0%,14%  {transform:translateX(0)}
+    22%,30% {transform:translateX(-2.6px)}
+    38%,48% {transform:translateX(2.8px)}
+    56%,62% {transform:translateX(-2.2px)}
+    70%,78% {transform:translateX(2.4px)}
+    88%,100%{transform:translateX(0)}}
+
   /* --- палмов декор вляво --- */
   body::after{content:"";position:fixed;left:0;top:0;bottom:0;width:300px;pointer-events:none;z-index:0;
     background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20240%20900%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%2711%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M118%20900%20C%2096%20700%20108%20520%2092%20378%27/%3E%3Cpath%20d%3D%27M132%20900%20C%20134%20720%20120%20540%20100%20384%27/%3E%3C/g%3E%3Cg%20fill%3D%27%232c9a63%27%20fill-opacity%3D%27.13%27%3E%3Cpath%20d%3D%27M92%20376%20C%2032%20338%2012%20298%206%20248%20C%2062%20278%2096%20318%20105%20358Z%27/%3E%3Cpath%20d%3D%27M94%20370%20C%2062%20298%2062%20238%2086%20188%20C%20110%20248%20110%20318%20104%20362Z%27/%3E%3Cpath%20d%3D%27M98%20366%20C%20112%20288%20152%20248%20202%20234%20C%20178%20298%20142%20346%20106%20364Z%27/%3E%3Cpath%20d%3D%27M90%20378%20C%2042%20378%2014%20364%202%20338%20C%2052%20342%2084%20356%2098%20372Z%27/%3E%3Cpath%20d%3D%27M102%20370%20C%20152%20348%20198%20348%20238%20370%20C%20188%20388%20138%20386%20104%20376Z%27/%3E%3C/g%3E%3Ccircle%20cx%3D%2798%27%20cy%3D%27376%27%20r%3D%279%27%20fill%3D%27%23a35c22%27%20fill-opacity%3D%27.3%27/%3E%3Ccircle%20cx%3D%27112%27%20cy%3D%27382%27%20r%3D%278%27%20fill%3D%27%23a35c22%27%20fill-opacity%3D%27.3%27/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20260%20200%27%3E%3Cg%20fill%3D%27%232c9a63%27%20fill-opacity%3D%27.11%27%3E%3Cpath%20d%3D%27M10%20100%20C%2060%2040%20130%2020%20210%2030%20C%20150%2070%2080%2096%2020%20104Z%27/%3E%3Cpath%20d%3D%27M6%20110%20C%2070%20100%20140%20108%20200%20140%20C%20130%20150%2060%20138%2010%20118Z%27/%3E%3Cpath%20d%3D%27M14%2096%20C%2040%2040%2084%2012%20140%204%20C%20110%2050%2066%2084%2022%2098Z%27/%3E%3C/g%3E%3C/svg%3E");
@@ -1067,7 +1154,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v66</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <span class="ver" id="verTag">v68</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="hdrfz" id="btnFreeze2" title="Замрази екрана (Z)" aria-label="Замрази екрана"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3"/><path d="M4 7.5l16 9M4 7.5l.4 4.1M4 7.5l4-1.1M20 16.5l-.4-4.1M20 16.5l-4 1.1"/><path d="M20 7.5l-16 9M20 7.5l-4-1.1M20 7.5l-.4 4.1M4 16.5l4 1.1M4 16.5l.4-4.1"/></svg></button><button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -1087,6 +1174,10 @@
         <label class="switch"><input type="checkbox" id="setFour" checked><span></span></label></div>
       <div class="set-item"><span>Ефект при печалба (само за теб)</span>
         <label class="switch"><input type="checkbox" id="setWinFx" checked><span></span></label></div>
+      <div class="set-item"><span>Джунгла: водопад, папагал, маймуна (само за теб)</span>
+        <label class="switch"><input type="checkbox" id="setJungle" checked><span></span></label></div>
+      <div class="set-item"><span>Шум на водопада</span>
+        <label class="switch"><input type="checkbox" id="setWfSnd"><span></span></label></div>
       <div id="hostSettings">
         <div class="set-item" style="margin-top:6px"><span class="lbl">Настройки на масата — общи, всеки играч може да ги променя (вижда се в дневника кой какво е сменил)</span></div>
         <div class="set-item"><span>Блайндове</span>
@@ -1128,6 +1219,41 @@
   
 
   <div class="layout">
+  <div class="wfall" id="wfall" aria-hidden="true">
+    <div class="body"></div><div class="mist"></div>
+  </div>
+  <div class="jungleL" id="jungleL" aria-hidden="true">
+    <svg class="parrot" id="parrot" viewBox="0 0 64 44">
+      <ellipse cx="30" cy="24" rx="15" ry="9" fill="#3fa96b" opacity=".82"/>
+      <path class="wing" d="M28 22 C 16 8 6 8 2 16 C 10 22 20 26 28 26Z" fill="#f0c14b" opacity=".85"/>
+      <path class="wing2" d="M30 24 C 22 36 12 40 6 34 C 14 30 24 27 30 26Z" fill="#e07b39" opacity=".8"/>
+      <path d="M44 22 C 54 18 60 22 62 28 C 54 28 48 26 44 25Z" fill="#3fa96b" opacity=".7"/>
+      <circle cx="45" cy="20" r="7" fill="#4bbd79" opacity=".9"/>
+      <path d="M50 20 L 57 23 L 50 25Z" fill="#f0c14b"/>
+      <circle cx="46" cy="18.5" r="1.5" fill="#12261c"/>
+    </svg>
+    <svg class="monkey" id="monkey" viewBox="0 0 58 62">
+      <ellipse cx="12" cy="30" rx="7" ry="8" fill="#8a6242" opacity=".9"/>
+      <ellipse cx="46" cy="30" rx="7" ry="8" fill="#8a6242" opacity=".9"/>
+      <ellipse cx="12" cy="30" rx="4" ry="4.6" fill="#c49a74" opacity=".9"/>
+      <ellipse cx="46" cy="30" rx="4" ry="4.6" fill="#c49a74" opacity=".9"/>
+      <ellipse cx="29" cy="30" rx="19" ry="20" fill="#8a6242" opacity=".95"/>
+      <ellipse cx="29" cy="36" rx="13" ry="12" fill="#c49a74" opacity=".95"/>
+      <ellipse cx="22" cy="27" rx="4.6" ry="5" fill="#fdf6ea" opacity=".95"/>
+      <ellipse cx="36" cy="27" rx="4.6" ry="5" fill="#fdf6ea" opacity=".95"/>
+      <g class="pupils">
+        <circle cx="22" cy="28" r="2.4" fill="#1d1108"/>
+        <circle cx="36" cy="28" r="2.4" fill="#1d1108"/>
+      </g>
+      <g class="lids" opacity="0">
+        <ellipse cx="22" cy="27" rx="5" ry="5.4" fill="#8a6242"/>
+        <ellipse cx="36" cy="27" rx="5" ry="5.4" fill="#8a6242"/>
+      </g>
+      <ellipse cx="26" cy="36" rx="1.3" ry="1.7" fill="#6b4a30"/>
+      <ellipse cx="32" cy="36" rx="1.3" ry="1.7" fill="#6b4a30"/>
+      <path d="M23 42 Q 29 47 35 42" stroke="#6b4a30" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
   <div class="decorL"></div>
   <div class="mainCol">
   <div class="tablewrap">
@@ -1166,6 +1292,7 @@
         <button class="dockbtn callb" id="btnCall">Check</button>
       </div>
       <div class="sizer" id="sizer">
+        <div class="rowstack">
         <div class="presets" id="preRow"></div>
         <div class="presets" id="postRow">
           <button class="preset r-low" data-k="min">Min</button>
@@ -1174,6 +1301,7 @@
           <button class="preset r-mid" data-k="75">75%</button>
           <button class="preset r-high" data-k="100">100%</button>
           <button class="preset r-high" data-k="a">All-in</button>
+        </div>
         </div>
         <div class="fine">
           <input type="range" id="raiseSlider">
@@ -1869,7 +1997,7 @@ function renderTable(){
   // пулс на обкова: 3-бет → златно · нов all-in → червено
   const allInCnt=S.seats.filter(p=>p.allIn&&!p.folded&&p.type!=="empty").length;
   if(!S.handOver){
-    if(allInCnt>prevAllIn)rimPulse("red");
+    if(allInCnt>prevAllIn){rimPulse("red");jungleAllIn();}
     else if(S.currentBet>prevCB&&prevCB>S.settings.sb*2)rimPulse("gold");
     prevCB=S.currentBet;prevAllIn=allInCnt;
   }else{prevCB=0;prevAllIn=0;}
@@ -1901,6 +2029,7 @@ function renderTable(){
   startCountdown();
   syncHistSoon();
   wfxCheck();          /* ефектът при печалба — след като местата са на екрана */
+  placeWaterfall();    /* водопадът се подравнява под дясното място */
 }
 /* бордът се пречертава само при промяна — иначе обръщането щеше да се къса,
    защото масата се рисува наново при всяко съобщение от сървъра */
@@ -2074,8 +2203,9 @@ function renderControls(){
       const P=S.pot+S.seats.reduce((s,p)=>s+(p.bet||0),0);
       $("sizer")._ctx={minTo,maxTo,P,toCall};
       // редове според етапа: префлоп → стъпки в BB; след флопа → проценти от пота
-      $("preRow").style.display=S.stage==="preflop"?"flex":"none";
-      $("postRow").style.display=S.stage!=="preflop"?"flex":"none";
+      const pf=S.stage==="preflop";
+      $("preRow").classList.toggle("hid",!pf);
+      $("postRow").classList.toggle("hid",pf);
       showRaiseVal();
     }
   }else{
@@ -2279,7 +2409,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v66 · 27.07";
+const NV_VER="v68 · 28.07";
 const Snd=(()=>{
   let ctx=null,muted=(LS.get("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -2397,7 +2527,50 @@ const Snd=(()=>{
       g.gain.exponentialRampToValueAtTime(.0001,t+.17);
       o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.2);
     });}catch(e){}}
-  return{ding,chips,swish,win,tick,go,card,fill,coin,
+  /* водопадът: розов шум през ниска и лентова стълба — вода, не съскане.
+     Държан е много тих; заглушава се с общия ключ като всичко останало. */
+  let wfNodes=null;
+  function waterfall(on){
+    try{
+      if(!on||muted){ if(wfNodes){wfNodes.g.gain.linearRampToValueAtTime(.0001,ac().currentTime+.6);
+                        const n=wfNodes; wfNodes=null; setTimeout(()=>{try{n.src.stop();}catch(e){}},900);} return; }
+      if(wfNodes)return;
+      const c=ac(), len=c.sampleRate*3;
+      const b=c.createBuffer(1,len,c.sampleRate), d=b.getChannelData(0);
+      let b0=0,b1=0,b2=0;
+      for(let k=0;k<len;k++){                 // приблизителен розов шум
+        const wn=Math.random()*2-1;
+        b0=0.99765*b0+wn*0.0990460; b1=0.96300*b1+wn*0.2965164; b2=0.57000*b2+wn*1.0526913;
+        d[k]=(b0+b1+b2+wn*0.1848)*0.16;
+      }
+      // краищата се преливат, за да няма щракане при завъртане на цикъла
+      const fade=Math.floor(c.sampleRate*0.05);
+      for(let k=0;k<fade;k++){const g=k/fade; d[k]*=g; d[len-1-k]*=g;}
+      const src=c.createBufferSource(); src.buffer=b; src.loop=true;
+      const lp=c.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=1500; lp.Q.value=.4;
+      const bp=c.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=520; bp.Q.value=.6;
+      const g=c.createGain(); g.gain.setValueAtTime(.0001,c.currentTime);
+      g.gain.linearRampToValueAtTime(.030,c.currentTime+1.6);
+      src.connect(lp); lp.connect(bp); bp.connect(g); g.connect(c.destination);
+      src.start();
+      wfNodes={src,g};
+    }catch(e){}
+  }
+  /* кратък дрезгав вик на папагал — две бързи изсвирвания надолу */
+  function squawk(){if(muted)return;try{
+    const c=ac(),t0=c.currentTime;
+    [0,0.17].forEach((off,i)=>{
+      const t=t0+off;
+      const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();
+      o.type="sawtooth"; f.type="bandpass"; f.frequency.value=1500-i*260; f.Q.value=4.5;
+      o.frequency.setValueAtTime(920-i*90,t);
+      o.frequency.exponentialRampToValueAtTime(430-i*40,t+.13);
+      g.gain.setValueAtTime(.0001,t);
+      g.gain.exponentialRampToValueAtTime(.055,t+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,t+.16);
+      o.connect(f);f.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.2);
+    });}catch(e){}}
+  return{ding,chips,swish,win,tick,go,card,fill,coin,waterfall,squawk,
     get muted(){return muted;},
     toggle(){muted=!muted;LS.set("nvMute",muted?"1":"0");return muted;}};
 })();
@@ -2630,6 +2803,73 @@ function drawGraph(){
 }
 
 /* ================= КЛАВИШНИ КОМБИНАЦИИ ================= */
+
+/* ============ ДЖУНГЛА: ВОДОПАД, ПАПАГАЛ, МАЙМУНА ============ */
+const jungleOn=()=>LS.get("nvJungle")!=="0";
+
+/* --- водопадът се сглобява веднъж и тече през цялото време --- */
+function buildWaterfall(){
+  const w=$("wfall"); if(!w||w.dataset.built)return;
+  w.dataset.built="1";
+  for(let i=0;i<16;i++){                       // струи
+    const e=document.createElement("i");
+    e.style.left=(6+Math.random()*84)+"%";
+    e.style.height=(24+Math.random()*30)+"%";
+    e.style.opacity=(0.35+Math.random()*0.65).toFixed(2);
+    e.style.animationDuration=(1.5+Math.random()*1.6).toFixed(2)+"s";
+    e.style.animationDelay=(-Math.random()*3).toFixed(2)+"s";
+    w.appendChild(e);
+  }
+  for(let i=0;i<9;i++){                        // пръски в подножието
+    const e=document.createElement("b");
+    e.style.left=(12+Math.random()*76)+"%";
+    e.style.setProperty("--dx",((Math.random()*2-1)*22).toFixed(0)+"px");
+    e.style.animationDuration=(1.1+Math.random()*1.0).toFixed(2)+"s";
+    e.style.animationDelay=(-Math.random()*2).toFixed(2)+"s";
+    w.appendChild(e);
+  }
+  w.classList.toggle("on",jungleOn());
+}
+
+/* Водопадът се залепва под мястото на десния играч: там е свободното поле.
+   Досега стоеше на десния ръб на екрана — тоест точно зад страничния панел
+   и никога не се виждаше на широка маса. */
+function placeWaterfall(){
+  const w=$("wfall"); if(!w||w.style.display==="none")return;
+  const t=$("tableEl"); if(!t)return;
+  const tr=t.getBoundingClientRect();
+  if(!tr.width)return;
+  const mid=tr.left+tr.width/2;
+  let best=null;                       // най-дясното място от дясната половина
+  document.querySelectorAll(".seat").forEach(e=>{
+    const r=e.getBoundingClientRect();
+    if(r.left+r.width/2<=mid)return;
+    if(!best||r.right>best.right||(Math.abs(r.right-best.right)<6&&r.bottom>best.bottom))best=r;
+  });
+  const r=best||{left:tr.right-140,width:132,bottom:tr.bottom};
+  w.style.left=Math.round(r.left)+"px";
+  w.style.width=Math.round(r.width)+"px";
+  w.style.top=Math.round(r.bottom+16)+"px";
+}
+let wfTick=null;
+addEventListener("resize",()=>{clearTimeout(wfTick);wfTick=setTimeout(placeWaterfall,120);});
+
+/* --- при all-in: папагал прелита, маймуна надзърта --- */
+let jungleBusy=0;
+function jungleAllIn(){
+  if(!jungleOn())return;
+  const now=Date.now();
+  if(now-jungleBusy<5000)return;        // да не се трупат при няколко all-in-а подред
+  jungleBusy=now;
+  const pr=$("parrot"), mk=$("monkey");
+  if(pr){ pr.classList.remove("fly"); void pr.offsetWidth; pr.classList.add("fly");
+          setTimeout(()=>pr.classList.remove("fly"),3500); }
+  if(mk){ setTimeout(()=>{
+            mk.classList.remove("peek"); void mk.offsetWidth; mk.classList.add("peek");
+            setTimeout(()=>mk.classList.remove("peek"),4300);
+          },700); }
+  try{Snd.squawk();}catch(_){}
+}
 
 /* ============ ЕФЕКТ ПРИ ПЕЧАЛБА ============ */
 /* Три степени според спечеленото в BB. Прагът не е за красота, а срещу омръзване:
@@ -3056,6 +3296,16 @@ $("setAuto").onchange=e=>socket.emit("settings",{autoDeal:e.target.checked});
 {const w=$("setWinFx");
  if(w){w.checked=wfxOn();
        w.onchange=e=>LS.set("nvWinFx",e.target.checked?"1":"0");}}
+{const j=$("setJungle"), sd=$("setWfSnd");
+ const applyWfSound=()=>{try{Snd.waterfall(jungleOn()&&LS.get("nvWfSnd")==="1");}catch(_){}};
+ if(j){j.checked=jungleOn();
+   j.onchange=e=>{LS.set("nvJungle",e.target.checked?"1":"0");
+     const w=$("wfall"); if(w)w.classList.toggle("on",e.target.checked);
+     applyWfSound();};}
+ if(sd){sd.checked=LS.get("nvWfSnd")==="1";
+   sd.onchange=e=>{LS.set("nvWfSnd",e.target.checked?"1":"0");applyWfSound();};}
+ /* браузърите пускат звук чак след първо докосване */
+ document.addEventListener("pointerdown",applyWfSound,{once:true});}
 $("btnApplyBlinds").onclick=()=>socket.emit("settings",{sb:+document.querySelector('input[name="blindopt"]:checked').value});
 $("btnApplyStack").onclick=()=>socket.emit("settings",{startStack:+document.querySelector('input[name="stackopt"]:checked').value});
 $("btnApplySpeed").onclick=()=>socket.emit("settings",{botSpeed:+document.querySelector('input[name="speedopt"]:checked').value});
@@ -3091,6 +3341,9 @@ $("btnVerify").onclick=async()=>{
       :"✗ НЕ съвпада — печатът и seed-ът не пасват!";
   }catch(e){$("verifyOut").textContent="Грешка при проверката: "+e.message;}
 };
+
+/* декорът се сглобява последен — след като всичко е дефинирано */
+try{buildWaterfall();}catch(e){}
 })();
 </script>
 <div class="offbar" id="offBar" style="display:none">
