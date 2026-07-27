@@ -51,6 +51,25 @@ const PORT = process.env.PORT || 3000;
 const RANKS = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
 const SUITS = ["♠","♥","♦","♣"];
 const HAND_NAMES = ["Висока карта","Чифт","Два чифта","Тройка","Кента","Флъш","Фул хаус","Каре","Кента флъш"];
+const RANKPL = ["двойки","тройки","четворки","петици","шестици","седмици","осмици",
+  "деветки","десетки","валета","дами","попове","аса"];
+/* пълното име на ръката, а не само видът ѝ */
+function handFull(res){
+  const t=res.tie||[],R=RANKS,P=RANKPL;
+  switch(res.cat){
+    case 8:return "Кента флъш до "+R[t[0]];
+    case 7:return "Каре "+P[t[0]];
+    case 6:return "Фул хаус: "+P[t[0]]+" над "+P[t[1]];
+    case 5:return "Флъш до "+R[t[0]];
+    case 4:return "Кента до "+R[t[0]];
+    case 3:return "Тройка "+P[t[0]];
+    case 2:return "Два чифта: "+P[t[0]]+" и "+P[t[1]];
+    case 1:return "Чифт "+P[t[0]];
+    default:return "Висока карта "+R[t[0]];
+  }
+}
+/* суми в дневника се маркират, за да ги покаже клиентът в BB или в жетони */
+const A = v => "\u27ea"+Math.round(v)+"\u27eb";
 const cardStr = c => RANKS[c.r] + SUITS[c.s];
 function freshDeck(){ const d=[]; for(let s=0;s<4;s++) for(let r=0;r<13;r++) d.push({r,s}); return d; }
 
@@ -75,7 +94,7 @@ function score5(cs){
   else if(groups[0].n===2){cat=1;tie=[groups[0].r,groups[1].r,groups[2].r,groups[3].r];}
   else{cat=0;tie=rs;}
   let v=cat; for(let i=0;i<5;i++) v=v*16+(tie[i]!==undefined?tie[i]+1:0);
-  return {v,cat};
+  return {v,cat,tie};
 }
 function best7(cards){
   if(cards.length===5){const s=score5(cards);return{...s,combo:cards.slice()};}
@@ -263,7 +282,7 @@ function newHand(room){
   if(active(room).length<2){room.log("Нужни са поне 2 участника.","sys");return;}
   const start=room.settings.startStack;
   active(room).forEach(p=>{
-    if(p.chips<=0){p.st.net+=p.chips-p.st._startChips;p.st._startChips=start;p.chips=start;room.log(p.name+": rebuy "+start,"sys");}
+    if(p.chips<=0){p.st.net+=p.chips-p.st._startChips;p.st._startChips=start;p.chips=start;room.log(p.name+": rebuy "+A(start),"sys");}
     Object.assign(p,{hole:[],folded:false,allIn:false,bet:0,contrib:0,acted:false,
       showCards:false,winCards:false,handName:"",canRaiseFlag:true,equity:null,pendingReason:"",_shown:false});
     p.st.hands++;p.st._vp=false;p.st._pf=false;
@@ -284,7 +303,7 @@ function newHand(room){
   const heads=active(room).length===2;
   const sbI=heads?room.button:nextIdx(room,room.button), bbI=nextIdx(room,sbI);
   postBlind(room.seats[sbI],SB(room)); postBlind(room.seats[bbI],BB(room));
-  room.rec("Дилър: "+room.seats[room.button].name+" · "+room.seats[sbI].name+" SB "+SB(room)+" · "+room.seats[bbI].name+" BB "+BB(room));
+  room.rec("Дилър: "+room.seats[room.button].name+" · "+room.seats[sbI].name+" SB "+A(SB(room))+" · "+room.seats[bbI].name+" BB "+A(BB(room)));
   room.rec("— PREFLOP —");
   room.currentBet=BB(room); room.minRaise=BB(room);
   const order=[]; let k=room.button;
@@ -383,8 +402,8 @@ function actCheckCall(room,i){
     p.chips-=a;p.bet+=a;p.contrib+=a;
     if(p.chips===0)p.allIn=true;
     room.act(i,p.allIn?"allin":"call",a);
-    room.log(p.name+": call "+a+(p.allIn?" (all-in)":""));
-    room.rec(p.name+": call "+a+(p.allIn?" · all-in":"")+reasonSuffix(p));
+    room.log(p.name+": call "+A(a)+(p.allIn?" (all-in)":""));
+    room.rec(p.name+": call "+A(a)+(p.allIn?" · all-in":"")+reasonSuffix(p));
   }
   p.acted=true;room.acting=nextIdx(room,i);proceed(room);
 }
@@ -407,8 +426,8 @@ function actRaiseTo(room,i,target){
   const fullRaise=raiseSize>=room.minRaise;
   room.currentBet=Math.max(room.currentBet,target);
   room.act(i,p.allIn?"allin":"raise",target);
-  room.log(p.name+": "+(p.allIn?"all-in ":"raise до ")+target);
-  room.rec(p.name+": "+(p.allIn?"all-in ":"raise до ")+target+reasonSuffix(p));
+  room.log(p.name+": "+(p.allIn?"all-in ":"raise до ")+A(target));
+  room.rec(p.name+": "+(p.allIn?"all-in ":"raise до ")+A(target)+reasonSuffix(p));
   if(fullRaise){
     room.minRaise=raiseSize;
     active(room).forEach(q=>{if(q!==p){q.acted=false;q.canRaiseFlag=true;}});
@@ -420,6 +439,31 @@ function actRaiseTo(room,i,target){
 }
 
 /* ============ БОТ С РАЦИОНАЛ (пренесен 1:1) ============ */
+/* Сила на ръката постфлоп в скала 0–1, съпоставима с префлоп преценката.
+   Старият вариант делеше категорията на 6, заради което чифт даваше 0.29,
+   а два чифта 0.45 — под прага за залог, тоест ботът чекваше цяла ръка с вале-вале. */
+const CAT_STR=[0,0,0.74,0.85,0.92,0.95,0.97,0.99,1.00];
+function postStr(res,hole,board){
+  // ако най-добрата петица е само от борда — играчът няма нищо свое
+  const usesHole=(res.combo||[]).some(c=>hole.some(h=>h.r===c.r&&h.s===c.s));
+  if(!usesHole)return 0.28;
+  const t=res.tie||[];
+  if(res.cat===1){
+    const br=board.map(c=>c.r).sort((a,b)=>b-a), pr=t[0];
+    if(pr>br[0])return 0.68;                       // овърпеър
+    if(pr===br[0]){                                // топ чифт — кикърът тежи
+      const k=t[1]!==undefined?t[1]:0;
+      return k>=10?0.66:(k>=7?0.60:0.55);
+    }
+    if(br.length>1&&pr>=br[1])return 0.47;         // среден чифт
+    return 0.38;                                   // долен чифт / джобна двойка под борда
+  }
+  if(res.cat===0){
+    const hi=t[0]!==undefined?t[0]:0;
+    return hi>=11?0.22:(hi>=9?0.16:0.12);
+  }
+  return CAT_STR[res.cat];
+}
 function botAct(room,i){
   room.botTimer=null;
   if(room.handOver||room.acting!==i)return;
@@ -430,8 +474,7 @@ function botAct(room,i){
   const rnd=Math.random();
   const sbv=SB(room), bbv=BB(room);
   const halfBB=v=>Math.max(sbv,Math.round(v/sbv)*sbv); // закръгляне до 0.5 BB
-  const inBB=v=>((v/bbv)%1===0?(v/bbv).toFixed(0):(v/bbv).toFixed(1));
-  let strength,made=-1,drawB=0,lateBonus=false;
+  let strength,made=-1,madeRes=null,drawB=0,lateBonus=false;
   if(room.stage==="preflop"){
     strength=preStr(p.hole);
     const n=active(room).length;
@@ -440,12 +483,12 @@ function botAct(room,i){
     else if(lateness===3||lateness===4)strength-=0.05;
   }else{
     const res=best7(p.hole.concat(room.board));
-    made=res.cat;
-    strength=Math.min(1,res.cat/6+(res.cat===0?0.05:0.12));
-    if(room.stage==="flop"||room.stage==="turn"){drawB=drawStrength(p.hole,room.board);strength+=drawB;}
+    made=res.cat;madeRes=res;
+    strength=postStr(res,p.hole,room.board);
+    if(room.stage==="flop"||room.stage==="turn"){drawB=drawStrength(p.hole,room.board);strength=Math.min(1,strength+drawB);}
   }
   const bluff=rnd<pf.bluff;
-  const madeTxt=made>=0?HAND_NAMES[made]:"";
+  const madeTxt=madeRes?handFull(madeRes):"";
   const drawTxt=drawB>=0.15?"силно дроу":(drawB>=0.08?"гътшот дроу":"");
   if(p.canRaiseFlag===false&&toCall>0){
     const potOdds=toCall/(P+toCall);
@@ -461,7 +504,7 @@ function botAct(room,i){
       if(toCall<=0){ // опция на големия блайнд
         if(strength>0.60&&rnd<0.45+pf.agg*0.4&&p.chips>0){
           const t=Math.min(p.bet+p.chips,Math.max(room.currentBet+room.minRaise,halfBB(bbv*(2.5+pf.agg*1.5))));
-          p.pendingReason="рейз от блайнда до "+inBB(t)+" BB — силна ръка";
+          p.pendingReason="рейз от блайнда до "+A(t)+" — силна ръка";
           actRaiseTo(room,i,t);return;
         }
         p.pendingReason="чек от големия блайнд";actCheckCall(room,i);return;
@@ -469,8 +512,8 @@ function botAct(room,i){
       if((strength>openTh+0.10)||(strength>openTh&&rnd<0.35+pf.agg*0.5)||bluff){
         const openBB=2+pf.agg*1.3+Math.random()*0.7; // 2.0–4.0 BB според агресията
         const t=Math.min(p.bet+p.chips,Math.max(room.currentBet+room.minRaise,halfBB(openBB*bbv)));
-        p.pendingReason=(bluff&&strength<=openTh)?("open-рейз "+inBB(t)+" BB като блъф")
-          :("отваря с рейз "+inBB(t)+" BB — "+(strength>0.72?"премиум ръка":"добра начална ръка")+(lateBonus?", късна позиция":""));
+        p.pendingReason=(bluff&&strength<=openTh)?("open-рейз "+A(t)+" като блъф")
+          :("отваря с рейз "+A(t)+" — "+(strength>0.72?"премиум ръка":"добра начална ръка")+(lateBonus?", късна позиция":""));
         actRaiseTo(room,i,t);return;
       }
       if(strength>openTh-0.08&&rnd<0.75-pf.agg*0.35){p.pendingReason="лимп — спекулативна ръка, гледа евтин флоп";actCheckCall(room,i);return;}
@@ -480,8 +523,8 @@ function botAct(room,i){
     if(toCall>0&&room.currentBet>bbv&&p.chips>toCall){
       if(strength>0.80||(strength>0.66&&rnd<pf.agg*0.55)||(bluff&&rnd<0.5)){
         const t=Math.min(p.bet+p.chips,Math.max(room.currentBet+room.minRaise,halfBB(room.currentBet*(2.2+pf.agg*0.9))));
-        p.pendingReason=strength>0.80?("3-бет до "+inBB(t)+" BB — много силна ръка")
-          :(strength>0.66?("3-бет до "+inBB(t)+" BB — стойност и натиск"):"3-бет блъф");
+        p.pendingReason=strength>0.80?("3-бет до "+A(t)+" — много силна ръка")
+          :(strength>0.66?("3-бет до "+A(t)+" — стойност и натиск"):"3-бет блъф");
         actRaiseTo(room,i,t);return;
       }
       // иначе продължава към общата кол/фолд преценка по-долу
@@ -569,7 +612,7 @@ function revealAllIn(room){
     room.log("ALL-IN — картите се обръщат преди рънаута: "+txt,"sys");
     room.rec("ALL-IN: карти открити — "+txt);
   }
-  if(room.board.length>=3)cont.forEach(p=>{p.handName=HAND_NAMES[best7(p.hole.concat(room.board)).cat];});
+  if(room.board.length>=3)cont.forEach(p=>{p.handName=handFull(best7(p.hole.concat(room.board)));});
   equityCalc(room);
 }
 function endBettingRound(room){
@@ -620,9 +663,9 @@ function endByFold(room){
   const amt=room.pot;
   w.chips+=amt;w.st.won++;room.lastWin=w.name;w.winCards=true;
   room.pot=0;
-  room.rec(w.name+" печели "+amt+" (останалите fold).");
-  io.to(room.code).emit("banner",{html:esc(w.name)+" печели "+amt});
-  room.log(w.name+" печели "+amt+" (останалите fold).","win");
+  room.rec(w.name+" печели "+A(amt)+" (останалите fold).");
+  io.to(room.code).emit("banner",{html:esc(w.name)+" печели "+A(amt)});
+  room.log(w.name+" печели "+A(amt)+" (останалите fold).","win");
   finishHand(room);
 }
 function showdown(room){
@@ -632,7 +675,7 @@ function showdown(room){
   cont.forEach(p=>{
     p.showCards=true;
     const res=best7(p.hole.concat(room.board));
-    p._score=res.v;p.handName=HAND_NAMES[res.cat];
+    p._score=res.v;p.handName=handFull(res);
   });
   const levels=[...new Set(active(room).map(p=>p.contrib).filter(x=>x>0))].sort((a,b)=>a-b);
   let prev=0;const gains={};
@@ -660,10 +703,10 @@ function showdown(room){
   cont.filter(p=>p._score<bestV).forEach(p=>p.st.sdL++);
   const winTxt=winners.map(p=>esc(p.name)+" ("+esc(p.handName)+")").join(", ");
   room.lastWin=winners.map(p=>p.name).join(", ");
-  io.to(room.code).emit("banner",{html:"Печели: "+winTxt+"<br><span class='bsub'>"+Object.entries(gains).map(([n,g])=>esc(n)+" +"+g).join(" · ")+"</span>"});
+  io.to(room.code).emit("banner",{html:"Печели: "+winTxt+"<br><span class='bsub'>"+Object.entries(gains).map(([n,g])=>esc(n)+" +"+A(g)).join(" · ")+"</span>"});
   room.rec("SHOWDOWN: "+cont.map(p=>p.name+" "+p.hole.map(cardStr).join("")+" → "+p.handName).join(" | "));
   const winPlain=winners.map(p=>p.name+" ("+p.handName+")").join(", ");
-  room.rec("Печели: "+winPlain+" · "+Object.entries(gains).map(([n,g])=>n+" +"+g).join(", "));
+  room.rec("Печели: "+winPlain+" · "+Object.entries(gains).map(([n,g])=>n+" +"+A(g)).join(", "));
   room.log("Печели: "+winPlain,"win");
   room.pot=0;finishHand(room);
 }
