@@ -120,6 +120,11 @@
   .bustnote{font-size:.82rem;line-height:1.5;color:#cfe0d6;margin:0 0 18px}
   .bustnote b{color:var(--gold-hi)}
   .bustbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .bustwatch{margin-top:12px;text-align:center}
+  .bustwatch button{background:none;border:none;cursor:pointer;color:#9fb3a8;
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;
+    padding:6px 10px;border-bottom:1px solid transparent;transition:color .15s,border-color .15s}
+  .bustwatch button:hover{color:var(--gold-hi);border-bottom-color:rgba(212,175,106,.5)}
   .bustbtns button{font-size:.95rem;padding:11px 20px;border-radius:10px;cursor:pointer;
     border:1px solid var(--line);background:rgba(255,255,255,.06);color:#e6efe9}
   .bustbtns button:hover{border-color:var(--gold);background:rgba(212,175,106,.14)}
@@ -983,7 +988,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v65.1</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <span class="ver" id="verTag">v65.2</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="hdrfz" id="btnFreeze2" title="Замрази екрана (Z)" aria-label="Замрази екрана"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3"/><path d="M4 7.5l16 9M4 7.5l.4 4.1M4 7.5l4-1.1M20 16.5l-.4-4.1M20 16.5l-4 1.1"/><path d="M20 7.5l-16 9M20 7.5l-4-1.1M20 7.5l-.4 4.1M4 16.5l4 1.1M4 16.5l.4-4.1"/></svg></button><button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -1164,8 +1169,8 @@
     <div class="bustbtns">
       <button class="pri" id="bustRebuy">Влез пак</button>
       <button id="bustNew">Нова маса</button>
-      <button id="bustWatch">Гледай</button>
     </div>
+    <div class="bustwatch"><button id="bustWatch">Гледай масата</button></div>
   </div>
 </div>
 
@@ -2187,7 +2192,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v65.1 · 27.07";
+const NV_VER="v65.2 · 27.07";
 const Snd=(()=>{
   let ctx=null,muted=(LS.get("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -2538,7 +2543,10 @@ function renderBust(){
   nEl.className="v "+(net>0?"pos":(net<0?"neg":""));
   $("bustHands").textContent=(me.st&&me.st.hands)||0;   /* сървърът праща st в състоянието */
   $("bustBig").textContent=bustBB(me.bigPot||0)+" BB";
-  $("bustEntries").textContent=(me.entries||1)+" от "+(S.entriesMax||4);
+  /* докато си отпаднал, използваните влизания са колкото са фалитите;
+     me.entries сочи СЛЕДВАЩОТО влизане, което още не е взето */
+  const used=me.out?(me.busts||1):(me.entries||1);
+  $("bustEntries").textContent=used+" от "+(S.entriesMax||4);
   let note;
   if(won) note="Масата е твоя. Резултатът горе е за цялата сесия.";
   else if(canAgain) note="Влизаш с <b>"+bustBB(me.nextBuyin)+" BB</b> — по-малко от предишния път, и никога над медианата на оцелелите. "
@@ -2549,7 +2557,8 @@ function renderBust(){
   $("bustRebuy").style.display=canAgain?"":"none";
   if(canAgain)$("bustRebuy").textContent="Влез пак — "+bustBB(me.nextBuyin)+" BB";
   $("bustNew").textContent=won?"Нова маса":"Нова маса";
-  $("bustWatch").style.display=(S.over||!S.seats.some(q=>q.type!=="empty"&&!q.out&&q.seat!==mySeat))?"none":"";
+  {const w=$("bustWatch").parentNode;
+   w.style.display=(S.over||!S.seats.some(q=>q.type!=="empty"&&!q.out&&q.seat!==mySeat))?"none":"";}
   ov.classList.add("on"); ov.setAttribute("aria-hidden","false");
 }
 (function bustWire(){
