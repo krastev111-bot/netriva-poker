@@ -209,7 +209,7 @@ function emptySeat(i){
     showCards:false,winCards:false,handName:"",canRaiseFlag:true,equity:null,
     st:{hands:0,vpip:0,pfr:0,won:0,sdW:0,sdL:0,net:0,_vp:false,_pf:false,_startChips:0,
         busts:0,entries:1,_entryChips:0,bigPot:0},
-    out:false,done:false,pendingReason:""};
+    out:false,done:false,wonNow:0,pendingReason:""};
 }
 const SB=r=>r.settings.sb, BB=r=>r.settings.sb*2;
 /* seated = всички на масата (вкл. отпадналите, които чакат решение)
@@ -282,7 +282,7 @@ function publicState(room){
     lastReveal:room.lastReveal||null,
     seats:room.seats.map(p=>({
       seat:p.seat,type:p.type,name:p.name,avatar:p.avatar||"",chips:p.chips,bet:p.bet,
-      out:!!p.out,done:!!p.done,busts:p.st.busts,
+      out:!!p.out,done:!!p.done,busts:p.st.busts,wonNow:p.wonNow||0,
       nextBuyin:p.out&&!p.done?buyinFor(room,p):0,place:p.place||0,
       folded:p.folded,allIn:p.allIn,handName:p.showCards?p.handName:"",
       equity:p.equity,winCards:p.winCards,connected:p.type!=="human"||!!p.id,
@@ -310,6 +310,7 @@ function newHand(room){
   fillBots(room);
   if(active(room).length<2){room.log("Нужни са поне 2 участника.","sys");return;}
   active(room).forEach(p=>{
+    p.wonNow=0;
     Object.assign(p,{hole:[],folded:false,allIn:false,bet:0,contrib:0,acted:false,
       showCards:false,winCards:false,handName:"",canRaiseFlag:true,equity:null,pendingReason:"",_shown:false});
     p.st.hands++;p.st._vp=false;p.st._pf=false;
@@ -689,7 +690,7 @@ function endByFold(room){
   const w=alive(room)[0];
   active(room).forEach(p=>{room.pot+=p.bet;p.bet=0;});
   const amt=room.pot;
-  w.chips+=amt;w.st.won++;w.st.bigPot=Math.max(w.st.bigPot,amt);room.lastWin=w.name;w.winCards=true;
+  w.chips+=amt;w.st.won++;w.st.bigPot=Math.max(w.st.bigPot,amt);w.wonNow=amt;room.lastWin=w.name;w.winCards=true;
   room.pot=0;
   room.rec(w.name+" печели "+A(amt)+" (останалите fold).");
   io.to(room.code).emit("banner",{html:esc(w.name)+" печели "+A(amt)});
@@ -729,7 +730,8 @@ function showdown(room){
   const winners=cont.filter(p=>p._score===bestV);
   winners.forEach(p=>{p.winCards=true;p.st.won++;p.st.sdW++;});
   cont.filter(p=>p._score<bestV).forEach(p=>p.st.sdL++);
-  Object.entries(gains).forEach(([n,g])=>{const q=seated(room).find(x=>x.name===n);if(q)q.st.bigPot=Math.max(q.st.bigPot,g);});
+  Object.entries(gains).forEach(([n,g])=>{const q=seated(room).find(x=>x.name===n);
+    if(q){q.st.bigPot=Math.max(q.st.bigPot,g);q.wonNow=g;}});
   const winTxt=winners.map(p=>esc(p.name)+" ("+esc(p.handName)+")").join(", ");
   room.lastWin=winners.map(p=>p.name).join(", ");
   io.to(room.code).emit("banner",{html:"Печели: "+winTxt+"<br><span class='bsub'>"+Object.entries(gains).map(([n,g])=>esc(n)+" +"+A(g)).join(" · ")+"</span>"});
