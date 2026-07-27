@@ -99,6 +99,85 @@
   .board{display:flex;gap:5px}
   .potline{font-size:.9rem;color:var(--gold-hi);letter-spacing:.03em;background:rgba(0,0,0,.35);padding:2px 12px;border-radius:11px}
   .stageline{font-family:var(--mono);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mint)}
+  /* ---------- ЕФЕКТ ПРИ ПЕЧАЛБА ---------- */
+  /* Три степени според пота: малък — само рамка и брояч; среден — монети и вълна;
+     голям — и печатът WIN. Така зрелището остава рядко и значи нещо. */
+  .seat.wfx{animation:wfxShake .34s .10s both}
+  @keyframes wfxShake{0%,100%{transform:translate(-50%,-50%)}
+    25%{transform:translate(-51.4%,-49.2%)}50%{transform:translate(-48.6%,-50.8%)}
+    75%{transform:translate(-50.9%,-50.4%)}}
+  .seat.wfx .postag,.seat.wfx .name,.seat.wfx .stack,.seat.wfx .hl,
+  .seat.wfx .outtag,.seat.wfx .note-flag{position:relative;z-index:6}
+
+  /* печелившата сума над горния ръб */
+  .wplus{position:absolute;left:50%;top:0;transform:translate(-50%,-100%);z-index:9;opacity:0;
+    font-family:var(--mono);font-size:1.18rem;font-weight:bold;color:#42e6a4;white-space:nowrap;
+    text-shadow:0 0 14px rgba(66,230,164,.9),0 0 30px rgba(66,230,164,.45);pointer-events:none}
+  .wfx .wplus{animation:wfxPlus 2.3s .10s ease-out forwards}
+  @keyframes wfxPlus{0%{opacity:0;transform:translate(-50%,-60%) scale(.8)}
+    16%{opacity:1;transform:translate(-50%,-108%) scale(1)}
+    68%{opacity:1;transform:translate(-50%,-118%)}
+    100%{opacity:0;transform:translate(-50%,-165%)}}
+
+  /* монетите падат вдясно от името и потъват в процеп */
+  .wcoins{position:absolute;right:6px;top:24px;width:20px;height:20px;z-index:7;pointer-events:none}
+  .wcoin{position:absolute;left:0;top:0;width:17px;height:17px;border-radius:50%;opacity:0;
+    background:radial-gradient(circle at 34% 28%,#ffeaa8,#d9ac48 58%,#8f6a1e);
+    border:1px solid rgba(90,66,16,.9);box-shadow:0 1px 2px rgba(0,0,0,.55)}
+  .wfx .wcoin{animation:wfxCoin .78s cubic-bezier(.34,.02,.5,1) forwards}
+  @keyframes wfxCoin{
+    0%  {opacity:0;transform:translateY(-30px) scale(.6)}
+    28% {opacity:1;transform:translateY(-11px) scale(.92)}
+    46% {opacity:1;transform:translateY(0)     scale(1)}
+    54% {opacity:1;transform:translateY(1px)   scale(1.06,.9)}
+    100%{opacity:0;transform:translateY(9px)   scale(.5,.06)}}
+  .wslot{position:absolute;right:6px;top:42px;width:20px;height:2px;border-radius:2px;z-index:8;
+    background:#42e6a4;opacity:0;box-shadow:0 0 7px rgba(66,230,164,.85);pointer-events:none}
+  .wfx .wslot{animation:wfxSlot 2.4s ease-in-out forwards}
+  @keyframes wfxSlot{0%{opacity:0}8%{opacity:.9}80%{opacity:.9}100%{opacity:0}}
+
+  /* картончето се пълни като съд */
+  .wvessel{position:absolute;inset:0;overflow:hidden;border-radius:10px;z-index:3;pointer-events:none}
+  .wfill{position:absolute;left:0;right:0;bottom:0;height:0;opacity:0;
+    background:linear-gradient(to top,rgba(66,230,164,.26),rgba(66,230,164,.05))}
+  .wfx .wfill{animation:wfxFill 2.4s cubic-bezier(.32,.7,.35,1) forwards}
+  @keyframes wfxFill{0%{height:0;opacity:0}7%{opacity:1}
+    62%{height:100%;opacity:1}80%{height:100%;opacity:1}100%{height:100%;opacity:0}}
+  .wblob{position:absolute;left:50%;bottom:100%;width:210px;height:210px;margin:0 0 -188px -105px;
+    border-radius:43% 47% 45% 44%}
+  .wb1{background:rgba(66,230,164,.26);animation:wfxBlob 3.6s linear infinite}
+  .wb2{background:rgba(66,230,164,.15);animation:wfxBlob 5.2s linear infinite reverse;margin-bottom:-194px}
+  @keyframes wfxBlob{to{transform:rotate(360deg)}}
+
+  /* блясък през картончето */
+  .wsheen{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;overflow:hidden;border-radius:10px}
+  .wsheen::after{content:"";position:absolute;top:-30%;left:-60%;width:40%;height:160%;transform:rotate(18deg);
+    background:linear-gradient(90deg,transparent,rgba(180,255,225,.38),transparent)}
+  .wfx .wsheen{animation:wfxSheenOn 2.3s forwards}
+  .wfx .wsheen::after{animation:wfxSweep 1s .5s cubic-bezier(.3,0,.4,1) 2}
+  @keyframes wfxSheenOn{0%,100%{opacity:0}10%,80%{opacity:1}}
+  @keyframes wfxSweep{0%{left:-60%}100%{left:130%}}
+
+  /* печатът WIN върху долния ръб — настройките, избрани от играча */
+  .wwin{position:absolute;left:50%;bottom:0;transform:translate(-50%,calc(50% + 5px));z-index:8;
+    font-family:Georgia,serif;font-size:3.4rem;line-height:.74;font-weight:bold;letter-spacing:.1em;
+    color:#42e6a4;opacity:0;pointer-events:none;white-space:nowrap;
+    text-shadow:0 0 10px rgba(66,230,164,.95),0 0 26px rgba(66,230,164,.6),0 2px 4px rgba(0,0,0,.6)}
+  .wfx .wwin{animation:wfxStampIn .58s .26s cubic-bezier(.2,1.5,.4,1) forwards,
+                       wfxStampOut .5s 1.95s forwards}
+  @keyframes wfxStampIn{0%{opacity:0;transform:translate(-50%,calc(50% + 5px)) scale(2.4) rotate(-6deg)}
+    62%{opacity:1;transform:translate(-50%,calc(50% + 5px)) scale(.93) rotate(1deg)}
+    100%{opacity:1;transform:translate(-50%,calc(50% + 5px)) scale(1) rotate(0)}}
+  @keyframes wfxStampOut{to{opacity:0;transform:translate(-50%,calc(50% + 5px)) scale(1.12)}}
+
+  /* степен 1 (малък пот) крие всичко освен рамката и брояча; степен 2 крие само печата */
+  .wfx.wt1 .wwin,.wfx.wt1 .wcoins,.wfx.wt1 .wslot,.wfx.wt1 .wvessel,.wfx.wt1 .wsheen{display:none}
+  .wfx.wt2 .wwin{display:none}
+  @media(max-width:760px){
+    .wwin{font-size:2.5rem}
+    .wplus{font-size:1rem}
+    .wcoins{right:4px;top:20px}.wslot{right:4px;top:36px}
+  }
   /* ---------- ОТПАДАНЕ И ПОВТОРНО ВЛИЗАНЕ ---------- */
   .seat.isout{opacity:.34;filter:grayscale(.7)}
   .seat .outtag{display:block;font-family:var(--mono);font-size:.55rem;letter-spacing:.14em;
@@ -988,7 +1067,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v65.2</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <span class="ver" id="verTag">v66</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="hdrfz" id="btnFreeze2" title="Замрази екрана (Z)" aria-label="Замрази екрана"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3"/><path d="M4 7.5l16 9M4 7.5l.4 4.1M4 7.5l4-1.1M20 16.5l-.4-4.1M20 16.5l-4 1.1"/><path d="M20 7.5l-16 9M20 7.5l-4-1.1M20 7.5l-.4 4.1M4 16.5l4 1.1M4 16.5l.4-4.1"/></svg></button><button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -1006,6 +1085,8 @@
         <label class="switch"><input type="checkbox" id="setAuto" checked><span></span></label></div>
       <div class="set-item"><span>Четирицветно тесте (само за теб)</span>
         <label class="switch"><input type="checkbox" id="setFour" checked><span></span></label></div>
+      <div class="set-item"><span>Ефект при печалба (само за теб)</span>
+        <label class="switch"><input type="checkbox" id="setWinFx" checked><span></span></label></div>
       <div id="hostSettings">
         <div class="set-item" style="margin-top:6px"><span class="lbl">Настройки на масата — общи, всеки играч може да ги променя (вижда се в дневника кой какво е сменил)</span></div>
         <div class="set-item"><span>Блайндове</span>
@@ -1623,7 +1704,11 @@ function setLink(on){
 }
 function renderTable(){
   const t=$("tableEl");
-  [...t.querySelectorAll(".seat,.betchip")].forEach(e=>e.remove());
+  /* място с течащ ефект при печалба се запазва — иначе пречертаването
+     го убива по средата и WIN изчезва рязко вместо да избледнее */
+  [...t.querySelectorAll(".seat,.betchip")].forEach(e=>{
+    if(!e.classList.contains("wfx"))e.remove();
+  });
   const rot=i=>SEAT_POS[mySeat>=0?((i-mySeat+8)%8):i];
   const POSMAP=seatPositions();
   // етикетите живеят до края на текущата улица
@@ -1631,6 +1716,7 @@ function renderTable(){
   const peekSeats=[];
   S.seats.forEach((p,i)=>{
     if(p.type==="empty")return;
+    if(t.querySelector('.seat.wfx[data-seat="'+i+'"]'))return;   // ефектът си довършва
     const [x,y]=rot(i);
     const d=document.createElement("div");
     d.className="seat"+(p.out?" isout":"")+(i===mySeat?" hero":"")+(p.folded&&!S.handOver?" folded":"")+((i===mySeat&&p.folded&&myHole&&myHole.length)?" peekme":"")+(i===S.acting?" acting":"")+(!p.connected?" gone":"")+(S.handOver&&p.winCards?" wonseat":"")+(S.handOver&&p.showCards&&!p.winCards?" lostseat":"");
@@ -1814,6 +1900,7 @@ function renderTable(){
   }
   startCountdown();
   syncHistSoon();
+  wfxCheck();          /* ефектът при печалба — след като местата са на екрана */
 }
 /* бордът се пречертава само при промяна — иначе обръщането щеше да се къса,
    защото масата се рисува наново при всяко съобщение от сървъра */
@@ -2192,7 +2279,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v65.2 · 27.07";
+const NV_VER="v66 · 27.07";
 const Snd=(()=>{
   let ctx=null,muted=(LS.get("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -2286,7 +2373,31 @@ const Snd=(()=>{
     const g3=c.createGain();g3.gain.value=.09;
     src.connect(hp);hp.connect(g3);g3.connect(c.destination);src.start(t+.06);
   }catch(e){}}
-  return{ding,chips,swish,win,tick,go,card,
+  /* тонът се качва, докато картончето се пълни — ухото чува „пълни се" */
+  function fill(ms){if(muted)return;try{
+    const c=ac(),t=c.currentTime,D=(ms||1400)/1000;
+    const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();
+    o.type="triangle"; f.type="lowpass";
+    f.frequency.setValueAtTime(700,t); f.frequency.linearRampToValueAtTime(2600,t+D);
+    o.frequency.setValueAtTime(196,t); o.frequency.exponentialRampToValueAtTime(392,t+D);
+    g.gain.setValueAtTime(.0001,t);
+    g.gain.exponentialRampToValueAtTime(.085,t+.12);
+    g.gain.setValueAtTime(.085,t+D*.8);
+    g.gain.exponentialRampToValueAtTime(.0001,t+D+.25);
+    o.connect(f);f.connect(g);g.connect(c.destination);
+    o.start(t);o.stop(t+D+.3);}catch(e){}}
+  /* една монета = едно кратко металическо „дзън" */
+  function coin(delay){if(muted)return;try{
+    const c=ac(),t=c.currentTime+(delay||0);
+    [1860,2790].forEach((fr,i)=>{
+      const o=c.createOscillator(),g=c.createGain();
+      o.type="sine";o.frequency.setValueAtTime(fr*(1+Math.random()*.05),t);
+      g.gain.setValueAtTime(.0001,t);
+      g.gain.exponentialRampToValueAtTime(i?.045:.09,t+.006);
+      g.gain.exponentialRampToValueAtTime(.0001,t+.17);
+      o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.2);
+    });}catch(e){}}
+  return{ding,chips,swish,win,tick,go,card,fill,coin,
     get muted(){return muted;},
     toggle(){muted=!muted;LS.set("nvMute",muted?"1":"0");return muted;}};
 })();
@@ -2519,6 +2630,71 @@ function drawGraph(){
 }
 
 /* ================= КЛАВИШНИ КОМБИНАЦИИ ================= */
+
+/* ============ ЕФЕКТ ПРИ ПЕЧАЛБА ============ */
+/* Три степени според спечеленото в BB. Прагът не е за красота, а срещу омръзване:
+   уокоувър за 1.5 BB не заслужава същото, което заслужава пот от 40 BB. */
+const WFX_MID=8, WFX_BIG=25;          // BB
+let wfxHand=0, wfxSeq=0;
+const wfxOn=()=>LS.get("nvWinFx")!=="0";
+
+function wfxTier(bb){ return bb>=WFX_BIG?"wt3":(bb>=WFX_MID?"wt2":"wt1"); }
+
+function wfxPlay(seatEl,chips,bbv){
+  if(!seatEl)return;
+  const tier=wfxTier(chips/bbv);
+  const coins=tier==="wt1"?0:(tier==="wt2"?4:6);
+  // старите слоеве се махат, за да е чист рестартът
+  seatEl.querySelectorAll(".wplus,.wcoins,.wslot,.wvessel,.wsheen,.wwin").forEach(e=>e.remove());
+  seatEl.classList.remove("wfx","wt1","wt2","wt3");
+
+  const add=(cls,html)=>{const d=document.createElement("div");d.className=cls;
+    if(html)d.innerHTML=html;seatEl.appendChild(d);return d;};
+  const plus=add("wplus"); plus.textContent="+"+fmt(chips);
+  add("wvessel",'<div class="wfill"><span class="wblob wb1"></span><span class="wblob wb2"></span></div>');
+  add("wsheen");
+  if(coins){
+    add("wslot");
+    const box=add("wcoins");
+    for(let i=0;i<coins;i++){
+      const c=document.createElement("div");c.className="wcoin";
+      c.style.animationDelay=(0.14+i*0.13)+"s";
+      box.appendChild(c);
+    }
+  }
+  if(tier==="wt3"){const w=add("wwin");w.textContent="WIN";}
+
+  void seatEl.offsetWidth;
+  seatEl.classList.add("wfx",tier);
+  /* ако междувременно тръгне нов ефект на същото място, старият таймер
+     не бива да гаси новия — затова всеки пуск носи свой номер */
+  const myId=++wfxSeq; seatEl._wfxId=myId;
+  setTimeout(()=>{
+    if(seatEl._wfxId!==myId)return;
+    seatEl.classList.remove("wfx",tier);
+    seatEl.querySelectorAll(".wplus,.wcoins,.wslot,.wvessel,.wsheen,.wwin").forEach(e=>e.remove());
+    if(S)renderTable();          // чисто пречертаване, ако нещо е чакало ефекта
+  },2600);
+
+  if(tier!=="wt1"){
+    try{Snd.fill(1500);}catch(_){}
+    for(let i=0;i<coins;i++){try{Snd.coin(0.14+i*0.13+0.30);}catch(_){}}
+  }
+}
+
+/* пуска се веднъж на ръка, за всеки победител */
+function wfxCheck(){
+  if(!S||!S.handOver||!S.handNo||S.handNo===wfxHand)return;
+  const ws=S.seats.filter(p=>p.type!=="empty"&&p.winCards&&p.wonNow>0);
+  if(!ws.length)return;
+  wfxHand=S.handNo;
+  if(!wfxOn())return;
+  const bbv=S.settings.sb*2;
+  ws.forEach(w=>{
+    const el=document.querySelector('.seat[data-seat="'+w.seat+'"]');
+    wfxPlay(el, w.wonNow, bbv);
+  });
+}
 
 /* ============ ОТПАДАНЕ И ПОВТОРНО ВЛИЗАНЕ ============ */
 let bustShown=-1, bustDismissed=-1;
@@ -2877,6 +3053,9 @@ if($("btnGoVerify"))$("btnGoVerify").onclick=()=>{
 $("setFour").onchange=e=>{local.fourColor=e.target.checked;document.body.classList.toggle("fourcolor",local.fourColor);};
 document.body.classList.toggle("fourcolor",local.fourColor);
 $("setAuto").onchange=e=>socket.emit("settings",{autoDeal:e.target.checked});
+{const w=$("setWinFx");
+ if(w){w.checked=wfxOn();
+       w.onchange=e=>LS.set("nvWinFx",e.target.checked?"1":"0");}}
 $("btnApplyBlinds").onclick=()=>socket.emit("settings",{sb:+document.querySelector('input[name="blindopt"]:checked').value});
 $("btnApplyStack").onclick=()=>socket.emit("settings",{startStack:+document.querySelector('input[name="stackopt"]:checked').value});
 $("btnApplySpeed").onclick=()=>socket.emit("settings",{botSpeed:+document.querySelector('input[name="speedopt"]:checked').value});
