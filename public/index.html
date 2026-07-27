@@ -99,6 +99,100 @@
   .board{display:flex;gap:5px}
   .potline{font-size:.9rem;color:var(--gold-hi);letter-spacing:.03em;background:rgba(0,0,0,.35);padding:2px 12px;border-radius:11px}
   .stageline{font-family:var(--mono);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mint)}
+  /* ---------- ОТПАДАНЕ И ПОВТОРНО ВЛИЗАНЕ ---------- */
+  .seat.isout{opacity:.34;filter:grayscale(.7)}
+  .seat .outtag{display:block;font-family:var(--mono);font-size:.55rem;letter-spacing:.14em;
+    text-transform:uppercase;color:#ff9a8b;margin-top:2px}
+  .bustov{position:fixed;inset:0;z-index:150;display:none;align-items:center;justify-content:center;
+    background:rgba(3,12,8,.86);backdrop-filter:blur(3px);padding:20px}
+  .bustov.on{display:flex}
+  .bustbox{width:min(460px,94vw);border-radius:16px;padding:26px 24px 22px;text-align:center;
+    background:linear-gradient(180deg,#0d2c1e,#06180f);
+    border:1px solid rgba(212,175,106,.45);box-shadow:0 18px 60px rgba(0,0,0,.7)}
+  .bustbox h3{margin:0 0 4px;font-size:1.5rem;letter-spacing:.1em;color:var(--gold-hi);font-weight:normal}
+  .bustbox .sub{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+    color:#9fb3a8;margin-bottom:16px}
+  .bustgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 18px}
+  .bustgrid>div{background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:9px;padding:8px 6px}
+  .bustgrid .k{font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mint)}
+  .bustgrid .v{font-size:1.05rem;font-weight:bold;color:#fff;margin-top:2px}
+  .bustgrid .v.neg{color:#ff9a8b} .bustgrid .v.pos{color:#42e6a4}
+  .bustnote{font-size:.82rem;line-height:1.5;color:#cfe0d6;margin:0 0 18px}
+  .bustnote b{color:var(--gold-hi)}
+  .bustbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .bustbtns button{font-size:.95rem;padding:11px 20px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--line);background:rgba(255,255,255,.06);color:#e6efe9}
+  .bustbtns button:hover{border-color:var(--gold);background:rgba(212,175,106,.14)}
+  .bustbtns button.pri{background:linear-gradient(180deg,#e8cd8a,#bf9a44);color:#20180a;
+    border-color:#e8cd8a;font-weight:bold}
+  .bustbtns button.pri:hover{background:linear-gradient(180deg,#fff1c2,#e0b95f)}
+  @media(max-width:520px){.bustgrid{grid-template-columns:1fr}.bustbox{padding:20px 16px 18px}}
+  /* ---------- ЗАМРАЗЯВАНЕ НА ЕКРАНА ---------- */
+  .fzbtn{position:absolute;left:72%;top:95%;transform:translate(-50%,-50%);z-index:6;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    width:92px;padding:9px 6px 8px;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,rgba(12,38,26,.96),rgba(6,20,14,.96));
+    border:1px solid rgba(212,175,106,.45);color:var(--gold-hi);
+    box-shadow:0 3px 10px rgba(0,0,0,.45);
+    transition:border-color .18s,box-shadow .18s,transform .12s}
+  .fzbtn:hover{border-color:var(--gold);box-shadow:0 0 16px rgba(212,175,106,.4);transform:translate(-50%,-50%) scale(1.04)}
+  .fzbtn:active{transform:translate(-50%,-50%) scale(.97)}
+  .fzbtn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
+  .fzbtn span{font-family:var(--mono);font-size:.56rem;letter-spacing:.13em;text-transform:uppercase;opacity:.9}
+  .hdrfz{display:none;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:8px;
+    padding:5px 8px;cursor:pointer;line-height:0;align-items:center;color:var(--gold-hi);
+    transition:border-color .15s,background .15s}
+  .hdrfz:hover{border-color:var(--gold);background:rgba(212,175,55,.10)}
+  .hdrfz svg{width:21px;height:21px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
+  .fzov{position:fixed;inset:0;z-index:200;display:none;background:#04140d}
+  .fzov.on{display:block}
+  .fzbar{position:absolute;left:0;right:0;top:0;height:48px;z-index:3;
+    display:flex;align-items:center;gap:10px;padding:0 12px;
+    background:linear-gradient(180deg,rgba(6,22,15,.99),rgba(6,22,15,.9));
+    border-bottom:1px solid rgba(212,175,106,.35)}
+  .fzbar .ttl{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--gold);white-space:nowrap}
+  .fzbar .dot{width:7px;height:7px;border-radius:50%;background:#42e6a4;
+    box-shadow:0 0 8px #42e6a4;animation:fzpulse 1.3s ease-in-out infinite;flex:0 0 auto}
+  @keyframes fzpulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .fzbar .liv{font-family:var(--mono);font-size:.72rem;color:#dfe9e2;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto}
+  .fzbar .liv b{color:#fff}
+  .fzbar .liv .urg{color:#ff9a8b}
+  .fzbtns{display:flex;gap:6px;flex:0 0 auto}
+  .fzbtns button{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;
+    padding:6px 11px;border-radius:7px;cursor:pointer;color:#e6efe9;
+    background:rgba(255,255,255,.06);border:1px solid rgba(212,175,106,.32)}
+  .fzbtns button:hover{background:rgba(212,175,106,.16);border-color:var(--gold)}
+  .fzbtns b{font-weight:inherit}
+  .fzbtns .sm{display:none}
+  .fzbtns button.pri{background:linear-gradient(180deg,#e8cd8a,#bf9a44);color:#20180a;
+    border-color:#e8cd8a;font-weight:bold}
+  .fzstage{position:absolute;left:0;right:0;top:48px;bottom:0;overflow:hidden;
+    cursor:grab;background:#04140d}
+  .fzstage.drag{cursor:grabbing}
+  .fzinner{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;
+    padding:10px 14px;background:#07281a}
+  .fzhint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:3;
+    font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;color:#9fb3a8;
+    background:rgba(4,20,13,.85);border:1px solid rgba(212,175,106,.22);
+    border-radius:20px;padding:6px 14px;pointer-events:none}
+  @media(max-width:760px){
+    .fzbtn{display:none}
+    .hdrfz{display:inline-flex}
+    .fzbar{height:44px;gap:6px;padding:0 8px}
+    .fzbar .ttl{display:none}
+    .fzbtns button{padding:5px 9px;font-size:.62rem}
+    .fzstage{top:44px}
+    .fzhint{display:none}
+  }
+  @media(max-width:520px){
+    .fzbtns .lg{display:none}
+    .fzbtns .sm{display:inline}
+    .fzbtns{gap:4px}
+    .fzbtns button{padding:5px 8px}
+    .fzbar .liv{font-size:.66rem}
+  }
   .winbanner{position:absolute;left:50%;top:64%;transform:translate(-50%,-50%);
     background:rgba(8,20,15,.92);border:1px solid var(--gold);border-radius:10px;
     padding:12px 22px;font-size:.95rem;color:var(--gold-hi);z-index:9;text-align:center;display:none;max-width:80%}
@@ -873,8 +967,8 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v63</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
-      <button class="gear" id="btnSettings" title="Настройки">⚙</button>
+      <span class="ver" id="verTag">v65</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <button class="hdrfz" id="btnFreeze2" title="Замрази екрана (Z)" aria-label="Замрази екрана"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3"/><path d="M4 7.5l16 9M4 7.5l.4 4.1M4 7.5l4-1.1M20 16.5l-.4-4.1M20 16.5l-4 1.1"/><path d="M20 7.5l-16 9M20 7.5l-4-1.1M20 7.5l-.4 4.1M4 16.5l4 1.1M4 16.5l.4-4.1"/></svg></button><button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
 
@@ -943,6 +1037,10 @@
         <div class="potline" id="potLine" style="display:none"></div>
       </div>
       <div class="winbanner" id="winBanner"></div>
+      <button class="fzbtn" id="btnFreeze" title="Замрази екрана, за да го разгледаш (Z)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3"/><path d="M4 7.5l16 9M4 7.5l.4 4.1M4 7.5l4-1.1M20 16.5l-.4-4.1M20 16.5l-4 1.1"/><path d="M20 7.5l-16 9M20 7.5l-4-1.1M20 7.5l-.4 4.1M4 16.5l4 1.1M4 16.5l.4-4.1"/></svg>
+        <span>Замрази</span>
+      </button>
     </div>
   </div>
 
@@ -1034,6 +1132,42 @@
     </div>
   </div><!-- /sidebar -->
   </div><!-- /layout -->
+</div>
+
+<div class="bustov" id="bustOv" aria-hidden="true">
+  <div class="bustbox">
+    <h3 id="bustTitle">Отпадна</h3>
+    <div class="sub" id="bustSub">—</div>
+    <div class="bustgrid">
+      <div><div class="k">Резултат</div><div class="v" id="bustNet">—</div></div>
+      <div><div class="k">Изиграни ръце</div><div class="v" id="bustHands">—</div></div>
+      <div><div class="k">Най-голям пот</div><div class="v" id="bustBig">—</div></div>
+      <div><div class="k">Влизания</div><div class="v" id="bustEntries">—</div></div>
+    </div>
+    <p class="bustnote" id="bustNote"></p>
+    <div class="bustbtns">
+      <button class="pri" id="bustRebuy">Влез пак</button>
+      <button id="bustNew">Нова маса</button>
+      <button id="bustWatch">Гледай</button>
+    </div>
+  </div>
+</div>
+
+<div class="fzov" id="fzOv" aria-hidden="true">
+  <div class="fzbar">
+    <span class="dot"></span>
+    <span class="ttl">Замразен екран</span>
+    <span class="liv" id="fzLive">—</span>
+    <span class="fzbtns">
+      <button id="fzOut" title="Намали">−</button>
+      <button id="fzFit" title="Побери в екрана">1:1</button>
+      <button id="fzIn" title="Увеличи">+</button>
+      <button id="fzPng" class="pri"><b class="lg">Свали PNG</b><b class="sm">PNG</b></button>
+      <button id="fzClose"><b class="lg">Размрази</b><b class="sm">✕</b></button>
+    </span>
+  </div>
+  <div class="fzstage" id="fzStage"><div class="fzinner" id="fzInner"></div></div>
+  <div class="fzhint">колелце = мащаб · влачене = местене · Esc или Z = размразяване</div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -1427,6 +1561,7 @@ function syncHistSoon(){
 window.addEventListener("resize",syncHistSoon);
 function render(){
   if(!S)return;
+  renderBust();
   updateRoomTag();
   $("blindsHdr").textContent=S.settings.sb+"/"+S.settings.sb*2;
   if(document.activeElement!==$("setAuto"))$("setAuto").checked=S.settings.autoDeal!==false;
@@ -1477,12 +1612,13 @@ function renderTable(){
     if(p.type==="empty")return;
     const [x,y]=rot(i);
     const d=document.createElement("div");
-    d.className="seat"+(i===mySeat?" hero":"")+(p.folded&&!S.handOver?" folded":"")+((i===mySeat&&p.folded&&myHole&&myHole.length)?" peekme":"")+(i===S.acting?" acting":"")+(!p.connected?" gone":"")+(S.handOver&&p.winCards?" wonseat":"")+(S.handOver&&p.showCards&&!p.winCards?" lostseat":"");
+    d.className="seat"+(p.out?" isout":"")+(i===mySeat?" hero":"")+(p.folded&&!S.handOver?" folded":"")+((i===mySeat&&p.folded&&myHole&&myHole.length)?" peekme":"")+(i===S.acting?" acting":"")+(!p.connected?" gone":"")+(S.handOver&&p.winCards?" wonseat":"")+(S.handOver&&p.showCards&&!p.winCards?" lostseat":"");
     d.dataset.seat=i;
     d.style.left=x+"%";d.style.top=y+"%";
     const pos=POSMAP[i];
     let nm=(pos?'<span class="postag">'+pos+'</span>':"")+
-      '<div class="name">'+avHTML(p.avatar||(p.type==="bot"?botAvatar(p.name):""))+escHTML(p.name)+(p.type==="bot"?'<span class="tag">bot</span>':"")+(i===S.button?'<span class="dealerbtn">D</span>':"")+(!p.connected?'<span class="tag">off</span>':"")+'</div>';
+      '<div class="name">'+avHTML(p.avatar||(p.type==="bot"?botAvatar(p.name):""))+escHTML(p.name)+(p.type==="bot"?'<span class="tag">bot</span>':"")+(i===S.button?'<span class="dealerbtn">D</span>':"")+(!p.connected?'<span class="tag">off</span>':"")+'</div>'
+      +(p.out?'<span class="outtag">отпадна'+(p.place?" · "+p.place+"-то място":"")+'</span>':"");
     let stack='<div class="stack"><b>'+fmt(p.chips)+'</b>'+(p.allIn?" · all-in":"")+'</div>';
     let timer=(i===S.acting&&S.deadline)?'<div class="timer" data-deadline="'+S.deadline+'"><span class="tsec"></span><div class="tbar"><i></i></div></div>':"";
     d.innerHTML=nm+stack+timer;
@@ -2035,7 +2171,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v63 · 26.07";
+const NV_VER="v65 · 27.07";
 const Snd=(()=>{
   let ctx=null,muted=(LS.get("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -2362,10 +2498,194 @@ function drawGraph(){
 }
 
 /* ================= КЛАВИШНИ КОМБИНАЦИИ ================= */
+
+/* ============ ОТПАДАНЕ И ПОВТОРНО ВЛИЗАНЕ ============ */
+let bustShown=-1, bustDismissed=-1;
+function bustBB(v){const bb=(S&&S.settings?S.settings.sb:10)*2;const x=v/bb;return (x%1===0?x.toFixed(0):x.toFixed(1));}
+function renderBust(){
+  const ov=$("bustOv"); if(!ov)return;
+  const me=(S&&mySeat>=0)?S.seats[mySeat]:null;
+  const won=S&&S.over&&S.winner&&me&&S.winner===me.name;
+  const show=!!me&&(me.out||won)&&bustDismissed!==S.handNo;
+  if(!show){ov.classList.remove("on");ov.setAttribute("aria-hidden","true");return;}
+  if(bustShown!==S.handNo){
+    bustShown=S.handNo;
+    try{won?Snd.win&&Snd.win():Snd.ding&&Snd.ding();}catch(_){}
+  }
+  const canAgain=me.out&&!me.done&&me.nextBuyin>0;
+  $("bustTitle").textContent=won?"Ти печелиш турнира":(me.done?"Сесията свърши":"Отпадна");
+  $("bustSub").textContent=won?("остана последен на масата · ръка №"+S.handNo)
+    :("ръка №"+S.handNo+(me.place?" · "+me.place+"-то място":""));
+  const net=me.net||0;
+  const nEl=$("bustNet");
+  nEl.textContent=(net>0?"+":"")+bustBB(net)+" BB";
+  nEl.className="v "+(net>0?"pos":(net<0?"neg":""));
+  $("bustHands").textContent=(me.st&&me.st.hands)||0;   /* сървърът праща st в състоянието */
+  $("bustBig").textContent=bustBB(me.bigPot||0)+" BB";
+  $("bustEntries").textContent=(me.entries||1)+" от "+(S.entriesMax||4);
+  let note;
+  if(won) note="Масата е твоя. Резултатът горе е за цялата сесия.";
+  else if(canAgain) note="Влизаш с <b>"+bustBB(me.nextBuyin)+" BB</b> — по-малко от предишния път, и никога над медианата на оцелелите. "
+      +"Удвоиш ли този стек, наказанието пада и следващото влизане пак е пълно.";
+  else if(me.done&&me.entries>=(S.entriesMax||4)) note="Изчерпа "+(S.entriesMax||4)+"-те влизания за тази сесия.";
+  else note="Масата е твърде къса — влизане под 10 BB няма смисъл. Започни нова.";
+  $("bustNote").innerHTML=note;
+  $("bustRebuy").style.display=canAgain?"":"none";
+  if(canAgain)$("bustRebuy").textContent="Влез пак — "+bustBB(me.nextBuyin)+" BB";
+  $("bustNew").textContent=won?"Нова маса":"Нова маса";
+  $("bustWatch").style.display=(S.over||!S.seats.some(q=>q.type!=="empty"&&!q.out&&q.seat!==mySeat))?"none":"";
+  ov.classList.add("on"); ov.setAttribute("aria-hidden","false");
+}
+(function bustWire(){
+  const g=(id,fn)=>{const e=$(id);if(e)e.onclick=fn;};
+  g("bustRebuy",()=>{socket.emit("rebuy");bustDismissed=-1;$("bustOv").classList.remove("on");});
+  g("bustWatch",()=>{bustDismissed=S?S.handNo:-1;$("bustOv").classList.remove("on");});
+  g("bustNew",()=>{
+    socket.emit("leaveTable");
+    $("bustOv").classList.remove("on");
+    setTimeout(()=>location.reload(),350);
+  });
+})();
+
+/* ============ ЗАМРАЗЯВАНЕ НА ЕКРАНА ============ */
+/* Клонира цялата игрална зона в неподвижен слой. Играта отдолу продължава —
+   горната лента показва живо състояние и сама вдига замразяването при 10 сек. */
+const FZ={on:false,z:1,x:0,y:0,w:0,h:0,timer:null,drag:null,lifted:false};
+
+function fzSyncInputs(src,dst){
+  const a=src.querySelectorAll("input,textarea,select"), b=dst.querySelectorAll("input,textarea,select");
+  for(let i=0;i<a.length&&i<b.length;i++){
+    if(a[i].type==="checkbox"||a[i].type==="radio"){if(a[i].checked)b[i].setAttribute("checked","checked");else b[i].removeAttribute("checked");}
+    else b[i].setAttribute("value",a[i].value);
+  }
+  const da=src.querySelectorAll("details"), db=dst.querySelectorAll("details");
+  for(let i=0;i<da.length&&i<db.length;i++){if(da[i].open)db[i].setAttribute("open","");else db[i].removeAttribute("open");}
+}
+function fzFit(){
+  const st=$("fzStage"),inn=$("fzInner");
+  if(!st||!FZ.w)return;
+  const r=st.getBoundingClientRect();
+  FZ.z=Math.min(r.width/FZ.w,r.height/FZ.h,1.6);
+  FZ.x=(r.width-FZ.w*FZ.z)/2; FZ.y=Math.max(0,(r.height-FZ.h*FZ.z)/2);
+  fzApply();
+}
+function fzApply(){
+  const inn=$("fzInner");
+  if(inn)inn.style.transform="translate("+FZ.x+"px,"+FZ.y+"px) scale("+FZ.z+")";
+}
+function fzZoom(mult,cx,cy){
+  const st=$("fzStage");if(!st)return;
+  const r=st.getBoundingClientRect();
+  if(cx===undefined){cx=r.width/2;cy=r.height/2;}
+  const nz=Math.min(4,Math.max(.2,FZ.z*mult));
+  FZ.x=cx-(cx-FZ.x)*(nz/FZ.z); FZ.y=cy-(cy-FZ.y)*(nz/FZ.z);
+  FZ.z=nz; fzApply();
+}
+function fzLive(){
+  const el=$("fzLive");if(!el)return;
+  if(!S){el.textContent="—";return;}
+  let txt="Ръка №"+(S.handNo||0)+" · ";
+  if(S.handOver)txt+="ръката приключи";
+  else if(S.acting>=0&&S.seats[S.acting]&&S.seats[S.acting].type!=="empty"){
+    const nm=escHTML(S.seats[S.acting].name||"—");
+    txt+=(S.acting===mySeat?"<b>ТВОЙ РЕД</b>":"чака "+nm);
+  } else txt+="…";
+  let urgent=false;
+  if(!S.handOver&&S.acting===mySeat&&mySeat>=0&&S.deadline){
+    const left=Math.max(0,Math.round((S.deadline-Date.now())/1000));
+    urgent=left<=12;
+    txt+=' · <b class="'+(urgent?"urg":"")+'">'+left+" с</b>";
+    if(left<=10&&!FZ.lifted){FZ.lifted=true;fzOff(true);return;}
+  }
+  el.innerHTML=txt;
+}
+function fzOn(){
+  if(FZ.on)return;
+  const host=document.querySelector(".wrap"); if(!host)return;
+  const inn=$("fzInner"); inn.innerHTML="";
+  const r=host.getBoundingClientRect();
+  FZ.w=Math.round(r.width); FZ.h=Math.round(r.height);
+  const cl=host.cloneNode(true);
+  /* id-тата се пазят — част от стиловете висят на тях. Слоят живее НАКРАЯ на <body>,
+     затова getElementById винаги връща оригинала, не клонинга. */
+  cl.querySelectorAll(".fzbtn").forEach(e=>e.remove());
+  fzSyncInputs(host,cl);
+  cl.style.width=FZ.w+"px";
+  inn.style.width=FZ.w+"px"; inn.style.height=FZ.h+"px";
+  inn.appendChild(cl);
+  FZ.on=true; FZ.lifted=false;
+  $("fzOv").classList.add("on"); $("fzOv").setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+  fzFit(); fzLive();
+  FZ.timer=setInterval(fzLive,250);
+  try{Snd.card&&Snd.card();}catch(_){}
+}
+function fzOff(auto){
+  if(!FZ.on)return;
+  FZ.on=false;
+  if(FZ.timer){clearInterval(FZ.timer);FZ.timer=null;}
+  $("fzOv").classList.remove("on"); $("fzOv").setAttribute("aria-hidden","true");
+  $("fzInner").innerHTML="";
+  document.body.style.overflow="";
+  if(auto){try{Snd.turn&&Snd.turn();}catch(_){}
+    log("Замразяването се вдигна — остават под 10 секунди за твоя ход.","sys");}
+}
+/* PNG без външна библиотека: клонингът минава през SVG foreignObject в canvas */
+async function fzPNG(){
+  const btn=$("fzPng"); const old=btn.textContent;
+  btn.textContent="…"; btn.disabled=true;
+  try{
+    const src=$("fzInner").firstElementChild; if(!src)throw new Error("няма какво да се снима");
+    const css=document.querySelector("style").textContent;
+    const body=new XMLSerializer().serializeToString(src);
+    const W=FZ.w+28,H=FZ.h+20,SC=2;
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'">'
+      +'<foreignObject x="0" y="0" width="'+W+'" height="'+H+'">'
+      +'<div xmlns="http://www.w3.org/1999/xhtml" style="width:'+W+'px;padding:10px 14px;'
+      +'background:#07281a;color:#e9e4d4;font-family:Georgia,serif;box-sizing:border-box">'
+      +"<style>"+css+"</style>"+body+"</div></foreignObject></svg>";
+    const img=new Image();
+    await new Promise((res,rej)=>{
+      img.onload=res; img.onerror=()=>rej(new Error("браузърът отказа да рендира снимката"));
+      img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+    });
+    const c=document.createElement("canvas");
+    c.width=W*SC; c.height=H*SC;
+    const g=c.getContext("2d");
+    g.scale(SC,SC); g.fillStyle="#07281a"; g.fillRect(0,0,W,H); g.drawImage(img,0,0);
+    const a=document.createElement("a");
+    a.download="netriva-"+(S&&S.handNo?("hand-"+S.handNo):"table")+".png";
+    a.href=c.toDataURL("image/png");
+    document.body.appendChild(a); a.click(); a.remove();
+  }catch(err){
+    log("Снимката не се получи ("+err.message+"). Замразеният екран остава — ползвай Win+Shift+S.","sys");
+  }finally{ btn.textContent=old; btn.disabled=false; }
+}
+(function fzWire(){
+  [$("btnFreeze"),$("btnFreeze2")].forEach(bf=>{if(bf)bf.onclick=()=>FZ.on?fzOff():fzOn();});
+  const g=(id,fn)=>{const e=$(id);if(e)e.onclick=fn;};
+  g("fzClose",()=>fzOff()); g("fzIn",()=>fzZoom(1.25));
+  g("fzOut",()=>fzZoom(.8)); g("fzFit",()=>fzFit()); g("fzPng",fzPNG);
+  const st=$("fzStage"); if(!st)return;
+  st.addEventListener("wheel",e=>{e.preventDefault();
+    const r=st.getBoundingClientRect();
+    fzZoom(e.deltaY<0?1.12:.89,e.clientX-r.left,e.clientY-r.top);},{passive:false});
+  st.addEventListener("pointerdown",e=>{FZ.drag={x:e.clientX,y:e.clientY,ox:FZ.x,oy:FZ.y};
+    st.classList.add("drag"); st.setPointerCapture(e.pointerId);});
+  st.addEventListener("pointermove",e=>{if(!FZ.drag)return;
+    FZ.x=FZ.drag.ox+(e.clientX-FZ.drag.x); FZ.y=FZ.drag.oy+(e.clientY-FZ.drag.y); fzApply();});
+  const up=()=>{FZ.drag=null;st.classList.remove("drag");};
+  st.addEventListener("pointerup",up); st.addEventListener("pointercancel",up);
+  window.addEventListener("resize",()=>{if(FZ.on)fzFit();});
+})();
+
 document.addEventListener("keydown",e=>{
   const t=e.target.tagName;
   if(t==="INPUT"||t==="TEXTAREA"||e.ctrlKey||e.metaKey||e.altKey)return;
   const k=e.key.toLowerCase();
+  if(k==="escape"&&FZ.on){e.preventDefault();fzOff();return;}
+  if(k==="z"){e.preventDefault();FZ.on?fzOff():fzOn();return;}
+  if(FZ.on)return;                     // замразен екран не приема игрови клавиши
   const my=S&&!S.handOver&&S.acting===mySeat&&mySeat>=0;
   if(k==="f"&&my){e.preventDefault();socket.emit("action",{type:"fold"});}
   else if((k==="c"||k===" ")&&my){e.preventDefault();socket.emit("action",{type:"check_call"});}
