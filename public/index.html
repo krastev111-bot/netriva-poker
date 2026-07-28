@@ -839,7 +839,7 @@
   @keyframes prFlap{from{transform:rotate(-24deg) scaleY(.85)}to{transform:rotate(16deg) scaleY(1.1)}}
 
   /* маймуната надзърта иззад короната */
-  .monkey{position:absolute;left:52px;top:44vh;width:58px;height:62px;opacity:0;
+  .monkey{position:absolute;left:44px;top:43vh;width:88px;height:94px;opacity:0;
     transform:translateY(26px) scale(.9)}
   .monkey.peek{animation:mkPeek 4.2s ease-in-out forwards}
   @keyframes mkPeek{
@@ -855,11 +855,11 @@
   /* зениците се стрелкат наляво и надясно — очакване на изненада */
   .monkey .pupils{animation:mkLook 4.2s ease-in-out forwards}
   @keyframes mkLook{
-    0%,14%  {transform:translateX(0)}
-    22%,30% {transform:translateX(-2.6px)}
-    38%,48% {transform:translateX(2.8px)}
-    56%,62% {transform:translateX(-2.2px)}
-    70%,78% {transform:translateX(2.4px)}
+    0%,12%  {transform:translateX(0)}
+    18%,30% {transform:translateX(-3.6px)}
+    36%,50% {transform:translateX(3.8px)}
+    56%,64% {transform:translateX(-3.4px)}
+    70%,80% {transform:translateX(3.6px)}
     88%,100%{transform:translateX(0)}}
 
   /* --- палмов декор вляво --- */
@@ -1154,7 +1154,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v68</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <span class="ver" id="verTag">v69</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="hdrfz" id="btnFreeze2" title="Замрази екрана (Z)" aria-label="Замрази екрана"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3"/><path d="M4 7.5l16 9M4 7.5l.4 4.1M4 7.5l4-1.1M20 16.5l-.4-4.1M20 16.5l-4 1.1"/><path d="M20 7.5l-16 9M20 7.5l-4-1.1M20 7.5l-.4 4.1M4 16.5l4 1.1M4 16.5l.4-4.1"/></svg></button><button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -1239,15 +1239,15 @@
       <ellipse cx="46" cy="30" rx="4" ry="4.6" fill="#c49a74" opacity=".9"/>
       <ellipse cx="29" cy="30" rx="19" ry="20" fill="#8a6242" opacity=".95"/>
       <ellipse cx="29" cy="36" rx="13" ry="12" fill="#c49a74" opacity=".95"/>
-      <ellipse cx="22" cy="27" rx="4.6" ry="5" fill="#fdf6ea" opacity=".95"/>
-      <ellipse cx="36" cy="27" rx="4.6" ry="5" fill="#fdf6ea" opacity=".95"/>
+      <ellipse cx="21.5" cy="27" rx="6.2" ry="6" fill="#fdf6ea"/>
+      <ellipse cx="36.5" cy="27" rx="6.2" ry="6" fill="#fdf6ea"/>
       <g class="pupils">
-        <circle cx="22" cy="28" r="2.4" fill="#1d1108"/>
-        <circle cx="36" cy="28" r="2.4" fill="#1d1108"/>
+        <circle cx="21.5" cy="27.6" r="2.5" fill="#12100c"/>
+        <circle cx="36.5" cy="27.6" r="2.5" fill="#12100c"/>
       </g>
       <g class="lids" opacity="0">
-        <ellipse cx="22" cy="27" rx="5" ry="5.4" fill="#8a6242"/>
-        <ellipse cx="36" cy="27" rx="5" ry="5.4" fill="#8a6242"/>
+        <ellipse cx="21.5" cy="27" rx="6.6" ry="6.4" fill="#8a6242"/>
+        <ellipse cx="36.5" cy="27" rx="6.6" ry="6.4" fill="#8a6242"/>
       </g>
       <ellipse cx="26" cy="36" rx="1.3" ry="1.7" fill="#6b4a30"/>
       <ellipse cx="32" cy="36" rx="1.3" ry="1.7" fill="#6b4a30"/>
@@ -2409,7 +2409,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v68 · 28.07";
+const NV_VER="v69 · 28.07";
 const Snd=(()=>{
   let ctx=null,muted=(LS.get("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -2835,38 +2835,44 @@ function buildWaterfall(){
    Досега стоеше на десния ръб на екрана — тоест точно зад страничния панел
    и никога не се виждаше на широка маса. */
 function placeWaterfall(){
-  const w=$("wfall"); if(!w||w.style.display==="none")return;
+  const w=$("wfall"); if(!w)return;
   const t=$("tableEl"); if(!t)return;
-  const tr=t.getBoundingClientRect();
-  if(!tr.width)return;
-  const mid=tr.left+tr.width/2;
-  let best=null;                       // най-дясното място от дясната половина
-  document.querySelectorAll(".seat").forEach(e=>{
-    const r=e.getBoundingClientRect();
-    if(r.left+r.width/2<=mid)return;
-    if(!best||r.right>best.right||(Math.abs(r.right-best.right)<6&&r.bottom>best.bottom))best=r;
-  });
-  const r=best||{left:tr.right-140,width:132,bottom:tr.bottom};
-  w.style.left=Math.round(r.left)+"px";
-  w.style.width=Math.round(r.width)+"px";
-  w.style.top=Math.round(r.bottom+16)+"px";
+  const tr=t.getBoundingClientRect(); if(!tr.width)return;
+  /* Вързан е за КООРДИНАТАТА на дясното място (индекс 6 в SEAT_POS), а не за
+     картончето. Така чертата е една и съща, независимо дали там седи някой,
+     дали има карти и колко е висок профилът — водопадът не подскача. */
+  const P=SEAT_POS[6]||[97,50];
+  const cx=tr.left+tr.width*P[0]/100;
+  const cy=tr.top +tr.height*P[1]/100;
+  const W=132;                              // колкото е широко едно място
+  let left=cx-W/2;
+  const sb=document.querySelector(".sidebar");
+  if(sb){const sr=sb.getBoundingClientRect();
+         if(sr.width&&left+W>sr.left-8)left=sr.left-8-W;}
+  left=Math.max(8,left);
+  w.style.width=W+"px";
+  w.style.left=Math.round(left)+"px";
+  w.style.top =Math.round(cy+78)+"px";      // фиксирана черта под мястото
 }
 let wfTick=null;
 addEventListener("resize",()=>{clearTimeout(wfTick);wfTick=setTimeout(placeWaterfall,120);});
 
 /* --- при all-in: папагал прелита, маймуна надзърта --- */
-let jungleBusy=0;
+let jungleBusy=0, jungleSeq=0;
 function jungleAllIn(){
   if(!jungleOn())return;
   const now=Date.now();
   if(now-jungleBusy<5000)return;        // да не се трупат при няколко all-in-а подред
   jungleBusy=now;
   const pr=$("parrot"), mk=$("monkey");
+  /* всяко пускане носи свой номер: стар таймер не бива да гаси нова поява */
+  const id=++jungleSeq;
   if(pr){ pr.classList.remove("fly"); void pr.offsetWidth; pr.classList.add("fly");
-          setTimeout(()=>pr.classList.remove("fly"),3500); }
+          setTimeout(()=>{if(id===jungleSeq)pr.classList.remove("fly");},3500); }
   if(mk){ setTimeout(()=>{
+            if(id!==jungleSeq)return;
             mk.classList.remove("peek"); void mk.offsetWidth; mk.classList.add("peek");
-            setTimeout(()=>mk.classList.remove("peek"),4300);
+            setTimeout(()=>{if(id===jungleSeq)mk.classList.remove("peek");},4300);
           },700); }
   try{Snd.squawk();}catch(_){}
 }
