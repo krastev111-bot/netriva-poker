@@ -178,6 +178,31 @@
     .wplus{font-size:1rem}
     .wcoins{right:4px;top:20px}.wslot{right:4px;top:36px}
   }
+  /* ---------- ALL-IN: КОЙ ИМЕННО ---------- */
+  /* Червеният обков казваше „нещо стана", но не и на кого. Сега картончетата
+     на влезлите all-in пулсират червено през цялата ръка, а веднъж се стоварва
+     и надписът ALL IN — както WIN, само че в червено. */
+  .seat.allin{border-color:#e2705f !important;
+    animation:ainPulse 1.25s ease-in-out infinite}
+  @keyframes ainPulse{0%,100%{box-shadow:0 0 0 0 rgba(226,112,95,.10)}
+    50%{box-shadow:0 0 20px 5px rgba(226,112,95,.62)}}
+  .seat.allin .stack{color:#ffd9d2}
+
+  .ainw{position:absolute;left:50%;bottom:0;transform:translate(-50%,calc(50% + 5px));z-index:8;
+    font-family:Georgia,serif;font-size:2rem;line-height:.78;font-weight:bold;letter-spacing:.06em;
+    color:#ff6a55;opacity:0;pointer-events:none;white-space:nowrap;
+    text-shadow:0 0 10px rgba(255,90,70,.95),0 0 26px rgba(226,60,40,.6),0 2px 4px rgba(0,0,0,.65)}
+  .ainfx .ainw{animation:ainStampIn .5s cubic-bezier(.2,1.5,.4,1) forwards,
+                         ainStampOut .45s 1.7s forwards}
+  @keyframes ainStampIn{0%{opacity:0;transform:translate(-50%,calc(50% + 5px)) scale(2.3) rotate(-5deg)}
+    62%{opacity:1;transform:translate(-50%,calc(50% + 5px)) scale(.94) rotate(1deg)}
+    100%{opacity:1;transform:translate(-50%,calc(50% + 5px)) scale(1) rotate(0)}}
+  @keyframes ainStampOut{to{opacity:0;transform:translate(-50%,calc(50% + 5px)) scale(1.1)}}
+  .ainfx{animation:ainShake .3s both, ainPulse 1.25s .3s ease-in-out infinite !important}
+  @keyframes ainShake{0%,100%{transform:translate(-50%,-50%)}
+    25%{transform:translate(-51.6%,-49%)}50%{transform:translate(-48.4%,-51%)}
+    75%{transform:translate(-51%,-50.4%)}}
+  @media(max-width:760px){.ainw{font-size:1.5rem}}
   /* ---------- ОТПАДАНЕ И ПОВТОРНО ВЛИЗАНЕ ---------- */
   .seat.isout{opacity:.34;filter:grayscale(.7)}
   .seat .outtag{display:block;font-family:var(--mono);font-size:.55rem;letter-spacing:.14em;
@@ -1154,7 +1179,7 @@
         <span class="hdr-stat">Блайндове: <b id="blindsHdr">10/20</b></span>
         <span class="hdr-stat">Стек: <b id="heroChips">—</b></span>
       </div>
-      <span class="ver" id="verTag">v70</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
+      <span class="ver" id="verTag">v71</span> <span class="roomtag" id="roomTag" title="Копирай линка за покана">—</span> <button id="sndBtn" title="Звуци вкл/изкл" aria-label="Звук"><svg viewBox="0 0 26 24" aria-hidden="true"><path class="spk" d="M4 9.2h4.1L13 5v14l-4.9-4.2H4z"/><path class="w1" d="M16.2 9.4a4.6 4.6 0 0 1 0 5.2"/><path class="w2" d="M19 7.1a8.4 8.4 0 0 1 0 9.8"/><path class="mute" d="M17 8.6l6 6.8M23 8.6l-6 6.8"/></svg></button>
       <button class="hdrfz" id="btnFreeze2" title="Замрази екрана (Z)" aria-label="Замрази екрана"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3"/><path d="M4 7.5l16 9M4 7.5l.4 4.1M4 7.5l4-1.1M20 16.5l-.4-4.1M20 16.5l-4 1.1"/><path d="M20 7.5l-16 9M20 7.5l-4-1.1M20 7.5l-.4 4.1M4 16.5l4 1.1M4 16.5l.4-4.1"/></svg></button><button class="gear" id="btnSettings" title="Настройки">⚙</button>
     </div>
   </header>
@@ -1835,7 +1860,7 @@ function renderTable(){
   /* място с течащ ефект при печалба се запазва — иначе пречертаването
      го убива по средата и WIN изчезва рязко вместо да избледнее */
   [...t.querySelectorAll(".seat,.betchip")].forEach(e=>{
-    if(!e.classList.contains("wfx"))e.remove();
+    if(!e.classList.contains("wfx")&&!e.classList.contains("ainfx"))e.remove();
   });
   const rot=i=>SEAT_POS[mySeat>=0?((i-mySeat+8)%8):i];
   const POSMAP=seatPositions();
@@ -1844,10 +1869,11 @@ function renderTable(){
   const peekSeats=[];
   S.seats.forEach((p,i)=>{
     if(p.type==="empty")return;
-    if(t.querySelector('.seat.wfx[data-seat="'+i+'"]'))return;   // ефектът си довършва
+    if(t.querySelector('.seat.wfx[data-seat="'+i+'"]'))return;     // ефектът си довършва
+    if(t.querySelector('.seat.ainfx[data-seat="'+i+'"]'))return;   // надписът ALL IN също
     const [x,y]=rot(i);
     const d=document.createElement("div");
-    d.className="seat"+(p.out?" isout":"")+(i===mySeat?" hero":"")+(p.folded&&!S.handOver?" folded":"")+((i===mySeat&&p.folded&&myHole&&myHole.length)?" peekme":"")+(i===S.acting?" acting":"")+(!p.connected?" gone":"")+(S.handOver&&p.winCards?" wonseat":"")+(S.handOver&&p.showCards&&!p.winCards?" lostseat":"");
+    d.className="seat"+(p.out?" isout":"")+((p.allIn&&!p.folded&&!S.handOver)?" allin":"")+(i===mySeat?" hero":"")+(p.folded&&!S.handOver?" folded":"")+((i===mySeat&&p.folded&&myHole&&myHole.length)?" peekme":"")+(i===S.acting?" acting":"")+(!p.connected?" gone":"")+(S.handOver&&p.winCards?" wonseat":"")+(S.handOver&&p.showCards&&!p.winCards?" lostseat":"");
     d.dataset.seat=i;
     d.style.left=x+"%";d.style.top=y+"%";
     const pos=POSMAP[i];
@@ -2030,6 +2056,7 @@ function renderTable(){
   syncHistSoon();
   wfxCheck();          /* ефектът при печалба — след като местата са на екрана */
   placeWaterfall();    /* водопадът се подравнява под дясното място */
+  ainCheck();          /* кой точно е влязъл all-in */
 }
 /* бордът се пречертава само при промяна — иначе обръщането щеше да се къса,
    защото масата се рисува наново при всяко съобщение от сървъра */
@@ -2409,7 +2436,7 @@ function renderHist(list){
 
 
 /* --- звуци: синтезирани в движение, без файлове --- */
-const NV_VER="v70 · 28.07";
+const NV_VER="v71 · 28.07";
 const Snd=(()=>{
   let ctx=null,muted=(LS.get("nvMute")==="1");
   const ac=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
@@ -2856,6 +2883,37 @@ function placeWaterfall(){
 }
 let wfTick=null;
 addEventListener("resize",()=>{clearTimeout(wfTick);wfTick=setTimeout(placeWaterfall,120);});
+
+/* Надписът ALL IN — веднъж за всеки играч, който влиза с целия си стек.
+   Постоянният червен пулс се слага в renderTable и стои до края на ръката. */
+let ainHand=0, ainSeq=0; const ainSeen=new Set();
+function ainStamp(seatEl){
+  if(!seatEl)return;
+  seatEl.querySelectorAll(".ainw").forEach(e=>e.remove());
+  seatEl.classList.remove("ainfx");
+  const d=document.createElement("div"); d.className="ainw"; d.textContent="ALL IN";
+  seatEl.appendChild(d);
+  void seatEl.offsetWidth;
+  seatEl.classList.add("ainfx");
+  const id=++ainSeq; seatEl._ainId=id;
+  setTimeout(()=>{
+    if(seatEl._ainId!==id)return;
+    seatEl.classList.remove("ainfx");
+    seatEl.querySelectorAll(".ainw").forEach(e=>e.remove());
+    if(S)renderTable();
+  },2300);
+}
+function ainCheck(){
+  if(!S||!S.handNo)return;
+  if(S.handNo!==ainHand){ainHand=S.handNo;ainSeen.clear();}
+  if(S.handOver)return;
+  if(!wfxOn())return;                 // ключът „Ефект при печалба" гаси и този
+  S.seats.forEach((p,i)=>{
+    if(p.type==="empty"||!p.allIn||p.folded||ainSeen.has(i))return;
+    ainSeen.add(i);
+    ainStamp(document.querySelector('.seat[data-seat="'+i+'"]'));
+  });
+}
 
 /* --- при all-in: папагал прелита, маймуна надзърта --- */
 let jungleBusy=0, jungleSeq=0;
